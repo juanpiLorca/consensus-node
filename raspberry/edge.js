@@ -15,27 +15,60 @@ pastTrigger = false;
 
 // uart-rx: on receive data from uart-tx (nordic)
 // -> edge-process: send state message to backend-process
+// parser.on('data', (data) => {
+//   const line = data.replace(/\r/g, '').replace(/\n/g, '');
+//   const msgType = line[0];
+//   if (msgType == 'd') {
+//     const arr = line.slice(1).split(',');
+//     const state = {timestamp: arr[0], gamma: arr[1], state: arr[2],  neighborStates: arr.slice(3)};
+//     process.send(state);
+//   }
+// })
+// --- Finite-Time Robust Adaptive Coordination ---
 parser.on('data', (data) => {
   const line = data.replace(/\r/g, '').replace(/\n/g, '');
   const msgType = line[0];
   if (msgType == 'd') {
     const arr = line.slice(1).split(',');
-    const state = { timestamp: arr[0], gamma: arr[1], state: arr[2],  neighborStates: arr.slice(3)};
+    const state = {
+      timestamp: arr[0],
+      gamma: arr[1],
+      state: arr[2],
+      vstate: arr[3],
+      neighborStates: arr.slice(4)
+    };
     process.send(state);
   }
-})
+});
+// --- Finite-Time Robust Adaptive Coordination ---
+
 
 // edge-process: on params message received from backend-process
 // -> uart-tx: send trigger-network-algorithm params to uart-rx (nordic)
 process.on('message', async (params) => {
   const msgNetwork = `n${params.enabled ? 1 : 0},${params.node},${params.neighbors.join(',')}\n\r`;
   const msgAlgorithm = `a${params.algorithm},${params.clock},${params.state},${params.gamma},${params.lambda},${params.pole},${params.dead},` +
-    `${params.disturbance.random ? 1 : 0},${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples}\n\r`;
+  `${params.disturbance.random ? 1 : 0},${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples}\n\r`;
+
+  // --- Finite-Time Robust Adaptive Coordination ---
+  const msgAlgorithm3 = `a${params.algorithm},${params.clock},${params.state},${params.gamma},${params.lambda},${params.pole},${params.dead},` +
+    `${params.disturbance.random ? 1 : 0},${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples},` +
+    `${params.vstate},${params.eta},${params.vartheta}\n\r`;
+  // --- Finite-Time Robust Adaptive Coordination ---
+
   const msgTrigger = `t${params.trigger ? 1 : 0}\n\r`;
   try {
     await serialWrite(msgNetwork);
     await serialDelay();
-    await serialWrite(msgAlgorithm);
+
+    // --- Finite-Time Robust Adaptive Coordination ---
+    if (params.algorithm === 3) {
+      await serialWrite(msgAlgorithm3);
+    } else {
+      await serialWrite(msgAlgorithm);
+    }
+    // --- Finite-Time Robust Adaptive Coordination ---
+    
     if ((params.trigger && !pastTrigger) || (!params.trigger && pastTrigger)) {
       await serialDelay();
       await serialWrite(msgTrigger);
@@ -98,6 +131,29 @@ async function getNeighborStates() {
   }
   return {neighborStates: neighborStates, neighborEnabled: neighborEnabled}
 }
+// --- Finite-Time Robust Adaptive Coordination ---
+async function getNeighborVStates() {
+  let neighborStates = [];
+  let neighborEnabled = [];
+  try {
+    for (let id of params.neighbors) {
+      if (params.neighborTypes[id] === TYPE_BLE) {
+        const data = await bleGetState(nordicNeighbors[id]); 
+        neighborStates.push(Number(data.vstate));
+        neighborEnabled.push(Boolean(data.enabled));
+      } else {
+        const response = await axios.get(`${params.neighborAddresses[id]}/getState`);
+        neighborStates.push(Number(response.data.vstate));
+        neighborEnabled.push(Boolean(response.data.enabled));
+      }
+    }
+  } catch (error) {
+    console.error(`Error fetching from url`);
+  }
+  return {neighborStates: neighborStates, neighborEnabled: neighborEnabled}
+}
+// --- Finite-Time Robust Adaptive Coordination ---
+
 
 // The consensus algorithm
 async function updateConsensus() {
@@ -105,9 +161,21 @@ async function updateConsensus() {
   // Update the state: timestamp, gamma, state and neigbor-states
   state.timestamp = Date.now() - time0;
   if (params.enabled) {
-    const { neighborStates, neighborEnabled } = await getNeighborStates();
-    state.neighborStates = neighborStates;
-    ({ state: state.state, gamma: state.gamma} = algo.update(neighborStates, neighborEnabled));
+    switch (params.algorithm) {
+
+      // --- Finite-Time Robust Adaptive Coordination ---
+      case 3: 
+        const { neighborVStates, neighborVEnabled } = await getNeighborVStates();
+        state.neighborStates = neighborVStates;
+        ({ state: state.state, gamma: state.gamma, vstate: state.vstate, vartheta: state.vartheta } = algo.update(neighborVStates, neighborVEnabled));
+        break; 
+      // --- Finite-Time Robust Adaptive Coordination ---
+      default:
+        const { neighborStates, neighborEnabled } = await getNeighborStates();
+        state.neighborStates = neighborStates;
+        ({ state: state.state, gamma: state.gamma, vstate: state.vstate, vartheta: state.vartheta } = algo.update(neighborStates, neighborEnabled));
+        break; 
+    }
   }
 
   // Send state to bakend-process
@@ -137,12 +205,22 @@ function startBleBridge() {
 process.on('message', async (updatedParams) => {
   try {
     if (isInitial) {
-      state = {timestamp: 0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+      //state = {timestamp: 0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+
+      // --- Finite-Time Robust Adaptive Coordination ---
+      state = {timestamp: 0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: [], vstate: updatedParams.vstate, vartheta: updatedParams.vartheta};
+      // --- Finite-Time Robust Adaptive Coordination ---
+
       isInitial = false;
     }
     if (updatedParams.trigger && !params.trigger) {
       time0 = Date.now();
-      state = {timestamp: Date.now() - time0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+      //state = {timestamp: Date.now() - time0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+
+      // --- Finite-Time Robust Adaptive Coordination ---
+      state = {timestamp: Date.now() - time0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: [], vstate: updatedParams.vstate, vartheta: updatedParams.vartheta};
+      // --- Finite-Time Robust Adaptive Coordination ---
+
       algo.setParams(params);
       algo.resetInitialConditions();
       if (TYPE === TYPE_BRIDGE) {
@@ -167,7 +245,11 @@ process.on('message', async (updatedParams) => {
 
 // express-server: on get to /getState route
 app.get('/getState', (_req, res) => {
-  res.json({state: state.state, enabled: params.enabled});
+  //res.json({state: state.state, enabled: params.enabled});
+
+  // --- Finite-Time Robust Adaptive Coordination ---
+  res.json({state: state.state, enabled: params.enabled, vstate: state.vstate});
+  // --- Finite-Time Robust Adaptive Coordination ---
 });
 
 // http-server: start edge http server (express-server)

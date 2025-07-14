@@ -56,17 +56,20 @@ float sign(float x) {
 
 // Auxiliar function for updating the consensus algorithm
 void update_consensus(consensus_params *cp) {
+
     // Cast to float for accurate computation
     float x = (float)cp->state;
     float g = (float)(cp->gamma * 0.001);
     float a = (float)(cp->lambda * 0.000001);
 	float p = (float)(cp->pole * 0.01);
 	float ed = (float)cp->dead;
+
 	// For algorithm with LPF system
 	float x0 = (float)cp->state0;
 	float e_past = cp->error;
 	float e_dc_past = cp->error_dc;
 	float ui_past = cp->ui;
+
 	// For disturbance
 	float cnt = (float)cp->disturbance.counter;
 	float off = (float)cp->disturbance.offset;
@@ -75,6 +78,7 @@ void update_consensus(consensus_params *cp) {
 	float Ns = (float)cp->disturbance.samples;
 	float norm_noise = cp->disturbance.random ? (float)rand() / RAND_MAX : sin(2*M_PI*(cnt/Ns - pha));
 	float disturbance = off + amp * norm_noise;
+
     // Compute the error
 	float e = 0;
 	float N = 0;
@@ -87,12 +91,33 @@ void update_consensus(consensus_params *cp) {
 	if (N > 0) {
 	    e /= N;
 	}
+
 	// Compute manipulated variable and update the algorithm
-	float uf = x0;//(x0 + N * (e + x)) / (1 + N);
+	float uf = x0;
 	float ui = ui_past + g * (e - p * e_past);
 	float e_dc = p * e_dc_past + (1 - p) * e;
 	float e_ac = e - e_dc; 
 	float u = 0;
+
+	// ---- Finite-Time Robust Adaptive Coordination ---
+	float xi = x; 
+	float mi = disturbance;
+	float zi = (float)cp->vstate;
+	float sigmai = (float)cp->sigma;
+	float eta = (float)cp->eta;
+	float varthetai = (float)cp->vartheta;
+	// g_i(z_i,v_i) function definition
+	float gi = 0.0; 
+	for (int i = 0; i < cp->N; i++) {
+		if (cp->neighbor_enabled[i]) {
+			gi += ((float)cp->neighbor_vstates[i] - zi);
+		}
+	}
+	if (N > 0) {
+	    gi /= N;
+	}
+	// ---- Finite-Time Robust Adaptive Coordination ---
+
 	switch (cp->algorithm) {
         case ALGO_TYPE_ORIGINAL:
             u = g * sign(e) + disturbance;
@@ -109,17 +134,38 @@ void update_consensus(consensus_params *cp) {
             cp->state = (int32_t)(p * x + (1 - p) * u);
 			cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
             break;
+		
+		// ---- Finite-Time Robust Adaptive Coordination ---
+		case FINITE_TIME_ROBUST_ADAPTIVE_COORDINATION:
+			sigmai = xi - zi; 
+			ui = gi - varthetai * sign(sigmai);
+			cp->vstate = (int32_t)(zi + gi);
+			cp->state = (int32_t)(xi + u + mi); 
+			cp->vartheta = (int32_t)(varthetai + eta * (sign(sigmai) * sign(sigmai)));
+			cp->sigma = (int32_t)sigmai;
         default:
-            u = uf + ui + disturbance;
-            cp->state = (int32_t)(p * x + (1 - p) * u);
-            cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
+            // u = uf + ui + disturbance;
+            // cp->state = (int32_t)(p * x + (1 - p) * u);
+            // cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
+			sigmai = xi - zi; 
+			ui = gi - varthetai * sign(sigmai);
+			cp->vstate = (int32_t)(zi + gi);
+			cp->state = (int32_t)(xi + u + mi); 
+			cp->vartheta = (int32_t)(varthetai + eta * (sign(sigmai) * sign(sigmai)));
+			cp->sigma = (int32_t)sigmai;
+		// ---- Finite-Time Robust Adaptive Coordination ---
     }
 	cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
 	cp->error = e;
 	cp->error_dc = e_dc;
 	cp->ui = ui;
 	LOG_INF("x: %d, g: %d, a: %d, e: %d, state: %d, gamma: %d", (int32_t)x, (int32_t)g, (int32_t)a, (int32_t)e, cp->state, cp->gamma);
+
+	// ---- Finite-Time Robust Adaptive Coordination ---
+	LOG_INF("xi: %d, mi: %d, zi: %d, sigmai: %d, eta: %d, varthetai: %d, gi: %d", (int32_t)xi, (int32_t)mi, (int32_t)zi, (int32_t)sigmai, (int32_t)eta, (int32_t)varthetai, (int32_t)gi);
+	// ---- Finite-Time Robust Adaptive Coordination ---
 }
+
 
 // Thread: Main (just for blinking a LED)
 int main(void) {
@@ -134,6 +180,7 @@ int main(void) {
 	}
 }
 
+
 // Thread: Concensus Algorithm
 void thread_consensus(void) {
 	custom_data_type custom_data = {MANUFACTURER_ID, consensus.enabled ? NETID_ENABLED : NETID_DISABLED, consensus.node, consensus.state};
@@ -144,6 +191,11 @@ void thread_consensus(void) {
 				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 				custom_data.node = consensus.node;
 				custom_data.state = consensus.state;
+
+				// ---- Finite-Time Robust Adaptive Coordination ---
+				custom_data.vstate = consensus.vstate;
+				// ---- Finite-Time Robust Adaptive Coordination ---
+
 				broadcaster_start(&custom_data);
 				observer_start();
 				serial_log_consensus();
@@ -154,10 +206,20 @@ void thread_consensus(void) {
 					if (consensus.enabled) {
 					    memcpy(consensus.neighbor_states, neighbor_info.states, sizeof(neighbor_info.states));
 					    memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
+
+						// ---- Finite-Time Robust Adaptive Coordination ---
+					    memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
+						// ---- Finite-Time Robust Adaptive Coordination ---		
+
 					    update_consensus(&consensus);
 					}
 					custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 					custom_data.state = consensus.state;
+
+					// ---- Finite-Time Robust Adaptive Coordination ---
+					custom_data.vstate = consensus.vstate;
+					// ---- Finite-Time Robust Adaptive Coordination ---
+					
 		    		broadcaster_update_scan_response_custom_data(&custom_data);
 				    serial_log_consensus();
 		    	}

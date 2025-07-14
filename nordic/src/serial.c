@@ -12,6 +12,11 @@ static bool available_neighbors[N_MAX_NEIGHBORS] = {false};
 static uint8_t neighbors[N_MAX_NEIGHBORS] = {1};
 static int32_t neighbor_states[N_MAX_NEIGHBORS] = {100};
 static bool neighbor_enabled[N_MAX_NEIGHBORS] = {false};
+
+// ---- Finite-Time Robust Adaptive Coordination ---
+static int32_t neighbor_vstates[N_MAX_NEIGHBORS] = {100}; 
+// ---- Finite-Time Robust Adaptive Coordination ---
+
 consensus_params consensus = {
 	false,					// running
 	false,					// enabled	
@@ -36,7 +41,18 @@ consensus_params consensus = {
 	0.0,					// integral (PI) manipulated variable
 	neighbor_states,		// neighbor states
 	neighbor_enabled,		// neighbor enabled
-	{false, 0, 0, 0, 0, 0}  // disturbance parameters
+	{false, 0, 0, 0, 0, 0}, // disturbance parameters
+
+	// ---- Finite-Time Robust Adaptive Coordination ---
+	100,         		// virtual reference system for agent i: z_i
+	100, 	   			// initial virtual reference system for agent i: z_i0
+	neighbor_vstates, 	// neighbor virtual reference systems
+	0,           		// tracking error for agent i: sigma_i = x_i - z_i
+	1,					// adaptive step gain.	
+	50,	         		// adaptive gain for agent i: vartheta_i
+	50			        // initial adaptive gain for agent i: vartheta_i0
+	// ---- Finite-Time Robust Adaptive Coordination ---
+
 };		
 
 // Get the device pointer of the UART hardware
@@ -74,10 +90,21 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                     			consensus.time0 = k_uptime_get();
                     			consensus.state = consensus.state0;
                     			consensus.gamma = consensus.gamma0;
+
+								// ---- Finite-Time Robust Adaptive Coordination ---
+								consensus.vstate = consensus.vstate0;
+								consensus.sigma = 0;
+								consensus.vartheta = consensus.vartheta0;	
+								// ---- Finite-Time Robust Adaptive Coordination ---
+
                     			for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
                     				consensus.available_neighbors[i] = false;
                     				consensus.neighbor_states[i] = consensus.state0;
 									consensus.neighbor_enabled[i] = false;
+
+									// ---- Finite-Time Robust Adaptive Coordination ---
+									consensus.neighbor_vstates[i] = consensus.vstate0;
+									// ---- Finite-Time Robust Adaptive Coordination ---
                     			}
                     		} else {
                     			consensus.running = false;
@@ -149,6 +176,19 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 									case 11:
                     					consensus.disturbance.samples = value;
                     					break;
+
+									// ---- Finite-Time Robust Adaptive Coordination ---
+									case 12: 
+										consensus.vstate0 = value;
+										break;
+									case 13:
+										consensus.eta = value;
+										break;
+									case 14:
+										consensus.vartheta0 = value;
+										break;
+									// ---- Finite-Time Robust Adaptive Coordination ---
+									
                     				default:
                     					break;
                     			}
@@ -197,15 +237,35 @@ void serial_start() {
 	return;
 }
 
+
 // Function to send the log data over serial
 void serial_log_consensus() {
-    // Prepare the string in the format "dtime,gamma,state,nieghbor_state1,nieghbor_state2\n\r"
+    
+	// Prepare the string in the format "dtime,gamma,state,nieghbor_state1,nieghbor_state2\n\r"
 	int64_t timestamp = k_uptime_get() - consensus.time0;
-    int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d", timestamp, consensus.gamma, consensus.state);
+    //int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d", timestamp, consensus.gamma, consensus.state);
+	// --- Finite-Time Robust Adaptive Coordination ---
+	int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d", timestamp, consensus.gamma, consensus.state, consensus.vstate);
+	// --- Finite-Time Robust Adaptive Coordination ---
+
 	// Append neighbor states to the buffer (we need to ensure we don't ecxeed TX buffer size)
 	for (int i = 0; i < consensus.N; i++) {
-    	len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, ",%d", consensus.neighbor_states[i]);
+		/**
+		 * For finte-time robust adaptive coordination, we need to send the neighbor virtual states
+		 * instead of the neighbor states. consensus.neighbor_states[i] ==> consensus.neighbor_vstates[i];
+		 */
+		switch(consensus.algorithm) {
+
+			case FINITE_TIME_ROBUST_ADAPTIVE_COORDINATION:
+    			len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, ",%d", consensus.neighbor_vstates[i]); 
+				break;
+
+			default:
+				len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, ",%d", consensus.neighbor_states[i]);
+				break;
+		}
 	}
+
 	len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "\n\r");
     // Send data asynchronously using uart_tx (I don't care if the tx is problematic, so I don't get the error)
     uart_tx(uart, tx_buf, len, SYS_FOREVER_US);

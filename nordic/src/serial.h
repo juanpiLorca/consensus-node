@@ -46,6 +46,17 @@ typedef struct {
     int32_t* neighbor_states;
     bool* neighbor_enabled;
     disturbance_params disturbance;
+
+    // ---- Finite-Time Robust Adaptive Coordination ---
+    int32_t vstate;             // virtual reference system for agent i: z_i
+    int32_t vstate0;            // initial virtual reference system for agent i: z_i0
+    int32_t* neighbor_vstates;  // neighbor virtual reference systems
+    int32_t sigma;              // tracking error for agent i: sigma_i = x_i - z_i
+    int32_t eta;                // adaptive step gain. 
+    int32_t vartheta;           // adaptive gain for agent i: vartheta_i
+    int32_t vartheta0;          // initial adaptive gain for agent i: vartheta_i0
+    // ---- Finite-Time Robust Adaptive Coordination ---
+
 } consensus_params;
 
 // Public boolean to know if the consensus algorithm has received a triggered signal

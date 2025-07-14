@@ -39,6 +39,7 @@ function generateBackendParams(updatedParams, id) {
     ...updatedParams.nodes[id],
     neighborTypes: Object.fromEntries(neighbors.map(id => [id, NODES[id].type])),
   };
+  console.log(`Generated backendParams for node ${id}:`, backendParams);
   return backendParams;
 }
 
@@ -73,7 +74,12 @@ function startIoClients() {
   for (let id of BACKEND_IDS) {
     sockets[id].on('state', (state) => {
       io.emit(`state${id}`, state);
-      console.log(`Received from IO-Server-${id}: state = ${state.state}, gamma = ${state.gamma}`);
+      //console.log(`IO-Server-${params.node} Sent: state = ${state.state}, gamma = ${state.gamma}`);
+
+      // --- Finite-Time Robust Adaptive Coordination ---
+      console.log(`IO-Server-${params.node} Sent: state = ${state.state}, vstate = ${state.vstate}, gamma = ${state.gamma}, vartheta = ${state.vartheta}`);
+      // --- Finite-Time Robust Adaptive Coordination ---
+
     });
   }
 }

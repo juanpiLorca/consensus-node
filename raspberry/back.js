@@ -37,7 +37,12 @@ const edgeProcess = fork(`./edge.js`, [TYPE]);
 edgeProcess.on('message', (state) => {
   io.emit('state', state);
   loggerLine(state);
-  console.log(`IO-Server-${params.node} Sent: state = ${state.state}, gamma = ${state.gamma}`);
+  //console.log(`IO-Server-${params.node} Sent: state = ${state.state}, gamma = ${state.gamma}`);
+
+  // --- Finite-Time Robust Adaptive Coordination ---
+  console.log(`IO-Server-${params.node} Sent: state = ${state.state}, vstate = ${state.vstate}, gamma = ${state.gamma}, vartheta = ${state.vartheta}`);
+  // --- Finite-Time Robust Adaptive Coordination ---
+  
 });
 
 // express-server: on post /updateParams route

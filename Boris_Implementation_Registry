@@ -1,0 +1,40 @@
+Error in nordic firmware: 
+
+}
+[SERIAL RAW] "[00:01:06.915,771] \u001b[0m<inf> Module_Serial: enabled: 1. node: 1. N: 3\u001b[0m\r"
+[SERIAL LINE] [00:01:06.915,771] <inf> Module_Serial: enabled: 1. node: 1. N: 3 | msgType=[
+[SERIAL RAW] "[00:01:06.915,771] \u001b[0m<inf> Module_Serial: neighbor: index = 0. id: 4.\u001b[0m\r"
+[SERIAL LINE] [00:01:06.915,771] <inf> Module_Serial: neighbor: index = 0. id: 4. | msgType=[
+[SERIAL RAW] "[00:01:06.915,802] \u001b[0m<inf> Module_Serial: neighbor: index = 1. id: 6.\u001b[0m\r"
+[SERIAL LINE] [00:01:06.915,802] <inf> Module_Serial: neighbor: index = 1. id: 6. | msgType=[
+[SERIAL RAW] "[00:01:06.915,802] \u001b[0m<inf> Module_Serial: neighbor: index = 2. id: 7.\u001b[0m\r"
+[SERIAL LINE] [00:01:06.915,802] <inf> Module_Serial: neighbor: index = 2. id: 7. | msgType=[
+[SERIAL RAW] "[00:01:07.417,144] \u001b[0m<inf> Module_Serial: Ts: 1000. state0: 1000. gamma0: 0. lambda: 100.\u001b[0m\r"
+[SERIAL LINE] [00:01:07.417,144] <inf> Module_Serial: Ts: 1000. state0: 1000. gamma0: 0. lambda: 100. | msgType=[
+[SERIAL RAW] "[00:01:07.918,182] \u001b[0m<inf> Module_Serial: running: 1. time0: 67918\u001b[0m\r"
+[SERIAL LINE] [00:01:07.918,182] <inf> Module_Serial: running: 1. time0: 67918 | msgType=[
+[SERIAL RAW] "d91,0,1000,1000,1000,1000"
+[SERIAL LINE] d91,0,1000,1000,1000,1000 | msgType=d
+IO-Server-1 Sent: state = 1000, gamma = 0
+[SERIAL RAW] "\r[00:01:08.008,758] \u001b[0m<inf> Module_Broadcaster: Advertising successfully started"
+[SERIAL LINE] [00:01:08.008,758] <inf> Module_Broadcaster: Advertising successfully started | msgType=[
+[SERIAL RAW] "\u001b[0m\r"
+[SERIAL LINE]  | msgType=
+
+ERIAL RAW] "[00:01:08.009,155] \u001b[1;33m<wrn> bt_hci_core: opcode 0x200c status 0x12 \u001b[0m\r"
+[SERIAL LINE] [00:01:08.009,155] <wrn> bt_hci_core: opcode 0x200c status 0x12  | msgType=[
+[SERIAL RAW] "[00:01:08.009,185] \u001b[1;31m<err> Module_Observer: Scanning failed to start (err -22)"
+[SERIAL LINE] [00:01:08.009,185] <err> Module_Observer: Scanning failed to start (err -22) | msgType=[
+[SERIAL RAW] "\u001b[0m\r"
+[SERIAL LINE]  | msgType=
+
+It seems it was deprecated in 3.0.0 SDK ==> USE 2.7.0!!
+https://devzone.nordicsemi.com/f/nordic-q-a/122169/ncs-3-0-2-concurrent-scan-and-advertizing-does-not-work-anymore?ReplySortBy=CreatedDate&ReplySortOrder=Descending
+
+continuous systems: 
+
+minus laplacian x_dot = -Lx
+
+1.- consenso para virtuales 
+2.- tracking para los ideales a los virtuales 
+==> tomar el cuenta ambas tasas de convergencia

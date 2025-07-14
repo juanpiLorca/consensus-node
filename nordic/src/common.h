@@ -10,9 +10,10 @@
 #define N_MAX_NEIGHBORS 4
 
 // For algorithm type
-#define ALGO_TYPE_ORIGINAL 0
-#define ALGO_TYPE_INTEGRAL 1
-#define ALGO_TYPE_PI_LPF 2
+#define ALGO_TYPE_ORIGINAL 							0
+#define ALGO_TYPE_INTEGRAL 							1
+#define ALGO_TYPE_PI_LPF   							2
+#define FINITE_TIME_ROBUST_ADAPTIVE_COORDINATION 	3
 
 // Custom type to represent a data 
 typedef struct {
@@ -20,6 +21,11 @@ typedef struct {
 	uint8_t netid_enabled;  // This is for network filtering and considering the node for udpating in the algorithm
 	uint8_t node;			// The ID of the in the custom network
 	int32_t state;			// A number (note that int32_t is aligned with uint16_t for "man" and uint16_t for "id")
+
+	// ---- Finite-Time Robust Adaptive Coordination ---
+	int32_t vstate;         // Another number: the virtual reference system of the node
+	// ---- Finite-Time Robust Adaptive Coordination ---
+
 } custom_data_type;
 
 #define CUSTOM_DATA_TYPE_SIZE sizeof(custom_data_type)

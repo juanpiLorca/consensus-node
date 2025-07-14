@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Node:
-    def __init__(self, idx, x_init, z_init, vartheta_init, eta, add_disturbance=False):
+    def __init__(self, idx, x_init, z_init, vartheta_init, eta, gamma=1.0, add_disturbance=False):
         self.idx = idx
         self.x = x_init
         self.z = z_init 
@@ -10,6 +10,7 @@ class Node:
         self.sigma = 0.0
         self.u = 0.0
         self.vartheta = vartheta_init
+        self.gamma = gamma
         self.eta = eta
         self.add_disturbance = add_disturbance
         self.neighbors = []
@@ -26,7 +27,7 @@ class Node:
 
         gi = self.g()
 
-        self.u = gi - self.vartheta * grad
+        self.u = gi - self.gamma * self.vartheta * grad
 
         # Updates
         zNew = self.z + gi
