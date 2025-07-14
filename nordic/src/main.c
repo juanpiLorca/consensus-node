@@ -1,123 +1,171 @@
-/*
- * Copyright (c) 2016 Intel Corporation
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/* Controlling LEDs through UART. Press 1-3 on your keyboard to toggle LEDS 1-3 on your development
- * kit */
-
+// Include modules
 #include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/devicetree.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/sys/printk.h>
-/* STEP 3 - Include the header file of the UART driver in main.c */
-#include <zephyr/drivers/uart.h>
+#include <zephyr/logging/log.h>
+#include <dk_buttons_and_leds.h>
+#include <zephyr/bluetooth/bluetooth.h>
+#include <zephyr/bluetooth/gap.h>
+#include <math.h>
+#include <stdlib.h>
+#include "common.h"
+#include "observer.h"
+#include "broadcaster.h"
+#include "serial.h"
+#define M_PI 3.14159265358979323846
 
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS 		1000
-#define RECEIVE_BUFF_SIZE	10 
-#define RX_TIMEOUT 			100
-#define TX_TIMEOUT 			SYS_FOREVER_US
+// Register the logger for this module
+LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 
-/* STEP 5.1 - Get the device pointers of the LEDs through gpio_dt_spec */
-static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios); 
-static const struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios); 
-static const struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios); 
+// For status led
+#define STATUS_LED DK_LED1
+#define BLINK_INTERVAL 1000
 
-/* STEP 4.1 - Get the device pointer of the UART hardware */
-const struct device *uart = DEVICE_DT_GET(DT_NODELABEL(uart0)); 
+// For threads
+#define STACKSIZE 2048
+#define THREAD_CONSENSUS_PRIORITY 7
 
-/* STEP 9.1 - Define the transmission buffer, which is a buffer to hold the data to be sent over
- * UART */
-static uint8_t tx_buf[] = {"nRF Connect SDK Fundamentals Course\r\n"
-	"Press 1-3 on your keyboard to toggle LEDS 1-3 on your development kit\r\n"};
+// Auxiliar function for starting LEDs
+void leds_start(void) {
+	int err = dk_leds_init();
+	if (err) {
+		LOG_ERR("Status LED failed to start (err %d)\n", err);
+		return;
+	}
+	LOG_INF("Status LED successfully started\n");
+}
 
-/* STEP 10.1.2 - Define the receive buffer */
-static uint8_t rx_buf[RECEIVE_BUFF_SIZE] = {0};
+// Auxiliar function for starting BT
+void bt_start(void) {
+    int err = bt_enable(NULL);
+	if (err) {
+		LOG_ERR("Bluetooth failed to start (err %d)\n", err);
+		return;
+	}
+	LOG_INF("Bluetooth successfully started\n");
+}
 
-/* STEP 7 - Define the callback function for UART */
-static void uart_callback(const struct device *dev, struct uart_event *evt, void *user_data)
-{
-	/* STEP 7.1 - Handle the UART events */
-	switch (evt->type) {
-	case UART_RX_RDY:
+// Auxiliar sign function
+float sign(float x) {
+    if (x > 0) {
+        return 1.0;
+    } else if (x < 0) {
+        return -1.0;
+    } else {
+        return 0.0;
+    }
+}
 
-		printk("Received data: %.*d\n\r", evt->data.rx.len, evt->data.rx.buf[evt->data.rx.offset]);
+// Auxiliar function for updating the consensus algorithm
+void update_consensus(consensus_params *cp) {
+    // Cast to float for accurate computation
+    float x = (float)cp->state;
+    float g = (float)(cp->gamma * 0.001);
+    float a = (float)(cp->lambda * 0.000001);
+	float p = (float)(cp->pole * 0.01);
+	float ed = (float)cp->dead;
+	// For algorithm with LPF system
+	float x0 = (float)cp->state0;
+	float e_past = cp->error;
+	float e_dc_past = cp->error_dc;
+	float ui_past = cp->ui;
+	// For disturbance
+	float cnt = (float)cp->disturbance.counter;
+	float off = (float)cp->disturbance.offset;
+	float amp = (float)cp->disturbance.amplitude;
+	float pha = (float)(cp->disturbance.phase * 0.01);
+	float Ns = (float)cp->disturbance.samples;
+	float norm_noise = cp->disturbance.random ? (float)rand() / RAND_MAX : sin(2*M_PI*(cnt/Ns - pha));
+	float disturbance = off + amp * norm_noise;
+    // Compute the error
+	float e = 0;
+	float N = 0;
+	for (int i=0; i < cp->N; i++) {
+		if (cp->neighbor_enabled[i]) {
+			e += ((float)cp->neighbor_states[i] - x);
+			N++;
+		}
+	}
+	if (N > 0) {
+	    e /= N;
+	}
+	// Compute manipulated variable and update the algorithm
+	float uf = x0;//(x0 + N * (e + x)) / (1 + N);
+	float ui = ui_past + g * (e - p * e_past);
+	float e_dc = p * e_dc_past + (1 - p) * e;
+	float e_ac = e - e_dc; 
+	float u = 0;
+	switch (cp->algorithm) {
+        case ALGO_TYPE_ORIGINAL:
+            u = g * sign(e) + disturbance;
+            cp->state = (int32_t)(x + u);
+            cp->gamma = (int32_t)((g + a * sign(fabs(e))) * 1000);
+            break;
+        case ALGO_TYPE_INTEGRAL:
+            u = g * e + disturbance;
+            cp->state = (int32_t)(x + u);
+            cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e) - ed)) * 1000);
+            break;
+        case ALGO_TYPE_PI_LPF:
+            u = uf + ui + disturbance;
+            cp->state = (int32_t)(p * x + (1 - p) * u);
+			cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
+            break;
+        default:
+            u = uf + ui + disturbance;
+            cp->state = (int32_t)(p * x + (1 - p) * u);
+            cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
+    }
+	cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
+	cp->error = e;
+	cp->error_dc = e_dc;
+	cp->ui = ui;
+	LOG_INF("x: %d, g: %d, a: %d, e: %d, state: %d, gamma: %d", (int32_t)x, (int32_t)g, (int32_t)a, (int32_t)e, cp->state, cp->gamma);
+}
 
-		if ((evt->data.rx.len) == 1) {
-			if (evt->data.rx.buf[evt->data.rx.offset] == '1') {
-				gpio_pin_toggle_dt(&led0);
-			} else if (evt->data.rx.buf[evt->data.rx.offset] == '2') {
-				gpio_pin_toggle_dt(&led1);
-			} else if (evt->data.rx.buf[evt->data.rx.offset] == '3') {
-				gpio_pin_toggle_dt(&led2);
+// Thread: Main (just for blinking a LED)
+int main(void) {
+	// Start status LED and the BLE stack
+	int blink_status = 0;
+	leds_start();
+	bt_start();
+	serial_start();
+	while (1) {
+		dk_set_led(STATUS_LED, (++blink_status) % 2);
+		k_sleep(K_MSEC(consensus.Ts));
+	}
+}
+
+// Thread: Concensus Algorithm
+void thread_consensus(void) {
+	custom_data_type custom_data = {MANUFACTURER_ID, consensus.enabled ? NETID_ENABLED : NETID_DISABLED, consensus.node, consensus.state};
+	static neighbor_info_type neighbor_info;
+	while (1) {
+		if (consensus.running) {
+			if (consensus.first_time_running) {
+				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
+				custom_data.node = consensus.node;
+				custom_data.state = consensus.state;
+				broadcaster_start(&custom_data);
+				observer_start();
+				serial_log_consensus();
+				consensus.first_time_running = false;
+			}
+			if (consensus.all_neighbors_observed) {
+				if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
+					if (consensus.enabled) {
+					    memcpy(consensus.neighbor_states, neighbor_info.states, sizeof(neighbor_info.states));
+					    memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
+					    update_consensus(&consensus);
+					}
+					custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
+					custom_data.state = consensus.state;
+		    		broadcaster_update_scan_response_custom_data(&custom_data);
+				    serial_log_consensus();
+		    	}
 			}
 		}
-		break;
-
-	case UART_RX_DISABLED:
-		printk("Receiving disabled\n\r");
-		uart_rx_enable(dev, rx_buf, sizeof(rx_buf), RX_TIMEOUT);
-		break;
-	default:
-		printk("Unknown event type: %d\n\r", evt->type);
-		break;
+		k_sleep(K_MSEC(consensus.Ts));
 	}
 }
 
-
-int main(void)
-{
-	int ret;
-
-	/* STEP 4.2 - Verify that the UART device is ready */
-	if (!device_is_ready(uart)) {
-		printk("UART device is not ready\n\r"); 
-		return 1; 
-	}
-
-	/* STEP 5.2 - Verify that the LED devices are ready */
-	if (!device_is_ready(led0.port)) {
-		printk("GPIO device for LED0 is not ready\n\r");
-		return 1;
-	}
-
-	/* STEP 6 - Configure the GPIOs of the LEDs */
-	ret = gpio_pin_configure_dt(&led0, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 1 ; 
-	}
-	ret = gpio_pin_configure_dt(&led1, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 1 ;
-	}
-	ret = gpio_pin_configure_dt(&led2, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 1 ;
-	}
-
-	/* STEP 8 - Register the UART callback function: ISR */
-	ret = uart_callback_set(uart, uart_callback, NULL); 
-	if (ret) {
-		return 1;
-	}
-
-	/* STEP 9.2 - Send the data over UART by calling uart_tx() */
-	ret = uart_tx(uart, tx_buf, sizeof(tx_buf), TX_TIMEOUT); 
-	if (ret) {
-		return 1; 
-	}
-
-	/* STEP 10.3  - Start receiving by calling uart_rx_enable() and pass it the address of the
-	 * receive  buffer */
-	ret = uart_rx_enable(uart, rx_buf, sizeof(rx_buf), RX_TIMEOUT);
-	if (ret) {
-		return 1; 
-	}
-
-	while (1) {
-		k_msleep(SLEEP_TIME_MS);
-	}
-}
+// Init the threads
+K_THREAD_DEFINE(thread_consensus_id, STACKSIZE, thread_consensus, NULL, NULL, NULL, THREAD_CONSENSUS_PRIORITY, 0, 0);
