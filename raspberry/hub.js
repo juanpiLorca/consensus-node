@@ -39,7 +39,6 @@ function generateBackendParams(updatedParams, id) {
     ...updatedParams.nodes[id],
     neighborTypes: Object.fromEntries(neighbors.map(id => [id, NODES[id].type])),
   };
-  console.log(`Generated backendParams for node ${id}:`, backendParams);
   return backendParams;
 }
 
@@ -50,7 +49,7 @@ async function updateBackendParams(updatedParams) {
   try {
     for (let id of BACKEND_IDS) {
       const backendParams = generateBackendParams(updatedParams, id);
-      console.log(backendParams)
+      console.log(`Generated backendParams for node ${id}:`, backendParams);
       await axios.post(`${BACKEND_ADDRESSES[id]}/updateParams`, backendParams);
     }
     console.log('Hub-Server: Backend-Server params updated successfully:', updatedParams);

@@ -36,12 +36,12 @@ async function updateDirectory(event, dataTree) {
   try {
     let stateTraces = [];
     let gammaTraces = [];
-    let lambda;
-    
+    let varthetaTraces = [];
+
     for (const filename of filenames) {
       const response = await fetch(basepath + filename);
       const node = await response.json();
-    
+
       const stateTrace = {
         x: node.data.timestamp.map(i => i / 1000),
         y: node.data.state,
@@ -50,7 +50,7 @@ async function updateDirectory(event, dataTree) {
         xaxis: 'x',
         yaxis: 'y1'
       };
-      
+
       const gammaTrace = {
         x: node.data.timestamp.map(i => i / 1000),
         y: node.data.gamma,
@@ -59,39 +59,52 @@ async function updateDirectory(event, dataTree) {
         xaxis: 'x',
         yaxis: 'y2'
       };
-    
+
+      const varthetaTrace = {
+        x: node.data.timestamp.map(i => i / 1000),
+        y: node.data.vartheta,
+        mode: 'lines',
+        name: `Node ${node.params.node}`,
+        xaxis: 'x',
+        yaxis: 'y3'
+      };
+
       stateTraces.push(stateTrace);
       gammaTraces.push(gammaTrace);
-      lambda = node.params.lambda / 1000000;
-    }
-    
-    // Combine state and gamma traces for the subplot
-    const traces = [...stateTraces, ...gammaTraces];
+      varthetaTraces.push(varthetaTrace);
 
-    // Define the layout for the subplot
+      // Optional: Log extra params if you want to see them
+      console.log(`Node ${node.params.node}: lambda=${node.params.lambda}, eta=${node.params.eta}`);
+    }
+
+    // Combine traces for the subplot
+    const traces = [...stateTraces, ...gammaTraces, ...varthetaTraces];
+
+    // Define the layout for the subplot with 3 rows
     const layout = {
       autosize: true,
-      height: 600,
-      margin: {l: 48, r: 0, t: 0, b: 36},
-      grid: { rows: 2, columns: 1, shared_xaxes: true, roworder: 'top to bottom' },
+      height: 900,
+      margin: { l: 48, r: 0, t: 0, b: 36 },
+      grid: { rows: 3, columns: 1, shared_xaxes: true, roworder: 'top to bottom' },
       xaxis: { title: 'Time [s]' },
-      yaxis: { title: 'State'}, // Top subplot
-      yaxis2: { title: 'Gamma'}, // Bottom subplot
-      showlegend: false,
+      yaxis: { title: 'State' },   // Top subplot
+      yaxis2: { title: 'Gamma' },  // Middle subplot
+      yaxis3: { title: 'Vartheta' }, // Bottom subplot
+      showlegend: true
     };
-    
+
     // Define mode bar buttons
     const modeBarButtons = {
       modeBarButtonsToRemove: [],
       modeBarButtonsToAdd: [{
         name: 'Download Image as .svg',
         icon: Plotly.Icons.camera,
-        click: function(gd) {
+        click: function (gd) {
           Plotly.downloadImage(gd, { format: 'svg' });
         }
       }]
     };
-    
+
     // Plot the combined subplots
     Plotly.newPlot('plot', traces, layout, modeBarButtons);
 
@@ -102,13 +115,11 @@ async function updateDirectory(event, dataTree) {
 
 // browser-ui: on window resize
 // -> browser-ui: relayout size of plotly graph
-window.onresize = function() {
-  Plotly.relayout('statePlot', {
+window.onresize = function () {
+  Plotly.relayout('plot', {
     'xaxis.autorange': true,
-    'yaxis.autorange': true
-  });
-  Plotly.relayout('gammaPlot', {
-    'xaxis.autorange': true,
-    'yaxis.autorange': true
+    'yaxis.autorange': true,
+    'yaxis2.autorange': true,
+    'yaxis3.autorange': true
   });
 };

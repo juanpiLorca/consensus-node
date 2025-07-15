@@ -1,12 +1,16 @@
-
 // io-client: connect to the io-server (server-hub)
 const socket = io();
 
 // Define some plot configurations
 const MAX_PLOT_POINTS = 20;
-const COLORS = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'brown', 'pink', 'cyan', 'magenta', 'lime', 'indigo', 'violet', 'black', 'gray', 'silver', 'gold']    //Must be longer than BACKEND_IDS
+const COLORS = [
+  'red', 'blue', 'green', 'yellow', 'orange',
+  'purple', 'brown', 'pink', 'cyan', 'magenta',
+  'lime', 'indigo', 'violet', 'black', 'gray',
+  'silver', 'gold'
+]; // Make sure you have enough colors for all nodes
 
-// Define the plot layout
+// Define the plot layouts
 const stateLayout = {
   autosize: true,
   title: 'Server States',
@@ -19,15 +23,18 @@ const gammaLayout = {
   xaxis: { title: 'Time [s]' },
   yaxis: { title: 'Gamma' },
 };
+const varthetaLayout = {
+  autosize: true,
+  title: 'Server Varthetas',
+  xaxis: { title: 'Time [s]' },
+  yaxis: { title: 'Vartheta' },
+};
 
-// browser-ui: on page load
-// -> browser-client: get BACKEND_IDS from the server-hub/getBackendIds route (server-hub)
-// -> browser-ui: render plot
+// browser-ui: on page load -> get backend IDs and render plots
 async function getBackendIds() {
   try {
     const response = await fetch('/getBackendIds');
-    const data = await response.json();
-    const BACKEND_IDS = data;
+    const BACKEND_IDS = await response.json();
     renderPlot(BACKEND_IDS);
   } catch (error) {
     console.error('Error fetching /getBackendIds:', error);
@@ -35,12 +42,18 @@ async function getBackendIds() {
 }
 getBackendIds();
 
-// browser-ui: definition of render plot auxiliar function
+// Render plots for each backend ID
 function renderPlot(BACKEND_IDS) {
+  // Initialize data arrays for each server
+  const serverData = BACKEND_IDS.map(() => ({
+    time: [],
+    state: [],
+    gamma: [],
+    vartheta: [],
+  }));
 
-  // Define the plot data, plot traces and the plot itself
-  let serverData = BACKEND_IDS.map(() => ({ time: [], state: [], gamma: []}));
-  let stateTraces = BACKEND_IDS.map((id, i) => ({
+  // Initialize traces
+  const stateTraces = BACKEND_IDS.map((id, i) => ({
     x: serverData[i].time,
     y: serverData[i].state,
     type: 'scatter',
@@ -48,8 +61,7 @@ function renderPlot(BACKEND_IDS) {
     name: `Server ${id}`,
     line: { color: COLORS[i] },
   }));
-  Plotly.newPlot('statePlot', stateTraces, stateLayout);
-  let gammaTraces = BACKEND_IDS.map((id, i) => ({
+  const gammaTraces = BACKEND_IDS.map((id, i) => ({
     x: serverData[i].time,
     y: serverData[i].gamma,
     type: 'scatter',
@@ -57,36 +69,58 @@ function renderPlot(BACKEND_IDS) {
     name: `Server ${id}`,
     line: { color: COLORS[i] },
   }));
-  Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout);
+  const varthetaTraces = BACKEND_IDS.map((id, i) => ({
+    x: serverData[i].time,
+    y: serverData[i].vartheta,
+    type: 'scatter',
+    mode: 'lines',
+    name: `Server ${id}`,
+    line: { color: COLORS[i] },
+  }));
 
-  // io-client: on data reception from the io-server (server-hub)
-  // -> browser-ui: update plot
-  for (const [i, id] of BACKEND_IDS.entries()) {
+  Plotly.newPlot('statePlot', stateTraces, stateLayout);
+  Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout);
+  Plotly.newPlot('varthetaPlot', varthetaTraces, varthetaLayout);
+
+  // Listen for updates from each backend server
+  BACKEND_IDS.forEach((id, i) => {
     socket.on(`state${id}`, (state) => {
       console.log(`Received from IO-Server-${id}: `, state);
-      serverData[i].time.push(state.timestamp / 1000);
+
+      const timestampSec = state.timestamp / 1000;
+      serverData[i].time.push(timestampSec);
       serverData[i].state.push(state.state);
       serverData[i].gamma.push(state.gamma);
+      serverData[i].vartheta.push(state.vartheta);
+
       if (serverData[i].time.length > MAX_PLOT_POINTS) {
         serverData[i].time.shift();
         serverData[i].state.shift();
         serverData[i].gamma.shift();
+        serverData[i].vartheta.shift();
       }
-      Plotly.update('statePlot', { x: [serverData[i].time], y: [serverData[i].state] }, stateLayout, [i]);
-      Plotly.update('gammaPlot', { x: [serverData[i].time], y: [serverData[i].gamma] }, gammaLayout, [i]);
+
+      Plotly.update('statePlot', {
+        x: [serverData[i].time],
+        y: [serverData[i].state],
+      }, {}, [i]);
+
+      Plotly.update('gammaPlot', {
+        x: [serverData[i].time],
+        y: [serverData[i].gamma],
+      }, {}, [i]);
+
+      Plotly.update('varthetaPlot', {
+        x: [serverData[i].time],
+        y: [serverData[i].vartheta],
+      }, {}, [i]);
     });
-  }
+  });
 }
 
-// browser-ui: on window resize
-// -> browser-ui: relayout size of plotly graph
-window.onresize = function() {
-  Plotly.relayout('statePlot', {
-      'xaxis.autorange': true,
-      'yaxis.autorange': true
-  });
-  Plotly.relayout('gammaPlot', {
-    'xaxis.autorange': true,
-    'yaxis.autorange': true
-  });
+// browser-ui: handle window resize
+window.onresize = function () {
+  Plotly.relayout('statePlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
+  Plotly.relayout('gammaPlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
+  Plotly.relayout('varthetaPlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
 };

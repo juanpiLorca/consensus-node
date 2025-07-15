@@ -36,7 +36,10 @@ async function updateDirectory(event, dataTree) {
   try {
     let stateTraces = [];
     let gammaTraces = [];
+    let varthetaTraces = [];
     let lambda;
+    let eta;
+
     for (const filename of filenames) {
       const response = await fetch(basepath + filename);
       const node = await response.json();
@@ -52,9 +55,17 @@ async function updateDirectory(event, dataTree) {
         mode: 'lines',
         name: `Node ${node.params.node}`
       }
+      const varthetaTrace = {
+        x: node.data.timestamp.map(i=>i/1000),
+        y: node.data.vartheta,
+        mode: 'lines',
+        name: `Node ${node.params.node}`
+      }
       stateTraces.push(stateTrace);
       gammaTraces.push(gammaTrace);
+      varthetaTraces.push(varthetaTrace);
       lambda = node.params.lambda / 1000000;
+      eta = node.params.eta;
     }
     // Define the plot layouts
     const stateLayout = {
@@ -69,6 +80,13 @@ async function updateDirectory(event, dataTree) {
       xaxis: { title: 'Time [s]' },
       yaxis: { title: 'Gamma' }
     };
+    const varthetaLayout = {
+      autosize: true,
+      title: `Consensus Algorithm. eta = ${eta} `,
+      xaxis: { title: 'Time [s]' },
+      yaxis: { title: 'Vartheta' }
+    };
+
     // Define mode bar buttons
     const modeBarButtons = {
       modeBarButtonsToRemove: [],
@@ -82,6 +100,7 @@ async function updateDirectory(event, dataTree) {
     }
     Plotly.newPlot('statePlot', stateTraces, stateLayout, modeBarButtons);
     Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout, modeBarButtons);
+    Plotly.newPlot('varthetaPlot', varthetaTraces, varthetaLayout, modeBarButtons);
   } catch (error) {
     console.error('Error fetching /data/<dir>/<id>.json:', error);
   }
@@ -95,6 +114,10 @@ window.onresize = function() {
     'yaxis.autorange': true
   });
   Plotly.relayout('gammaPlot', {
+    'xaxis.autorange': true,
+    'yaxis.autorange': true
+  });
+  Plotly.relayout('varthetaPlot', {
     'xaxis.autorange': true,
     'yaxis.autorange': true
   });
