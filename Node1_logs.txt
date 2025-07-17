@@ -1,0 +1,625 @@
+[Nordic RX] timestamp=584, state=1314, gamma=0, vstate=3500, vartheta=3500d1585, neighborStates=["0","1661","3500","3500"]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "584",
+  "gamma": "0",
+  "state": "1314",
+  "vstate": "3500",
+  "vartheta": "3500d1585",
+  "neighborStates": [
+    "0",
+    "1661",
+    "3500",
+    "3500"
+  ]
+}
+IO-Server-1 Sent: state = 1314, vstate = 3500, gamma = 0, vartheta = 3500d1585
+[Nordic RX] timestamp=2586, state=1994, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "2586",
+  "gamma": "0",
+  "state": "1994",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 1994, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=3586, state=2341, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "3586",
+  "gamma": "0",
+  "state": "2341",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 2341, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=4587, state=2684, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "4587",
+  "gamma": "0",
+  "state": "2684",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 2684, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=5587, state=3019, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "5587",
+  "gamma": "0",
+  "state": "3019",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 3019, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=6588, state=3337, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "6588",
+  "gamma": "0",
+  "state": "3337",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 3337, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=7588, state=3667, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "7588",
+  "gamma": "0",
+  "state": "3667",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 3667, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=8589, state=4010, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "8589",
+  "gamma": "0",
+  "state": "4010",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 4010, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=9589, state=4316, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "9589",
+  "gamma": "0",
+  "state": "4316",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 4316, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=10590, state=4637, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "10590",
+  "gamma": "0",
+  "state": "4637",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 4637, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=11590, state=4950, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "11590",
+  "gamma": "0",
+  "state": "4950",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 4950, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=12591, state=5259, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "12591",
+  "gamma": "0",
+  "state": "5259",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+IO-Server-1 Sent: state = 5259, vstate = 6500, gamma = 0, vartheta = 6500
+[Nordic RX] timestamp=13592, state=5584, gamma=0, vstate=6500, vartheta=6500, neighborStates=[]
+IO-Server-1 Sent full state:
+ {
+  "timestamp": "13592",
+  "gamma": "0",
+  "state": "5584",
+  "vstate": "6500",
+  "vartheta": "6500",
+  "neighborStates": []
+}
+
+
+TYPE-WIFI: 
+
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 1002,
+  "gamma": 0,
+  "state": 3390.201417586177,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 3390.201417586177, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 2002,
+  "gamma": 0,
+  "state": 4738.633474404254,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 4738.633474404254, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 3002,
+  "gamma": 0,
+  "state": 6038.801948397803,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 6038.801948397803, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 4002,
+  "gamma": 0,
+  "state": 7424.903807429622,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 7424.903807429622, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 5002,
+  "gamma": 0,
+  "state": 8788.405377952879,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 8788.405377952879, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 6004,
+  "gamma": 0,
+  "state": 10184.537008409196,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 10184.537008409196, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 7004,
+  "gamma": 0,
+  "state": 11586.38372989582,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 11586.38372989582, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 8005,
+  "gamma": 0,
+  "state": 12918.34303136326,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 12918.34303136326, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 9006,
+  "gamma": 0,
+  "state": 14348.775275334898,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 14348.775275334898, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 10006,
+  "gamma": 0,
+  "state": 15798.267151049726,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 15798.267151049726, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 11007,
+  "gamma": 0,
+  "state": 17166.1634541619,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 17166.1634541619, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 12009,
+  "gamma": 0,
+  "state": 18636.67629216974,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 18636.67629216974, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 13009,
+  "gamma": 0,
+  "state": 20028.772312913796,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 20028.772312913796, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 14009,
+  "gamma": 0,
+  "state": 21476.946642816438,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 21476.946642816438, vstate = 1500, gamma = 0, vartheta = 0
+Node 2 neighborVStates: undefined
+IO-Server-2 Sent full state:
+ {
+  "timestamp": 15010,
+  "gamma": 0,
+  "state": 22862.470819627844,
+  "vstate": 1500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 22862.470819627844, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerEnd: TypeError: Cannot read properties of undefined (reading 'map')
+    at loggerEnd (/home/control/Desktop/consensus-node/raspberry/log.js:118:46)
+    at async /home/control/Desktop/consensus-node/raspberry/back.js:61:7
+
+
+TYPE-BRIDGE: 
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 1125,
+  "gamma": 0,
+  "state": 4222.855906031269,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 4222.855906031269, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 2125,
+  "gamma": 0,
+  "state": 5516.417910032973,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 5516.417910032973, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 3125,
+  "gamma": 0,
+  "state": 6742.570878167198,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 6742.570878167198, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 4125,
+  "gamma": 0,
+  "state": 8014.999374880138,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 8014.999374880138, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 5125,
+  "gamma": 0,
+  "state": 9130.95708105018,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 9130.95708105018, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 6125,
+  "gamma": 0,
+  "state": 10276.206602930664,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 10276.206602930664, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 7126,
+  "gamma": 0,
+  "state": 11566.255218370006,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 11566.255218370006, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 8125,
+  "gamma": 0,
+  "state": 12724.6433629151,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 12724.6433629151, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 9126,
+  "gamma": 0,
+  "state": 13998.556509306196,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 13998.556509306196, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 10127,
+  "gamma": 0,
+  "state": 15146.409730254301,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 15146.409730254301, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 11126,
+  "gamma": 0,
+  "state": 16382.36176446411,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 16382.36176446411, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 12127,
+  "gamma": 0,
+  "state": 17518.990214256628,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 17518.990214256628, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 13127,
+  "gamma": 0,
+  "state": 18662.277482161637,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 18662.277482161637, vstate = 2500, gamma = 0, vartheta = 0
+Node 3 neighborVStates: undefined
+IO-Server-3 Sent full state:
+ {
+  "timestamp": 14127,
+  "gamma": 0,
+  "state": 19786.188030344463,
+  "vstate": 2500,
+  "vartheta": 0
+}
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/consensus-node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/consensus-node/raspberry/back.js:42:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-3 Sent: state = 19786.188030344463, vstate = 2500, gamma = 0, vartheta = 0
+Error loggerEnd: TypeError: Cannot read properties of undefined (reading 'map')
+    at loggerEnd (/home/control/Desktop/consensus-node/raspberry/log.js:118:46)
+    at async /home/control/Desktop/consensus-node/raspberry/back.js:61:7
+Node 3 neighborVStates: undefined
