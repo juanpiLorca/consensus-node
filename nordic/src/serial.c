@@ -245,7 +245,7 @@ void serial_log_consensus() {
 	int64_t timestamp = k_uptime_get() - consensus.time0;
     //int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d", timestamp, consensus.gamma, consensus.state);
 	// --- Finite-Time Robust Adaptive Coordination ---
-	int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d", timestamp, consensus.gamma, consensus.state, consensus.vstate);
+	int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d,%d", timestamp, consensus.gamma, consensus.state, consensus.vstate, consensus.vartheta);
 	// --- Finite-Time Robust Adaptive Coordination ---
 
 	// Append neighbor states to the buffer (we need to ensure we don't ecxeed TX buffer size)

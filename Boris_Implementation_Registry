@@ -1,6 +1,5 @@
-Error in nordic firmware: 
+(1) Error in nordic firmware: 
 
-}
 [SERIAL RAW] "[00:01:06.915,771] \u001b[0m<inf> Module_Serial: enabled: 1. node: 1. N: 3\u001b[0m\r"
 [SERIAL LINE] [00:01:06.915,771] <inf> Module_Serial: enabled: 1. node: 1. N: 3 | msgType=[
 [SERIAL RAW] "[00:01:06.915,771] \u001b[0m<inf> Module_Serial: neighbor: index = 0. id: 4.\u001b[0m\r"
@@ -28,8 +27,372 @@ ERIAL RAW] "[00:01:08.009,155] \u001b[1;33m<wrn> bt_hci_core: opcode 0x200c stat
 [SERIAL RAW] "\u001b[0m\r"
 [SERIAL LINE]  | msgType=
 
+*** SOL:
 It seems it was deprecated in 3.0.0 SDK ==> USE 2.7.0!!
 https://devzone.nordicsemi.com/f/nordic-q-a/122169/ncs-3-0-2-concurrent-scan-and-advertizing-does-not-work-anymore?ReplySortBy=CreatedDate&ReplySortOrder=Descending
+
+(2) Integration of new controller: 
+
+ERROR TYPE_BLE: logs
+IO-Server-1 Sent: state = 1000, vstate = 500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 1334, vstate = 3500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 1659, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 1988, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 2315, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 2633, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 2945, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 3255, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 3586, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 3903, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 4245, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 4548, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 4868, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 5211, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 5526, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 5875, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 6179, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 6524, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 6829, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 7175, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 7500, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 7843, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 8159, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 8493, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 8820, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 9138, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 9439, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 9781, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 10085, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 10428, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 10750, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 11071, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 11401, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 11747, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 12080, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 12399, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 12720, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 13052, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 13398, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 13745, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 14060, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 14389, vstate = 6500, gamma = 0, vartheta = undefined
+IO-Server-1 Sent: state = 14728, vstate = 6500, gamma = 0, vartheta = undefined
+
+For node 7 (nordic - type ble) we only got one transmission: IO-Server-7 Sent: state = 7000, vstate = 6500, gamma = 0, vartheta = undefined
+
+
+ERROR TYPE_WIFI & TYPE_BRIDGE: logs
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 3440.6214123428144, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 4904.4538787433, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 6374.581168382624, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 7736.794695248843, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 9112.987158692245, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 10530.953316106385, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 11874.744140054507, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 13208.472655324702, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 14592.718177840421, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 16016.326262818382, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 17476.002251179365, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 18776.162021218126, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 20108.710089444507, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 21560.401864422154, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 22998.008879082772, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 24346.561778357, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 25786.638873922286, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 27208.9427094541, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 28644.269854993992, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 29974.50504080495, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 31358.8858863535, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 32788.65148692638, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 34248.45958318425, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 35664.91985833825, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 37094.36000950695, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 38422.808059690295, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 39760.227870717375, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 41186.272997232554, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 42598.19616653408, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 43912.03745168324, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 45248.40504048251, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 46662.326670728886, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 48140.28540168822, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 49584.83981797154, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 50884.70785727104, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 52340.619175541855, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 53740.39494380154, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 55174.29438174646, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 56614.811564848525, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 57954.57627652208, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 59388.93384756942, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 60766.303326506415, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 62104.11985844035, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerLine: TypeError: state.neighborStates is not iterable (cannot read property undefined)
+    at loggerLine (/home/control/Desktop/node/raspberry/log.js:63:9)
+    at ChildProcess.<anonymous> (/home/control/Desktop/node/raspberry/back.js:39:3)
+    at ChildProcess.emit (node:events:518:28)
+    at emit (node:internal/child_process:950:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+IO-Server-2 Sent: state = 63574.20593113773, vstate = 1500, gamma = 0, vartheta = 0
+Error loggerEnd: TypeError: Cannot read properties of undefined (reading 'map')
+    at loggerEnd (/home/control/Desktop/node/raspberry/log.js:118:46)
+    at async /home/control/Desktop/node/raspberry/back.js:58:7
 
 continuous systems: 
 

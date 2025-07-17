@@ -35,8 +35,12 @@ parser.on('data', (data) => {
       gamma: arr[1],
       state: arr[2],
       vstate: arr[3],
-      neighborStates: arr.slice(4)
+      vartheta: arr[4],
+      neighborStates: arr.slice(5)
     };
+
+    console.log(`[Nordic RX] timestamp=${state.timestamp}, state=${state.state}, gamma=${state.gamma}, vstate=${state.vstate}, vartheta=${state.vartheta}, neighborStates=${JSON.stringify(state.neighborStates)}`);
+
     process.send(state);
   }
 });
@@ -167,12 +171,18 @@ async function updateConsensus() {
       case 3: 
         const { neighborVStates, neighborVEnabled } = await getNeighborVStates();
         state.neighborStates = neighborVStates;
+
+        console.log(`Node ${params.node} neighborVStates:`, JSON.stringify(neighborVStates));
+
         ({ state: state.state, gamma: state.gamma, vstate: state.vstate, vartheta: state.vartheta } = algo.update(neighborVStates, neighborVEnabled));
         break; 
       // --- Finite-Time Robust Adaptive Coordination ---
       default:
         const { neighborStates, neighborEnabled } = await getNeighborStates();
         state.neighborStates = neighborStates;
+
+        console.log(`Node ${params.node} neighborStates:`, JSON.stringify(neighborStates));
+
         ({ state: state.state, gamma: state.gamma, vstate: state.vstate, vartheta: state.vartheta } = algo.update(neighborStates, neighborEnabled));
         break; 
     }

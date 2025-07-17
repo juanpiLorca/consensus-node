@@ -36,6 +36,9 @@ let params = {trigger: false};
 const edgeProcess = fork(`./edge.js`, [TYPE]);
 edgeProcess.on('message', (state) => {
   io.emit('state', state);
+  
+  console.log(`IO-Server-${params.node} Sent full state:\n`, JSON.stringify(state, null, 2));
+
   loggerLine(state);
   //console.log(`IO-Server-${params.node} Sent: state = ${state.state}, gamma = ${state.gamma}`);
 
