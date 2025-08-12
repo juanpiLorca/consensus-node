@@ -51,6 +51,8 @@ typedef struct {
     bool* neighbor_enabled; 
     int32_t* neighbor_states; 
     int32_t* neighbor_vstates;
+
+    disturbance_params disturbance;
 } consensus_params;
 
 /**
