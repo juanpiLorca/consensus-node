@@ -1,0 +1,7 @@
+.venv 
+.vscode
+
+nordic/build/
+raspberry/package-lock.json
+raspberry/node_modules/
+raspberry/data/

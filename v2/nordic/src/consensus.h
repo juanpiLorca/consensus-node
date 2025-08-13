@@ -24,7 +24,7 @@ typedef struct {
  */
 typedef struct {
     bool running; 
-    bool enable; 
+    bool enabled; 
     bool first_time_running; 
     bool all_neighbors_observed; 
 

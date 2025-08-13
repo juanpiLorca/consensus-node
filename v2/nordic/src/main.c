@@ -12,7 +12,7 @@
 #include "broadcaster.h"
 #include "serial.h"
 
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846f
 
 // Register the logger for this module 
 LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF); 
@@ -98,11 +98,12 @@ static float sign(float x) {
 }
 
 static float v_i(consensus_params* cp) {
-    float vi = 0; 
+    float vstate_f = (float)cp->vstate;
+    float vi = 0.0f;
     for (int j = 0; j < cp->N; j++) {
         if (cp->neighbor_enabled[j]) {
-            vi += (-1) * sign((float)cp->vstate - (float)cp->neighbor_vstates[j]) * sqrt(fabs((float)cp->vstate - (float)cp->neighbor_vstates[j]));
-
+            float diff = vstate_f - (float)cp->neighbor_vstates[j];
+            vi += -1.0f * sign(diff) * sqrtf(fabsf(diff));
         }
     }
     return vi;
@@ -124,7 +125,7 @@ static void update_consensus(consensus_params* cp) {
 	float amp = (float)cp->disturbance.amplitude;
 	float pha = (float)(cp->disturbance.phase * 0.01);
 	float Ns = (float)cp->disturbance.samples;
-	float norm_noise = cp->disturbance.random ? (float)rand() / RAND_MAX : sin(2*M_PI*(cnt/Ns - pha));
+	float norm_noise = cp->disturbance.random ? (float)rand() / (float)RAND_MAX : sinf(2.0f * M_PI * ( (cnt/Ns) - pha ));
 	float disturbance = off + amp * norm_noise;
 
     // 2. Compute error term and gradients
@@ -165,8 +166,8 @@ static void thread_consensus(void) {
 				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 				custom_data.node = consensus.node;
 				custom_data.state = consensus.state;
-				broadcaster_start(&custom_data);
-				observer_start();
+				broadcaster_init(&custom_data);
+				observer_init();
 				serial_log_consensus();
 				consensus.first_time_running = false;
 			}
