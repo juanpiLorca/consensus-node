@@ -16,7 +16,7 @@ function getIpAddress() {
 }
 
 // Define constants for the backend server:
-const IP_ADDRESS = getIpAddress();
+const IP_ADDRESS = '192.168.0.141';//getIpAddress();
 
 // Ports:
 const HUB_PORT = 3000;
@@ -47,7 +47,7 @@ const NODE_TYPE_PORT = {
 
 let NODES;
 
-// 9node-ring-dir
+// 9node-ring-dir: ... ---> 4 ---> 1 ---> 9 ---> 5 ---> 2 ---> 6 ---> 8 ---> 3 ---> 7 ---> ...
 NODES = {
   1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true, neighbors: [4], clock: 1000, state: 1000, vstate:  500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 300, amplitude: 50, phase: 0, samples: 1}},
   2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true, neighbors: [5], clock: 1000, state: 2000, vstate: 1500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 700, amplitude: 50, phase: 0, samples: 1}},

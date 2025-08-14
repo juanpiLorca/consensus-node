@@ -28,7 +28,7 @@ app.use('/data', express.static(path.join(__dirname, 'data')));
 app.use(express.json());
 
 // Store data in RAM for consensus parameters
-let params = { trigger: false, filename: "dummy", nodes: NODES };
+let params = { trigger: false, filename: "dummy", nodes: NODES, };
 
 // Auxiliary function to generate backend parameters
 function generateBackendParams(updatedParams, id) {
@@ -62,12 +62,11 @@ async function updateBackendParams(updatedParams) {
     try {
         for (let id of BACKEND_IDS) {
             const backendParams = generateBackendParams(updatedParams, id);
-            console.log(backendParams)
             await axios.post(`${BACKEND_ADDRESSES[id]}/updateParams`, backendParams);
         }
         console.log('Hub-Server: Backend-Server params updated successfully:', updatedParams);
     } catch (error) {
-        console.error('Hub-Server: Backend-Server error updating params.');
+        console.error('Hub-Server: Backend-Server error updating params ==>', error.message);
     }
 }
 
