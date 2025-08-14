@@ -20,7 +20,7 @@ const io = socketIo(server)
 app.use(express.static(path.join(__dirname, 'data')))
 
 // Store data in RAM for consensus parameters/variables
-let params = { trigger: false }; // { enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples }, trigger }
+let params = { trigger: false }; // { trigger, enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples } }
 
 // Backend Process: 
 // --> Spawn backend process

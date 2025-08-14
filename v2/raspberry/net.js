@@ -49,18 +49,18 @@ let NODES;
 
 // 9node-ring-dir
 NODES = {
-  1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true, neighbors: [4], clock: 1000, state: 1000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 300, amplitude: 50, phase: 0, samples: 1}, vstate:  500, eta: 0.01, vartheta: 0},
-  2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true, neighbors: [5], clock: 1000, state: 2000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 700, amplitude: 50, phase: 0, samples: 1}, vstate: 1500, eta: 0.01, vartheta: 0},
-  3: {ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true, neighbors: [8], clock: 1000, state: 3000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 600, amplitude: 50, phase: 0, samples: 1}, vstate: 2500, eta: 0.01, vartheta: 0},
-  4: {ip: '192.168.0.101', type: TYPE_BLE,    enabled: true, neighbors: [7], clock: 1000, state: 4000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 100, amplitude: 50, phase: 0, samples: 1}, vstate: 3500, eta: 0.01, vartheta: 0},
-  5: {ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true, neighbors: [9], clock: 1000, state: 5000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 900, amplitude: 50, phase: 0, samples: 1}, vstate: 4500, eta: 0.01, vartheta: 0},
-  6: {ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: true, neighbors: [2], clock: 1000, state: 6000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 400, amplitude: 50, phase: 0, samples: 1}, vstate: 5500, eta: 0.01, vartheta: 0},
-  7: {ip: '192.168.0.134', type: TYPE_BLE,    enabled: true, neighbors: [3], clock: 1000, state: 7000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 800, amplitude: 50, phase: 0, samples: 1}, vstate: 6500, eta: 0.01, vartheta: 0},
-  8: {ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true, neighbors: [6], clock: 1000, state: 8000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 200, amplitude: 50, phase: 0, samples: 1}, vstate: 7500, eta: 0.01, vartheta: 0},
-  9: {ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true, neighbors: [1], clock: 1000, state: 9000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 500, amplitude: 50, phase: 0, samples: 1}, vstate: 8500, eta: 0.01, vartheta: 0},
+  1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true, neighbors: [4], clock: 1000, state: 1000, vstate:  500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 300, amplitude: 50, phase: 0, samples: 1}},
+  2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true, neighbors: [5], clock: 1000, state: 2000, vstate: 1500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 700, amplitude: 50, phase: 0, samples: 1}},
+  3: {ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true, neighbors: [8], clock: 1000, state: 3000, vstate: 2500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 600, amplitude: 50, phase: 0, samples: 1}},
+  4: {ip: '192.168.0.101', type: TYPE_BLE,    enabled: true, neighbors: [7], clock: 1000, state: 4000, vstate: 3500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 100, amplitude: 50, phase: 0, samples: 1}},
+  5: {ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true, neighbors: [9], clock: 1000, state: 5000, vstate: 4500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 900, amplitude: 50, phase: 0, samples: 1}},
+  6: {ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: true, neighbors: [2], clock: 1000, state: 6000, vstate: 5500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 400, amplitude: 50, phase: 0, samples: 1}},
+  7: {ip: '192.168.0.134', type: TYPE_BLE,    enabled: true, neighbors: [3], clock: 1000, state: 7000, vstate: 6500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 800, amplitude: 50, phase: 0, samples: 1}},
+  8: {ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true, neighbors: [6], clock: 1000, state: 8000, vstate: 7500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 200, amplitude: 50, phase: 0, samples: 1}},
+  9: {ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true, neighbors: [1], clock: 1000, state: 9000, vstate: 8500, vartheta: 0, eta: 1, disturbance: {random: true, offset: 500, amplitude: 50, phase: 0, samples: 1}},
 }
 
-// --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 const BACKEND_IDS = Object.keys(NODES); 
 const NODE_ADDRESSES = Object.fromEntries(BACKEND_IDS.map(id => [id, `http://${NODES[id].ip}:${NODE_TYPE_PORT[NODES[id].type]}`]));
