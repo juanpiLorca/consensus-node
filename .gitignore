@@ -1,7 +1,7 @@
 .venv
 docs/
 img/python-sim/
-nordic/build/
+nordic/build*/
 raspberry/node_modules/
 raspberry/package-lock.json
 raspberry/data/

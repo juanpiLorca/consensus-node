@@ -103,7 +103,7 @@ if (TYPE == TYPE_BLE) {
     // Auxiliary function to return neighbor virtual states 
     async function getNeighborStates() {
         //let neighborStates = []; 
-        let neighborVSes = [];
+        let neighborVStates = [];
         let neighborEnabled = []; 
 
         try { 

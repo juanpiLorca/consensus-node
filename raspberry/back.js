@@ -18,6 +18,7 @@ const io = socketIo(server)
 
 // Middleware configuration for serving static json files and parsing json bodies for express-server
 app.use(express.static(path.join(__dirname, 'data')))
+app.use(express.json());
 
 // Store data in RAM for consensus parameters/variables
 let params = { trigger: false }; // { trigger, enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples } }

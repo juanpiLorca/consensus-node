@@ -32,7 +32,7 @@ class Algorithm {
         let vi = 0; 
         let numberNeighbors = 0;
 
-        for (let j in neighborStates) {
+        for (let j in neighborVStates) {
             if (neighborEnabled[j]) {
                 vi += (-1) * Math.sign(this.state - neighborVStates[j]) * Math.sqrt(Math.abs(this.state - neighborVStates[j]));
                 numberNeighbors++;
@@ -68,6 +68,12 @@ class Algorithm {
         this.state = Math.floor(this.state + u + disturbance);
         this.vstate = Math.floor(this.vstate + this.gi);
         this.vartheta = Math.floor(this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma)));
+
+        return {
+            state: this.state,
+            vstate: this.vstate,
+            vartheta: this.vartheta
+        };
     }
 
 }

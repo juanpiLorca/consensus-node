@@ -16,7 +16,7 @@ function getIpAddress() {
 }
 
 // Define constants for the backend server:
-const IP_ADDRESS = '192.168.0.141';//getIpAddress();
+const IP_ADDRESS = getIpAddress();
 
 // Ports:
 const HUB_PORT = 3000;
