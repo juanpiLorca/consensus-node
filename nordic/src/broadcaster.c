@@ -5,8 +5,10 @@
 // Register the logger for this module
 LOG_MODULE_REGISTER(Module_Broadcaster, LOG_LEVEL_INF);
 
-// Function that initialize the broadcaster with scan response
-int broadcaster_start(custom_data_type* custom_data)
+/** 
+ * Function that initialize the broadcaster with scan response
+ */
+int broadcaster_init(custom_data_type* custom_data)
 {
 	struct bt_data ad[] = {
 		BT_DATA(BT_DATA_NAME_COMPLETE, DEVICE_NAME, DEVICE_NAME_LEN),
@@ -21,7 +23,9 @@ int broadcaster_start(custom_data_type* custom_data)
 	return 0;
 }
 
-// Function that updates the broadcaster with scan response
+/**
+ * Function that updates the broadcaster with scan response
+ */
 int broadcaster_update_scan_response_custom_data(custom_data_type* custom_data)
 {
 	struct bt_data ad[] = {

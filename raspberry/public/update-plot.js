@@ -17,11 +17,11 @@ const stateLayout = {
   xaxis: { title: 'Time [s]' },
   yaxis: { title: 'State' },
 };
-const gammaLayout = {
+const vstateLayout = {
   autosize: true,
-  title: 'Server Gammas',
+  title: 'Server VStates',
   xaxis: { title: 'Time [s]' },
-  yaxis: { title: 'Gamma' },
+  yaxis: { title: 'VState' },
 };
 const varthetaLayout = {
   autosize: true,
@@ -48,7 +48,7 @@ function renderPlot(BACKEND_IDS) {
   const serverData = BACKEND_IDS.map(() => ({
     time: [],
     state: [],
-    gamma: [],
+    vstate: [],
     vartheta: [],
   }));
 
@@ -61,9 +61,9 @@ function renderPlot(BACKEND_IDS) {
     name: `Server ${id}`,
     line: { color: COLORS[i] },
   }));
-  const gammaTraces = BACKEND_IDS.map((id, i) => ({
+  const vstateTraces = BACKEND_IDS.map((id, i) => ({
     x: serverData[i].time,
-    y: serverData[i].gamma,
+    y: serverData[i].vstate,
     type: 'scatter',
     mode: 'lines',
     name: `Server ${id}`,
@@ -79,7 +79,7 @@ function renderPlot(BACKEND_IDS) {
   }));
 
   Plotly.newPlot('statePlot', stateTraces, stateLayout);
-  Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout);
+  Plotly.newPlot('vstatePlot', vstateTraces, vstateLayout);
   Plotly.newPlot('varthetaPlot', varthetaTraces, varthetaLayout);
 
   // Listen for updates from each backend server
@@ -90,13 +90,13 @@ function renderPlot(BACKEND_IDS) {
       const timestampSec = state.timestamp / 1000;
       serverData[i].time.push(timestampSec);
       serverData[i].state.push(state.state);
-      serverData[i].gamma.push(state.gamma);
+      serverData[i].vstate.push(state.vstate);
       serverData[i].vartheta.push(state.vartheta);
 
       if (serverData[i].time.length > MAX_PLOT_POINTS) {
         serverData[i].time.shift();
         serverData[i].state.shift();
-        serverData[i].gamma.shift();
+        serverData[i].vstate.shift();
         serverData[i].vartheta.shift();
       }
 
@@ -105,9 +105,9 @@ function renderPlot(BACKEND_IDS) {
         y: [serverData[i].state],
       }, {}, [i]);
 
-      Plotly.update('gammaPlot', {
+      Plotly.update('vstatePlot', {
         x: [serverData[i].time],
-        y: [serverData[i].gamma],
+        y: [serverData[i].vstate],
       }, {}, [i]);
 
       Plotly.update('varthetaPlot', {
@@ -121,6 +121,6 @@ function renderPlot(BACKEND_IDS) {
 // browser-ui: handle window resize
 window.onresize = function () {
   Plotly.relayout('statePlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
-  Plotly.relayout('gammaPlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
+  Plotly.relayout('vstatePlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
   Plotly.relayout('varthetaPlot', { 'xaxis.autorange': true, 'yaxis.autorange': true });
 };

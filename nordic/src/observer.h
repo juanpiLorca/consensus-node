@@ -4,16 +4,13 @@
 // Include modules
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/hci.h>
+#include "consensus.h"
 #include "common.h"
 
 // Define a type for the message queue
 typedef struct {
     int32_t states[N_MAX_NEIGHBORS];    // to store the state values of the neighbors
-
-    // ---- Finite-Time Robust Adaptive Coordination ---
-    int32_t vstates[N_MAX_NEIGHBORS];   // to store the virtual reference systems of the neighbors
-    // ---- Finite-Time Robust Adaptive Coordination ---
-    
+    int32_t vstates[N_MAX_NEIGHBORS];   // to store the virtual state of the neighbors 
     bool enabled[N_MAX_NEIGHBORS];      // to store whether the neighbor is enabled or not
 } neighbor_info_type;
 
@@ -21,7 +18,7 @@ typedef struct {
 extern struct k_msgq custom_observer_msg_queue;
 
 // Declare public functions
-int observer_start(void);
+int observer_init(void);
 
 #endif // OBSERVER_H_
 

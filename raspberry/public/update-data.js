@@ -35,7 +35,7 @@ async function updateDirectory(event, dataTree) {
   const filenames = Object.keys(dataTree[dir]);
   try {
     let stateTraces = [];
-    let gammaTraces = [];
+    let vstateTraces = [];
     let varthetaTraces = [];
     let lambda;
     let eta;
@@ -49,9 +49,9 @@ async function updateDirectory(event, dataTree) {
         mode: 'lines',
         name: `Node ${node.params.node}`
       }
-      const gammaTrace = {
+      const vstateTrace = {
         x: node.data.timestamp.map(i=>i/1000),
-        y: node.data.gamma,
+        y: node.data.vstate,
         mode: 'lines',
         name: `Node ${node.params.node}`
       }
@@ -62,23 +62,22 @@ async function updateDirectory(event, dataTree) {
         name: `Node ${node.params.node}`
       }
       stateTraces.push(stateTrace);
-      gammaTraces.push(gammaTrace);
+      vstateTraces.push(vstateTrace);
       varthetaTraces.push(varthetaTrace);
-      lambda = node.params.lambda / 1000000;
       eta = node.params.eta;
     }
     // Define the plot layouts
     const stateLayout = {
       autosize: true,
-      title: `Consensus Algorithm. lambda = ${lambda} `,
+      title: `Consensus Algorithm.`,
       xaxis: { title: 'Time [s]' },
       yaxis: { title: 'State' }
     };
-    const gammaLayout = {
+    const vstateLayout = {
       autosize: true,
-      title: `Consensus Algorithm. lambda = ${lambda} `,
+      title: `Consensus Algorithm.`,
       xaxis: { title: 'Time [s]' },
-      yaxis: { title: 'Gamma' }
+      yaxis: { title: 'Vstate' }
     };
     const varthetaLayout = {
       autosize: true,
@@ -99,7 +98,7 @@ async function updateDirectory(event, dataTree) {
       }]
     }
     Plotly.newPlot('statePlot', stateTraces, stateLayout, modeBarButtons);
-    Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout, modeBarButtons);
+    Plotly.newPlot('vstatePlot', vstateTraces, vstateLayout, modeBarButtons);
     Plotly.newPlot('varthetaPlot', varthetaTraces, varthetaLayout, modeBarButtons);
   } catch (error) {
     console.error('Error fetching /data/<dir>/<id>.json:', error);
@@ -113,7 +112,7 @@ window.onresize = function() {
     'xaxis.autorange': true,
     'yaxis.autorange': true
   });
-  Plotly.relayout('gammaPlot', {
+  Plotly.relayout('vstatePlot', {
     'xaxis.autorange': true,
     'yaxis.autorange': true
   });

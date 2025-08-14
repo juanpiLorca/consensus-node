@@ -1,31 +1,39 @@
-// Import modules
-const { SerialPort, ReadlineParser } = require('serialport')
+const { SerialPort, ReadlineParser } = require('serialport');
 
-// Define configuration parameters
-const SERIAL_PATH = '/dev/ttyACM0'
-const SERIAL_BAUD = 115200
+const SERIAL_PATH = '/dev/ttyACM0';
+const SERIAL_BAUDRATE = 115200;
+const SERIAL_DELAY = 500; 
 
-// Define the port and the parser
-const port = new SerialPort({path: SERIAL_PATH, baudRate: SERIAL_BAUD})
-const parser = port.pipe(new ReadlineParser())
+const port = new SerialPort({path: SERIAL_PATH, baudRate: SERIAL_BAUDRATE});
+const parser = port.pipe(new ReadlineParser()); 
 
-// Auxiliar function to write data with the asyc/await style
+// Auxiliary function to write data to the serial port with the async/await pattern
 function serialWrite(msg) {
-  return new Promise((resolve, reject) => {
-    port.write(msg, (err) => {
-      if (err) {
-        reject(`Error sending data: ${err}`);  // Reject if there's an error
-      } else {
-        resolve(`Sent message: ${msg}`);  // Resolve on success
-      }
+    return new Promise((resolve, reject) => {
+        port.write(msg, (err) => {
+
+            if (err) { 
+                reject(`Error sending data: ${err}`); 
+            } else {
+                resolve(`Sent message: ${msg}`); 
+            }
+
+        });
     });
-  });
 }
 
-// Auxiliar function for an async/await delay, useful between consecutive writes
+// Auxiliary function to delay the next serial write operation, useful between consecutive writes
 function serialDelay() {
-  return new Promise(resolve => setTimeout(resolve, 500));
+    return new Promise(resolve => setTimeout(resolve, SERIAL_DELAY));
 }
 
-// Export the necessary objects and functions
-module.exports = { parser, serialWrite, serialDelay };
+// Exports: 
+module.exports = {
+    parser,
+    serialWrite,
+    serialDelay
+};
+
+
+
+

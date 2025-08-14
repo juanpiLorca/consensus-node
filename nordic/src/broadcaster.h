@@ -7,7 +7,7 @@
 #include "common.h"
 
 // Declare public functions
-int broadcaster_start(custom_data_type* custom_data);
+int broadcaster_init(custom_data_type* custom_data);
 int broadcaster_update_scan_response_custom_data(custom_data_type* custom_data);
 
 #endif // BROADCASTER_H_

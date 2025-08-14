@@ -2,3 +2,6 @@
 docs/
 img/python-sim/
 nordic/build/
+raspberry/node_modules/
+raspberry/package-lock.json
+raspberry/data/

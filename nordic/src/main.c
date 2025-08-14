@@ -1,4 +1,3 @@
-// Include modules
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
@@ -6,25 +5,71 @@
 #include <zephyr/bluetooth/gap.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "consensus.h"
 #include "common.h"
 #include "observer.h"
 #include "broadcaster.h"
 #include "serial.h"
-#define M_PI 3.14159265358979323846
 
-// Register the logger for this module
-LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
+#define M_PI 3.14159265358979323846f
 
-// For status led
-#define STATUS_LED DK_LED1
-#define BLINK_INTERVAL 1000
+// Register the logger for this module 
+LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF); 
 
-// For threads
-#define STACKSIZE 2048
-#define THREAD_CONSENSUS_PRIORITY 7
+/**
+ * Led status
+ */
+#define LED_STATUS                  DK_LED1
+#define BLINK_INTERVAL_MS           1000
+/**
+ * Thread stack size and priority
+ */
+#define STACK_SIZE                  2048
+#define THREAD_CONSENSUS_PRIORITY   7
 
-// Auxiliar function for starting LEDs
-void leds_start(void) {
+/**
+ * Function declarations: --------------------------------------------------------------
+ */
+static void leds_init(void);                        // Auxiliary function for starting LEDs
+static void bt_init(void);                          // Auxiliary function for starting Bluetooth
+static float sign(float x);                         // Auxiliary function to get the sign of a float number
+static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
+static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
+static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
+/*
+ * -------------------------------------------------------------------------------------
+ */
+
+/**
+ * Main thread:
+ */
+int main(void) {
+
+    int blink_status = 0; 
+
+    leds_init();
+    bt_init();
+    serial_init();
+
+    while (1) {
+        dk_set_led(LED_STATUS, (++blink_status) % 2);
+        k_sleep(K_MSEC(consensus.Ts));
+    }
+}
+
+/**
+ * Consensus thread:
+ */
+K_THREAD_DEFINE(thread_consensus_id, STACK_SIZE,
+                thread_consensus, NULL, NULL, NULL,
+                THREAD_CONSENSUS_PRIORITY, 0, 0);
+
+/**
+ * Function definitions: --------------------------------------------------------------
+ */
+
+static void leds_init(void) {
 	int err = dk_leds_init();
 	if (err) {
 		LOG_ERR("Status LED failed to start (err %d)\n", err);
@@ -33,8 +78,7 @@ void leds_start(void) {
 	LOG_INF("Status LED successfully started\n");
 }
 
-// Auxiliar function for starting BT
-void bt_start(void) {
+static void bt_init(void) {
     int err = bt_enable(NULL);
 	if (err) {
 		LOG_ERR("Bluetooth failed to start (err %d)\n", err);
@@ -43,8 +87,7 @@ void bt_start(void) {
 	LOG_INF("Bluetooth successfully started\n");
 }
 
-// Auxiliar sign function
-float sign(float x) {
+static float sign(float x) {
     if (x > 0) {
         return 1.0;
     } else if (x < 0) {
@@ -54,150 +97,77 @@ float sign(float x) {
     }
 }
 
-// Auxiliar function for updating the consensus algorithm
-void update_consensus(consensus_params *cp) {
+static float v_i(consensus_params* cp) {
+    float vstate_f = (float)cp->vstate;
+    float vi = 0.0f;
+    for (int j = 0; j < cp->N; j++) {
+        if (cp->neighbor_enabled[j]) {
+            float diff = vstate_f - (float)cp->neighbor_vstates[j];
+            vi += -1.0f * sign(diff) * sqrtf(fabsf(diff));
+        }
+    }
+    return vi;
+}
 
-    // Cast to float for accurate computation
-    float x = (float)cp->state;
-    float g = (float)(cp->gamma * 0.001);
-    float a = (float)(cp->lambda * 0.000001);
-	float p = (float)(cp->pole * 0.01);
-	float ed = (float)cp->dead;
+static void update_consensus(consensus_params* cp) {
 
-	// For algorithm with LPF system
-	float x0 = (float)cp->state0;
-	float e_past = cp->error;
-	float e_dc_past = cp->error_dc;
-	float ui_past = cp->ui;
+    // 1. Cast to float for calculations: system and disturbance parameters
 
-	// For disturbance
-	float cnt = (float)cp->disturbance.counter;
+    // Dynamic variables & parameters
+    float x = (float)(cp->state);
+    float z = (float)(cp->vstate);
+    float vartheta = (float)(cp->vartheta);
+    float eta = (float)(cp->eta);
+
+    // Disturbance parameters
+    float cnt = (float)cp->disturbance.counter;
 	float off = (float)cp->disturbance.offset;
 	float amp = (float)cp->disturbance.amplitude;
 	float pha = (float)(cp->disturbance.phase * 0.01);
 	float Ns = (float)cp->disturbance.samples;
-	float norm_noise = cp->disturbance.random ? (float)rand() / RAND_MAX : sin(2*M_PI*(cnt/Ns - pha));
+	float norm_noise = cp->disturbance.random ? (float)rand() / (float)RAND_MAX : sinf(2.0f * M_PI * ( (cnt/Ns) - pha ));
 	float disturbance = off + amp * norm_noise;
 
-    // Compute the error
-	float e = 0;
-	float N = 0;
-	for (int i=0; i < cp->N; i++) {
-		if (cp->neighbor_enabled[i]) {
-			e += ((float)cp->neighbor_states[i] - x);
-			N++;
-		}
-	}
-	if (N > 0) {
-	    e /= N;
-	}
+    // 2. Compute error term and gradients
+    float sigma = x - z; 
+    float grad = sign(sigma); 
 
-	// Compute manipulated variable and update the algorithm
-	float uf = x0;
-	float ui = ui_past + g * (e - p * e_past);
-	float e_dc = p * e_dc_past + (1 - p) * e;
-	float e_ac = e - e_dc; 
-	float u = 0;
+    // 3. Compute control input
+    float vi = v_i(cp);
+    float gi = vi; 
+    float ui = gi - vartheta * grad; 
 
-	// ---- Finite-Time Robust Adaptive Coordination ---
-	float xi = x; 
-	float mi = disturbance;
-	float zi = (float)cp->vstate;
-	float sigmai = (float)cp->sigma;
-	float eta = (float)cp->eta;
-	float varthetai = (float)cp->vartheta;
-	// g_i(z_i,v_i) function definition
-	float gi = 0.0; 
-	for (int i = 0; i < cp->N; i++) {
-		if (cp->neighbor_enabled[i]) {
-			gi += ((float)cp->neighbor_vstates[i] - zi);
-		}
-	}
-	if (N > 0) {
-	    gi /= N;
-	}
-	// ---- Finite-Time Robust Adaptive Coordination ---
+    // 4. Update dynamic variables
+    cp->state = (int32_t)(x + ui + disturbance);
+    cp->vstate = (int32_t)(z + gi);
+    cp->vartheta = (int32_t)(vartheta + eta * sign(sigma) * sign(sigma));
+    cp->sigma = (int32_t)sigma;
+    cp->gi = gi;
+    cp->ui = ui;
 
-	switch (cp->algorithm) {
-        case ALGO_TYPE_ORIGINAL:
-            u = g * sign(e) + disturbance;
-            cp->state = (int32_t)(x + u);
-            cp->gamma = (int32_t)((g + a * sign(fabs(e))) * 1000);
-            break;
-        case ALGO_TYPE_INTEGRAL:
-            u = g * e + disturbance;
-            cp->state = (int32_t)(x + u);
-            cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e) - ed)) * 1000);
-            break;
-        case ALGO_TYPE_PI_LPF:
-            u = uf + ui + disturbance;
-            cp->state = (int32_t)(p * x + (1 - p) * u);
-			cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
-            break;
-		
-		// ---- Finite-Time Robust Adaptive Coordination ---
-		case FINITE_TIME_ROBUST_ADAPTIVE_COORDINATION:
-			sigmai = xi - zi; 
-			ui = gi - varthetai * sign(sigmai);
-			cp->vstate = (int32_t)(zi + gi);
-			cp->state = (int32_t)(xi + u + mi); 
-			cp->vartheta = (int32_t)(varthetai + eta * (sign(sigmai) * sign(sigmai)));
-			cp->sigma = (int32_t)sigmai;
-        default:
-            // u = uf + ui + disturbance;
-            // cp->state = (int32_t)(p * x + (1 - p) * u);
-            // cp->gamma = (int32_t)(fabs(g + a * fabs(e) * sign(fabs(e_dc) - fabs(e_ac))) * 1000);
-			sigmai = xi - zi; 
-			ui = gi - varthetai * sign(sigmai);
-			cp->vstate = (int32_t)(zi + gi);
-			cp->state = (int32_t)(xi + u + mi); 
-			cp->vartheta = (int32_t)(varthetai + eta * (sign(sigmai) * sign(sigmai)));
-			cp->sigma = (int32_t)sigmai;
-		// ---- Finite-Time Robust Adaptive Coordination ---
-    }
-	cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-	cp->error = e;
-	cp->error_dc = e_dc;
-	cp->ui = ui;
-	LOG_INF("x: %d, g: %d, a: %d, e: %d, state: %d, gamma: %d", (int32_t)x, (int32_t)g, (int32_t)a, (int32_t)e, cp->state, cp->gamma);
-
-	// ---- Finite-Time Robust Adaptive Coordination ---
-	LOG_INF("xi: %d, mi: %d, zi: %d, sigmai: %d, eta: %d, varthetai: %d, gi: %d", (int32_t)xi, (int32_t)mi, (int32_t)zi, (int32_t)sigmai, (int32_t)eta, (int32_t)varthetai, (int32_t)gi);
-	// ---- Finite-Time Robust Adaptive Coordination ---
+    // 5. Update disturbance parameters & log info.
+    cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
+	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d, state: %d", (int32_t)x, (int32_t)z, (int32_t)vartheta, (int32_t)sigma, cp->state);
 }
 
+static void thread_consensus(void) {
+    custom_data_type custom_data = {
+        MANUFACTURER_ID, 
+        consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
+        consensus.node, 
+        consensus.state, 
+        consensus.vstate
+    };
 
-// Thread: Main (just for blinking a LED)
-int main(void) {
-	// Start status LED and the BLE stack
-	int blink_status = 0;
-	leds_start();
-	bt_start();
-	serial_start();
-	while (1) {
-		dk_set_led(STATUS_LED, (++blink_status) % 2);
-		k_sleep(K_MSEC(consensus.Ts));
-	}
-}
-
-
-// Thread: Concensus Algorithm
-void thread_consensus(void) {
-	custom_data_type custom_data = {MANUFACTURER_ID, consensus.enabled ? NETID_ENABLED : NETID_DISABLED, consensus.node, consensus.state};
-	static neighbor_info_type neighbor_info;
-	while (1) {
-		if (consensus.running) {
+    static neighbor_info_type neighbor_info; 
+    while (1) {
+        if (consensus.running) {
 			if (consensus.first_time_running) {
 				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 				custom_data.node = consensus.node;
 				custom_data.state = consensus.state;
-
-				// ---- Finite-Time Robust Adaptive Coordination ---
-				custom_data.vstate = consensus.vstate;
-				// ---- Finite-Time Robust Adaptive Coordination ---
-
-				broadcaster_start(&custom_data);
-				observer_start();
+				broadcaster_init(&custom_data);
+				observer_init();
 				serial_log_consensus();
 				consensus.first_time_running = false;
 			}
@@ -206,28 +176,16 @@ void thread_consensus(void) {
 					if (consensus.enabled) {
 					    memcpy(consensus.neighbor_states, neighbor_info.states, sizeof(neighbor_info.states));
 					    memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
-
-						// ---- Finite-Time Robust Adaptive Coordination ---
-					    memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
-						// ---- Finite-Time Robust Adaptive Coordination ---		
-
 					    update_consensus(&consensus);
 					}
 					custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 					custom_data.state = consensus.state;
-
-					// ---- Finite-Time Robust Adaptive Coordination ---
-					custom_data.vstate = consensus.vstate;
-					// ---- Finite-Time Robust Adaptive Coordination ---
-					
 		    		broadcaster_update_scan_response_custom_data(&custom_data);
 				    serial_log_consensus();
 		    	}
 			}
 		}
 		k_sleep(K_MSEC(consensus.Ts));
-	}
+    }
 }
 
-// Init the threads
-K_THREAD_DEFINE(thread_consensus_id, STACKSIZE, thread_consensus, NULL, NULL, NULL, THREAD_CONSENSUS_PRIORITY, 0, 0);
