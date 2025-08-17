@@ -100,37 +100,29 @@ async function bleGetState(device) {
 /**
  * Generates manufacturer data payload for BLE advertising.
  * 
- * Encodes the following fields into a 10-byte buffer:
- * - enabled: 1 byte (127 if true, 0 if false)
- * - node: 1 byte identifier
- * - state: 4 bytes signed integer (little endian)
- * - vstate: 4 bytes signed integer (little endian)
+ * Matches the behavior of the second version:
+ * - Prepends "f" if enabled, "0" otherwise (not stored in buffer).
+ * - Node: 1 byte at offset 0.
+ * - State: 4 bytes signed int (little endian) at offsets 1–4.
  * 
- * Returns a string of hex bytes prefixed with '0x' and space-separated,
- * suitable for use in BLE advertising commands.
+ * Returns a string like "f 0x01 0x34 0x12 0x00 0x00".
  */
-function bleGenerateManufacturerData(enabled, node, state, vstate) {
-  const buffer = Buffer.alloc(10);
+function bleGenerateManufacturerData(enabled, node, state) {
+    const buffer = Buffer.alloc(5);
   
-  // Write 1 byte: 127 if enabled, else 0
-  buffer.writeUInt8(enabled ? 127 : 0, 0);
+    // Write node in first byte
+    buffer.writeUInt8(node, 0);
   
-  // Write 1 byte: node ID
-  buffer.writeUInt8(node, 1);
+    // Write 4-byte signed integer in little endian after node
+    buffer.writeInt32LE(state, 1);
   
-  // Write 4 bytes: state as signed 32-bit int, little endian
-  buffer.writeInt32LE(state, 2);
+    // Build result string
+    let result = enabled ? 'f' : '0';
+    for (let i = 0; i < buffer.length; i++) {
+      result += ` 0x${buffer.toString('hex', i, i + 1)}`;
+    }
   
-  // Write 4 bytes: vstate as signed 32-bit int, little endian
-  buffer.writeInt32LE(vstate, 6);
-
-  // Convert each byte to '0xXX' hex string, space-separated
-  let result = '';
-  for (let i = 0; i < buffer.length; i++) {
-    result += `0x${buffer.toString('hex', i, i + 1)} `;
-  }
-  
-  return result.trim();
+    return result;
 }
 
 

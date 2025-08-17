@@ -86,11 +86,11 @@ async function getNeighborStates() {
     for (let id of params.neighbors) {
       if (params.neighborTypes[id] === TYPE_BLE) {
         const data = await bleGetState(nordicNeighbors[id]); 
-        neighborStates.push(Number(data.state));
+        neighborStates.push(Number(data.vstate));
         neighborEnabled.push(Boolean(data.enabled));
       } else {
         const response = await axios.get(`${params.neighborAddresses[id]}/getState`);
-        neighborStates.push(Number(response.data.state));
+        neighborStates.push(Number(response.data.vstate));
         neighborEnabled.push(Boolean(response.data.enabled));
       }
     }
@@ -116,14 +116,14 @@ async function updateConsensus() {
 
   // Broadcast via BLE
   if (TYPE === TYPE_BRIDGE) {
-    const bleCommand = `manufacturer 0x0059 0x7` + bleGenerateManufacturerData(params.enabled, params.node, state.state) + `\r`;
+    const bleCommand = `manufacturer 0x0059 0x7` + bleGenerateManufacturerData(params.enabled, params.node, state.vstate) + `\r`;
     advProcess.stdin.write(bleCommand);
   }
 }
 
 // Auxiliar function for starting ble for bridge configuration (restarts the process if any error)
 function startBleBridge() {
-  advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.state)}"`);
+  advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.vstate)}"`);
   advProcess.on('exit', (code, signal) => {
     if (code !== 0) {
       console.log(`Advertise process exited with error code: ${code}. Restart advertise process.`);
@@ -138,12 +138,12 @@ function startBleBridge() {
 process.on('message', async (updatedParams) => {
   try {
     if (isInitial) {
-      state = {timestamp: 0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+      state = {timestamp: 0, gamma: updatedParams.gamma, state: updatedParams.state, vstate: updatedParams.vstate, neighborStates: []};
       isInitial = false;
     }
     if (updatedParams.trigger && !params.trigger) {
       time0 = Date.now();
-      state = {timestamp: Date.now() - time0, gamma: updatedParams.gamma, state: updatedParams.state, neighborStates: []};
+      state = {timestamp: Date.now() - time0, gamma: updatedParams.gamma, state: updatedParams.state, vstate: updatedParams.vstate, neighborStates: []};
       algo.setParams(params);
       algo.resetInitialConditions();
       if (TYPE === TYPE_BRIDGE) {
@@ -168,7 +168,7 @@ process.on('message', async (updatedParams) => {
 
 // express-server: on get to /getState route
 app.get('/getState', (_req, res) => {
-  res.json({state: state.state, enabled: params.enabled});
+  res.json({state: state.vstate, enabled: params.enabled});
 });
 
 // http-server: start edge http server (express-server)

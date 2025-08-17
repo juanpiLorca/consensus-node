@@ -34,7 +34,7 @@ class Algorithm {
 
         for (let j in neighborVStates) {
             if (neighborEnabled[j]) {
-                vi += (-1) * Math.sign(this.state - neighborVStates[j]) * Math.sqrt(Math.abs(this.state - neighborVStates[j]));
+                vi += (-1) * Math.sign(this.vstate - neighborVStates[j]) * Math.sqrt(Math.abs(this.vstate - neighborVStates[j]));
                 numberNeighbors++;
             }
         }

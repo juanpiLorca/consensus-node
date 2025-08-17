@@ -1,7 +1,7 @@
 const ALGO_TYPE_ORIGINAL = 0;
 const ALGO_TYPE_INTEGRAL = 1;
 const ALGO_TYPE_PI_LPF = 2;
-const ALGO_
+const ALGO_FINITE_TIME = 3; 
 
 class Algorithm {
 
@@ -9,6 +9,10 @@ class Algorithm {
     // Algorithm parameters
     this.algorithm = parseInt(params.algorithm);
     this.state0 = Number(params.state);
+
+    // Add virtual state for Javier's consensus algorithm pourpose
+    this.vstate0 = Number(params.vstate);
+
     this.gamma0 = Number(params.gamma) * 0.001;
     this.lambda = Number(params.lambda) * 0.000001;
     this.pole = Number(params.pole) * 0.01;
@@ -23,12 +27,34 @@ class Algorithm {
 
   resetInitialConditions() {
     this.state = this.state0;
+    // Add virtual state for Javier's consensus algorithm pourpose
+    this.vstate = this.vstate0;
+    this.gi = 0; 
+    this.grad = 0; 
+
     this.gamma = this.gamma0;
     this.cnt = 0;
     this.error = 0;
     this.errorDC = 0;
     this.ui = 0;
   }
+
+  // Add consensus law: 
+  v_i(neighborStates, neighborEnabled) {
+
+    let vi = 0; 
+    let numberNeighbors = 0;
+
+    for (let j in neighborStates) {
+        if (neighborEnabled[j]) {
+            vi += (-1) * Math.sign(this.vstate - neighborStates[j]) * Math.sqrt(Math.abs(this.vstate - neighborStates[j]));
+            numberNeighbors++;
+        }
+    }
+
+    return {vi: vi, numberNeighbors: numberNeighbors};
+  }
+
 
   computeError(neighborStates, neighborEnabled) {
     let error = 0;
@@ -53,38 +79,34 @@ class Algorithm {
   }
 
   update(neighborStates, neighborEnabled) {
-    const { error, numberNeighbors } = this.computeError(neighborStates, neighborEnabled);
-    const uf = this.state0;//(this.state0 + numberNeighbors * (error + this.state)) / (1 + numberNeighbors);
-    const ui = this.ui + this.gamma * (error - this.pole * this.error);
-    const disturbance = this.computeDisturbance();
-    const errorDC = this.pole * this.errorDC + (1 - this.pole) * this.error;
-    const errorAC = this.error - this.errorDC; 
-    let u = 0;
-    switch (this.algorithm) {
-      case ALGO_TYPE_ORIGINAL:
-        u = this.gamma * Math.sign(error) + disturbance;
-        this.state = Math.floor(this.state + u);
-        this.gamma = Math.floor((this.gamma + this.lambda * Math.sign(Math.abs(error))) * 1000) / 1000;
-        break;
-      case ALGO_TYPE_INTEGRAL:
-        u = this.gamma * error + disturbance;
-        this.state = Math.floor(this.state + u);
-        this.gamma = Math.floor(Math.abs(this.gamma + this.lambda * Math.abs(error) * Math.sign(Math.abs(error) - this.dead)) * 1000) / 1000;
-        break;
-      case ALGO_TYPE_PI_LPF:
-        u = uf + ui + disturbance;
-        this.state = Math.floor(this.pole * this.state + (1 - this.pole) * u);
-        this.gamma = Math.floor(Math.abs(this.gamma + this.lambda * Math.abs(error) * Math.sign(Math.abs(errorDC) - Math.abs(errorAC))) * 1000) / 1000;
-        break;
-      default:
-        u = uf + ui + disturbance;
-        this.state = Math.floor(this.pole * this.state + (1 - this.pole) * u);
-        this.gamma = Math.floor(Math.abs(this.gamma + this.lambda * Math.abs(error) * Math.sign(Math.abs(errorDC) - Math.abs(errorAC))) * 1000) / 1000;
+
+    if (this.algorithm === ALGO_FINITE_TIME) {
+      let u = 0;
+      let sigma = 0;
+      
+      const disturbance = this.computeDisturbance();
+
+      // 1. Compute consensus law for virtal state
+      const {vi, numberNeighbors} = this.v_i(neighborStates, neighborEnabled);
+      this.gi = vi;
+
+      // 2. Compute error term (sigma) and gradient
+      sigma = this.state - this.vstate;
+      this.error = sigma;
+      this.grad = Math.sign(this.error); 
+
+      // 3. Compute control input
+      u = this.gi - this.gamma * this.grad;
+
+      // 4. Update state, virtual state and vartheta
+      this.state = Math.floor(this.state + u + disturbance);
+      this.vstate = Math.floor(this.vstate + this.gi);
+      this.vartheta = Math.floor(this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma)));
+    } else {
+
     }
-    this.error = error;
-    this.errorDC = errorDC;
-    this.ui = ui;
-    return { state: this.state, gamma: Math.floor(this.gamma * 1000)}
+
+    return { state: this.state, vstate: this.vstate, gamma: Math.floor(this.gamma * 1000)}
   }
 
 }

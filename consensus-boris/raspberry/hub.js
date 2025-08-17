@@ -21,7 +21,7 @@ app.use(express.json());
 // Store data in RAM for consensus parameters
 let params = {
   trigger: false,
-  algorithm: 2,
+  algorithm: 3,
   filename: "dummy",
   nodes: NODES,
 }

@@ -102,7 +102,6 @@ if (TYPE == TYPE_BLE) {
 
     // Auxiliary function to return neighbor virtual states 
     async function getNeighborStates() {
-        //let neighborStates = []; 
         let neighborVStates = [];
         let neighborEnabled = []; 
 
@@ -111,12 +110,10 @@ if (TYPE == TYPE_BLE) {
 
                 if (params.neighborTypes[id] == TYPE_BLE) {
                     const data = await bleGetState(nordicNeighbors[id]); 
-                    //neighborStates.push(Number(data.state));
                     neighborVStates.push(Number(data.vstate));
                     neighborEnabled.push(Boolean(data.enabled));
                 } else {
-                    const response = await axios.get(`${params.neighborAddress[id]}/getState`)
-                    //neighborStates.push(Number(response.data.state));
+                    const response = await axios.get(`${params.neighborAddress[id]}/getVState`)
                     neighborVStates.push(Number(response.data.vstate));
                     neighborEnabled.push(Boolean(response.data.enabled));
                 }
@@ -145,7 +142,7 @@ if (TYPE == TYPE_BLE) {
 
         // 3. Broadcast via BLE
         if (TYPE === TYPE_BRIDGE) {
-            const bleCommand = `manufacturer 0x0059 0x7` + bleGenerateManufacturerData(params.enabled, params.node, state.state) + `\r`; 
+            const bleCommand = `manufacturer 0x0059 0x7` + bleGenerateManufacturerData(params.enabled, params.node, state.vstate) + `\r`; 
             advProcess.stdin.write(bleCommand);
         }
     }
@@ -214,11 +211,10 @@ if (TYPE == TYPE_BLE) {
         }
     }); 
 
-    // Express-server: on get to /getState route
-    // --> Return the current state of the edge process
+    // Express-server: on get to /getVState route
     // --> Return the current vstate of the edge process
-    app.get('/getState', (_req, res) => {
-        res.json({state: state.state, vstate: state.vstate, enabled: params.enabled});
+    app.get('/getVState', (_req, res) => {
+        res.json({vstate: state.vstate, enabled: params.enabled});
     });
 
     // http-server: start edge http server (express-server)
