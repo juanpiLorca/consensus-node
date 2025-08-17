@@ -52,7 +52,6 @@ static bool on_data_parse_after_device_found(struct bt_data *data, void *user_da
 					    }
 
 					    // Update the message queue with the state value of the node (it only updates the place of a node in the array of neighbor values)
-					    neighbor_info.states[node_index] = custom_data->state;
                         neighbor_info.vstates[node_index] = custom_data->vstate; 
 					    neighbor_info.enabled[node_index] = (custom_data->netid_enabled == NETID_ENABLED) ? true : false;
 

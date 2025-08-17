@@ -25,11 +25,17 @@ consensus_params consensus = {
 	0,						// algorithm type
 	1000,					// period of the consensus task
 	100,					// initial state
+
+	10,						// initial virtual state: Javier's consensus algorithm
+
 	50,						// initial gamma
 	1,						// lambda parameter
 	50,                     // pole parameter
 	0,  					// error dead zone parameeter
 	100,					// state variable
+
+	10,						// virtual state variable: Javier's consensus algorithm
+
 	50,						// gamma variable
 	0.0,    				// error variable
 	0.0,					// error DC variable
@@ -73,6 +79,9 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 								consensus.ui = 0.0;
                     			consensus.time0 = k_uptime_get();
                     			consensus.state = consensus.state0;
+
+								consensus.vstate = consensus.vstate0; // Initialize virtual state
+
                     			consensus.gamma = consensus.gamma0;
                     			for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
                     				consensus.available_neighbors[i] = false;
@@ -149,6 +158,8 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 									case 11:
                     					consensus.disturbance.samples = value;
                     					break;
+									case 12:
+										consensus.vstate0 = value; // Set the initial virtual state for Javier
                     				default:
                     					break;
                     			}
@@ -203,7 +214,7 @@ void serial_start() {
 void serial_log_consensus() {
     // Prepare the string in the format "dtime,gamma,state,nieghbor_state1,nieghbor_state2\n\r"
 	int64_t timestamp = k_uptime_get() - consensus.time0;
-    int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d", timestamp, consensus.gamma, consensus.state);
+    int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d", timestamp, consensus.gamma, consensus.state, consensus.vstate);
 	// Append neighbor states to the buffer (we need to ensure we don't ecxeed TX buffer size)
 	for (int i = 0; i < consensus.N; i++) {
     	len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, ",%d", consensus.neighbor_states[i]);

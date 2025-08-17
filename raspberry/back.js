@@ -21,19 +21,26 @@ app.use(express.static(path.join(__dirname, 'data')))
 app.use(express.json());
 
 // Store data in RAM for consensus parameters/variables
-let params = { trigger: false }; // { trigger, enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples } }
+let params = { trigger: false }; 
+/**
+ * params = {
+ * trigger: false, filename: 'temp', node: 1, address: `http://192.168.1.126:${BLE_PORT}`,
+ * neighborAddresses: {2: `http://192.168.1.126:${BLE_PORT}`, 3: `http://192.168.1.127:${BLE_PORT}`, 7: `http://192.168.1.123:${BRIDGE_PORT}`},
+ * type: TYPE_BLE, enabled: true, neighbors: [2,3,7], clock: 1000, state: 100, vstate: 50, vartheta: 0, eta: 1,
+ * neighborTypes: {2: TYPE_BLE, 3: TYPE_BLE, 7: TYPE_BRIDGE},
+ * }
+ */
 
 // Backend Process: 
-// --> Spawn backend process
+// --> Spawn edge-process
 // --> process: on messsage received from edge-process (BLE, WiFi or Bridge)
-// --> io-server: emit the state to the io-client (server-hub) >>> state = { timestamp, state, vstate, vartheta, neighborStates }
+// --> io-server: emit the state to the io-client (server-hub) >>> state = { timestamp, state, vstate, vartheta, neighborVStates }
 // --> logger: save data line 
 const edgeProcess = fork(`./edge.js`, [TYPE]);
 
 edgeProcess.on('message', (state) => {
     io.emit('state', state); 
     loggerLine(state); 
-
     console.log(`IO-Server-${params.node} Sent: state = ${state.state}, vstate = ${state.vstate}, vartheta = ${state.vartheta}`);
 })
 

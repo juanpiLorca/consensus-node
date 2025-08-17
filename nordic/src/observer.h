@@ -9,7 +9,6 @@
 
 // Define a type for the message queue
 typedef struct {
-    int32_t states[N_MAX_NEIGHBORS];    // to store the state values of the neighbors
     int32_t vstates[N_MAX_NEIGHBORS];   // to store the virtual state of the neighbors 
     bool enabled[N_MAX_NEIGHBORS];      // to store whether the neighbor is enabled or not
 } neighbor_info_type;

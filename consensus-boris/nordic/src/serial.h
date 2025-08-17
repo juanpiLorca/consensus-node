@@ -34,16 +34,26 @@ typedef struct {
     uint8_t algorithm;
     int32_t Ts;
     int32_t state0;
+
+    // Virtual state added for Javier's consensus algorithm
+    int32_t vstate0;
+
     int32_t gamma0;
     int32_t lambda;
     int32_t pole;
     int32_t dead;
     int32_t state;
+
+    // Virtual state for the consensus algorithm
+    int32_t vstate;
+
     int32_t gamma;
     float error;
     float error_dc;
     float ui;
-    int32_t* neighbor_states;
+
+    int32_t* neighbor_states; // Neighbor vstates for Javier's consensus algorithm
+
     bool* neighbor_enabled;
     disturbance_params disturbance;
 } consensus_params;

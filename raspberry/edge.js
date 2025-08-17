@@ -217,7 +217,7 @@ if (TYPE == TYPE_BLE) {
     // Express-server: on get to /getState route
     // --> Return the current state of the edge process
     // --> Return the current vstate of the edge process
-    app.get('/getState', (req, res) => {
+    app.get('/getState', (_req, res) => {
         res.json({state: state.state, vstate: state.vstate, enabled: params.enabled});
     });
 

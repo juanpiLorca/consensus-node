@@ -20,7 +20,7 @@ parser.on('data', (data) => {
   const msgType = line[0];
   if (msgType == 'd') {
     const arr = line.slice(1).split(',');
-    const state = { timestamp: arr[0], gamma: arr[1], state: arr[2],  neighborStates: arr.slice(3)};
+    const state = { timestamp: arr[0], gamma: arr[1], state: arr[2], vstate: arr[3], neighborStates: arr.slice(4)};
     process.send(state);
   }
 })
@@ -30,7 +30,8 @@ parser.on('data', (data) => {
 process.on('message', async (params) => {
   const msgNetwork = `n${params.enabled ? 1 : 0},${params.node},${params.neighbors.join(',')}\n\r`;
   const msgAlgorithm = `a${params.algorithm},${params.clock},${params.state},${params.gamma},${params.lambda},${params.pole},${params.dead},` +
-    `${params.disturbance.random ? 1 : 0},${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples}\n\r`;
+    `${params.disturbance.random ? 1 : 0},${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples},`+ 
+    `${params.vstate}\n\r`;
   const msgTrigger = `t${params.trigger ? 1 : 0}\n\r`;
   try {
     await serialWrite(msgNetwork);
@@ -75,7 +76,7 @@ let params = {trigger: false};
 let intervalId = null;
 let isInitial = true;
 let time0 = 0;
-let state = {};     //{timestamp: 0, gamma: 1, state: 1000, neighborStates: [2000, 3000]}
+let state = {};     //{timestamp: 0, gamma: 1, state: 1000, vstate: 5000, neighborStates: [2000, 3000]}
 
 // Auxiliar function to return neighbor states
 async function getNeighborStates() {
@@ -107,7 +108,7 @@ async function updateConsensus() {
   if (params.enabled) {
     const { neighborStates, neighborEnabled } = await getNeighborStates();
     state.neighborStates = neighborStates;
-    ({ state: state.state, gamma: state.gamma} = algo.update(neighborStates, neighborEnabled));
+    ({ state: state.state, vstate: state.vstate, gamma: state.gamma} = algo.update(neighborStates, neighborEnabled));
   }
 
   // Send state to bakend-process

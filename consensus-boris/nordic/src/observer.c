@@ -45,12 +45,12 @@ static bool on_data_parse_after_device_found(struct bt_data *data, void *user_da
 					    	}
 					    }
 					    // Update the message queue with the state value of the node (it only updates the place of a node in the array of neighbor values)
-					    neighbor_info.states[node_index] = custom_data->state;
+					    neighbor_info.vstates[node_index] = custom_data->vstate;
 					    neighbor_info.enabled[node_index] = (custom_data->netid_enabled == NETID_ENABLED) ? true : false;
 					    while (k_msgq_put(&custom_observer_msg_queue, &neighbor_info, K_NO_WAIT) != 0) {
             		    	k_msgq_purge(&custom_observer_msg_queue);		// This logic deletes previous state values in the queue
         			    }
-					    LOG_INF("id: %d, state: %d, enabled: %d", custom_data->node, neighbor_info.states[node_index], neighbor_info.enabled[node_index]);
+					    LOG_INF("id: %d, vstate: %d, enabled: %d", custom_data->node, neighbor_info.vstates[node_index], neighbor_info.enabled[node_index]);
 					    //LOG_INF("SCANNED_NODE_ID: %d, SCANNED_NODE_VALUE %d, NEIGHBOR_INDEX %d, NEIGHBOR_STATE %d \n", custom_data->node, custom_data->state, map_node_to_index(custom_data->node), neighbor_states[map_node_to_index(custom_data->node)]);
 					}
 				}

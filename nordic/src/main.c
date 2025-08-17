@@ -155,7 +155,6 @@ static void thread_consensus(void) {
         MANUFACTURER_ID, 
         consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
         consensus.node, 
-        consensus.state, 
         consensus.vstate
     };
 
@@ -165,7 +164,7 @@ static void thread_consensus(void) {
 			if (consensus.first_time_running) {
 				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
 				custom_data.node = consensus.node;
-				custom_data.state = consensus.state;
+				custom_data.vstate = consensus.vstate;
 				broadcaster_init(&custom_data);
 				observer_init();
 				serial_log_consensus();
@@ -174,12 +173,12 @@ static void thread_consensus(void) {
 			if (consensus.all_neighbors_observed) {
 				if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
 					if (consensus.enabled) {
-					    memcpy(consensus.neighbor_states, neighbor_info.states, sizeof(neighbor_info.states));
+					    memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
 					    memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
 					    update_consensus(&consensus);
 					}
 					custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
-					custom_data.state = consensus.state;
+					custom_data.vstate = consensus.vstate;
 		    		broadcaster_update_scan_response_custom_data(&custom_data);
 				    serial_log_consensus();
 		    	}

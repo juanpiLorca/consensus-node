@@ -73,7 +73,7 @@ function startIoClients() {
   for (let id of BACKEND_IDS) {
     sockets[id].on('state', (state) => {
       io.emit(`state${id}`, state);
-      console.log(`Received from IO-Server-${id}: state = ${state.state}, gamma = ${state.gamma}`);
+      console.log(`Received from IO-Server-${id}: state = ${state.state}, gamma = ${state.gamma}, vstate = ${state.vstate}`);
     });
   }
 }

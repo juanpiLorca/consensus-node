@@ -37,7 +37,7 @@ int broadcaster_update_scan_response_custom_data(custom_data_type* custom_data)
 		LOG_ERR("Advertising failed to update (err %d)\n", err);
 		return err;
 	}
-	LOG_INF("Advertising successfully updated: value = %d \n", custom_data->state);
+	LOG_INF("Advertising successfully updated: value = %d \n", custom_data->vstate);
 	return 0;
 	
 }

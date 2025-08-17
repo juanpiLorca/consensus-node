@@ -10,7 +10,6 @@ LOG_MODULE_REGISTER(Module_Serial, LOG_LEVEL_INF);
 static bool available_neighbors[N_MAX_NEIGHBORS] = {false};
 static bool neighbor_enabled[N_MAX_NEIGHBORS] = {false};
 static uint8_t neighbors[N_MAX_NEIGHBORS] = {1};
-static int32_t neighbor_states[N_MAX_NEIGHBORS] = {100};
 static int32_t neighbor_vstates[N_MAX_NEIGHBORS] = {50};
 
 consensus_params consensus = {
@@ -35,7 +34,6 @@ consensus_params consensus = {
     0.0f,                   // gi
     0.0f,                   // ui
     neighbor_enabled,		// neighbor enabled
-	neighbor_states,		// neighbor states
     neighbor_vstates,		// neighbor vstates
 	{false, 0, 0, 0, 0, 0}  // disturbance parameters
 };	
@@ -83,7 +81,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 consensus.vartheta = consensus.vartheta0;
                     			for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
                     				consensus.available_neighbors[i] = false;
-                    				consensus.neighbor_states[i] = consensus.state0;
+                    				consensus.neighbor_vstates[i] = consensus.vstate0;
 									consensus.neighbor_enabled[i] = false;
                     			}
                     		} else {

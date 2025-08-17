@@ -1,6 +1,7 @@
 const ALGO_TYPE_ORIGINAL = 0;
 const ALGO_TYPE_INTEGRAL = 1;
 const ALGO_TYPE_PI_LPF = 2;
+const ALGO_
 
 class Algorithm {
 
