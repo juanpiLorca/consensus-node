@@ -37,7 +37,7 @@ const edgeProcess = fork(`./edge.js`, [TYPE]);
 edgeProcess.on('message', (state) => {
   io.emit('state', state);
   loggerLine(state);
-  console.log(`IO-Server-${params.node} Sent: state = ${state.state}, gamma = ${state.gamma}`);
+  console.log(`IO-Server-${params.node} Sent: state = ${state.state}, vstate = ${state.vstate}, gamma = ${state.gamma}`);
 });
 
 // express-server: on post /updateParams route

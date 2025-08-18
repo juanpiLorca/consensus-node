@@ -109,6 +109,7 @@ async function updateConsensus() {
     const { neighborStates, neighborEnabled } = await getNeighborStates();
     state.neighborStates = neighborStates;
     ({ state: state.state, vstate: state.vstate, gamma: state.gamma} = algo.update(neighborStates, neighborEnabled));
+    console.log(`Edge-Server-${params.node} Updated: state = ${state.state}, vstate = ${state.vstate}, gamma = ${state.gamma}`);
   }
 
   // Send state to bakend-process
