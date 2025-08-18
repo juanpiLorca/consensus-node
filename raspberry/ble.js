@@ -1,5 +1,5 @@
 const { createBluetooth } = require('node-ble'); 
-const { bluetooth } = createBluetooth();
+const { bluetooth, destroy } = createBluetooth();
 
 const DELAY_LOOP = 1000; // Delay between each loop iteration in milliseconds
 
@@ -41,7 +41,9 @@ async function bleGetDevices(neighborsRequired) {
 
                     const dataRaw = await device.getManufacturerData();
                     const dataBuff = Object.values(dataRaw)[0]; 
+                    const netidEnabled = dataBuff.readUInt8(0);
                     const node = dataBuff.readUInt8(1);
+                    const value = dataBuff.readInt32LE(2);
 
                     console.log('node: ', node);
 
@@ -54,6 +56,7 @@ async function bleGetDevices(neighborsRequired) {
                 }
             } catch (error) {
                 // TODO: Handle error if device is not found or other issues
+                console.error('Error retrieving device:', error);
             }
         }
 
@@ -89,6 +92,7 @@ async function bleGetState(device) {
     const dataRaw = await device.getManufacturerData();
     const dataBuff = Object.values(dataRaw)[0];
     const netidEnabled = dataBuff.readUInt8(0);
+    const node = dataBuff.readUInt8(1);
     const vstate = readInt32BLE(2);
 
     return {vstate: vstate, enabled: (netidEnabled === 127)};
