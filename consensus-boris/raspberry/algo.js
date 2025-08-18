@@ -82,7 +82,6 @@ class Algorithm {
 
     if (this.algorithm === ALGO_FINITE_TIME) {
       let u = 0;
-      let sigma = 0;
       
       const disturbance = this.computeDisturbance();
 
@@ -91,17 +90,17 @@ class Algorithm {
       this.gi = vi;
 
       // 2. Compute error term (sigma) and gradient
-      sigma = this.state - this.vstate;
+      const sigma = this.state - this.vstate;
       this.error = sigma;
       this.grad = Math.sign(this.error); 
 
       // 3. Compute control input
       u = this.gi - this.gamma * this.grad;
 
-      // 4. Update state, virtual state and vartheta
+      // 4. Update state, virtual state and gamma
       this.state = Math.floor(this.state + u + disturbance);
       this.vstate = Math.floor(this.vstate + this.gi);
-      this.vartheta = this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma));
+      this.gamma = this.gamma + this.lambda * (Math.sign(this.error) * Math.sign(this.error));
     } else {
       console.log('Unknown algorithm type');
     }
