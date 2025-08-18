@@ -101,9 +101,9 @@ class Algorithm {
       // 4. Update state, virtual state and vartheta
       this.state = Math.floor(this.state + u + disturbance);
       this.vstate = Math.floor(this.vstate + this.gi);
-      this.vartheta = Math.floor(this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma)));
+      this.vartheta = this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma));
     } else {
-
+      console.log('Unknown algorithm type');
     }
 
     return { state: this.state, vstate: this.vstate, gamma: Math.floor(this.gamma * 1000)}

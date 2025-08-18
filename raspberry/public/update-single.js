@@ -72,6 +72,7 @@ async function updateDirectory(event, dataTree) {
       stateTraces.push(stateTrace);
       vstateTraces.push(vstateTrace);
       varthetaTraces.push(varthetaTrace);
+      eta = node.params.eta / 1000000;
 
       // Optional: Log extra params if you want to see them
       console.log(`Node ${node.params.node}: lambda=${node.params.lambda}, eta=${node.params.eta}`);

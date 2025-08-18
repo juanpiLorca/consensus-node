@@ -35,6 +35,7 @@ async function updateDirectory(event, dataTree) {
   const filenames = Object.keys(dataTree[dir]);
   try {
     let stateTraces = [];
+    let vstateTraces = [];
     let gammaTraces = [];
     let lambda;
     
@@ -50,6 +51,15 @@ async function updateDirectory(event, dataTree) {
         xaxis: 'x',
         yaxis: 'y1'
       };
+
+      const vstateTrace = {
+        x: node.data.timestamp.map(i => i / 1000),
+        y: node.data.vstate,
+        mode: 'lines',
+        name: `Node ${node.params.node}`,
+        xaxis: 'x',
+        yaxis: 'y2'
+      };
       
       const gammaTrace = {
         x: node.data.timestamp.map(i => i / 1000),
@@ -61,12 +71,13 @@ async function updateDirectory(event, dataTree) {
       };
     
       stateTraces.push(stateTrace);
+      vstateTraces.push(vstateTrace);
       gammaTraces.push(gammaTrace);
       lambda = node.params.lambda / 1000000;
     }
-    
-    // Combine state and gamma traces for the subplot
-    const traces = [...stateTraces, ...gammaTraces];
+
+    // Combine state and vstate traces for the subplot
+    const traces = [...stateTraces, ...vstateTraces, ...gammaTraces];
 
     // Define the layout for the subplot
     const layout = {
@@ -75,8 +86,9 @@ async function updateDirectory(event, dataTree) {
       margin: {l: 48, r: 0, t: 0, b: 36},
       grid: { rows: 2, columns: 1, shared_xaxes: true, roworder: 'top to bottom' },
       xaxis: { title: 'Time [s]' },
-      yaxis: { title: 'State'}, // Top subplot
-      yaxis2: { title: 'Gamma'}, // Bottom subplot
+      yaxis1: { title: 'State'}, // Top subplot
+      yaxis2: { title: 'VState'}, // Middle subplot
+      yaxis3: { title: 'Gamma'}, // Bottom subplot
       showlegend: false,
     };
     
@@ -104,6 +116,10 @@ async function updateDirectory(event, dataTree) {
 // -> browser-ui: relayout size of plotly graph
 window.onresize = function() {
   Plotly.relayout('statePlot', {
+    'xaxis.autorange': true,
+    'yaxis.autorange': true
+  });
+  Plotly.relayout('vstatePlot', {
     'xaxis.autorange': true,
     'yaxis.autorange': true
   });

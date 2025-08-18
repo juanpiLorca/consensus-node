@@ -52,7 +52,6 @@ edgeProcess.on('message', (state) => {
 app.post(`/updateParams`, async (req, res) => {
     try {
         const updatedParams = req.body; 
-
         if (updatedParams.trigger && !params.trigger) {
             // Start logger new file if trigger is true and was false before <-- GUI interaction
             loggerUpdateFilename(`${updatedParams.filename}-${updatedParams.type}.json`)

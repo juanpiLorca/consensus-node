@@ -37,7 +37,6 @@ async function updateDirectory(event, dataTree) {
     let stateTraces = [];
     let vstateTraces = [];
     let varthetaTraces = [];
-    let lambda;
     let eta;
 
     for (const filename of filenames) {
@@ -64,7 +63,7 @@ async function updateDirectory(event, dataTree) {
       stateTraces.push(stateTrace);
       vstateTraces.push(vstateTrace);
       varthetaTraces.push(varthetaTrace);
-      eta = node.params.eta;
+      eta = node.params.eta / 1000000;
     }
     // Define the plot layouts
     const stateLayout = {

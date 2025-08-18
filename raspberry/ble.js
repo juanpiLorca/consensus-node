@@ -76,7 +76,6 @@ async function bleGetDevices(neighborsRequired) {
 // >>>     uint16_t manufacturer;
 // >>>     uint8_t netid_enabled;
 // >>>     uint8_t node;
-// >>>     int32_t state;
 // >>>     int32_t vstate;
 // >>> } custom_data_type;
 async function bleGetState(device) {
@@ -85,16 +84,14 @@ async function bleGetState(device) {
     // -------------- | ------------ | ---------------------------------------------
     // netid_enabled  | 1            | 0
     // node           | 1            | 1
-    // state          | 4            | 2
-    // vstate         | 4            | 6
+    // vstate         | 4            | 2
 
     const dataRaw = await device.getManufacturerData();
     const dataBuff = Object.values(dataRaw)[0];
     const netidEnabled = dataBuff.readUInt8(0);
-    const state = readInt32BLE(2); 
-    const vstate = readInt32BLE(6);
+    const vstate = readInt32BLE(2);
 
-    return {state: state, vstate: vstate, enabled: (netidEnabled === 127)};
+    return {vstate: vstate, enabled: (netidEnabled === 127)};
 }
 
 /**
@@ -107,14 +104,14 @@ async function bleGetState(device) {
  * 
  * Returns a string like "f 0x01 0x34 0x12 0x00 0x00".
  */
-function bleGenerateManufacturerData(enabled, node, state) {
+function bleGenerateManufacturerData(enabled, node, vstate) {
     const buffer = Buffer.alloc(5);
   
     // Write node in first byte
     buffer.writeUInt8(node, 0);
   
     // Write 4-byte signed integer in little endian after node
-    buffer.writeInt32LE(state, 1);
+    buffer.writeInt32LE(vstate, 1);
   
     // Build result string
     let result = enabled ? 'f' : '0';

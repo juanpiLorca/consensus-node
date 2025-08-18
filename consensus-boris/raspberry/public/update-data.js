@@ -35,6 +35,7 @@ async function updateDirectory(event, dataTree) {
   const filenames = Object.keys(dataTree[dir]);
   try {
     let stateTraces = [];
+    let vstateTraces = [];
     let gammaTraces = [];
     let lambda;
     for (const filename of filenames) {
@@ -46,6 +47,12 @@ async function updateDirectory(event, dataTree) {
         mode: 'lines',
         name: `Node ${node.params.node}`
       }
+      const vstateTrace = {
+        x: node.data.timestamp.map(i=>i/1000),
+        y: node.data.vstate,
+        mode: 'lines',
+        name: `Node ${node.params.node}`
+      }
       const gammaTrace = {
         x: node.data.timestamp.map(i=>i/1000),
         y: node.data.gamma,
@@ -53,6 +60,7 @@ async function updateDirectory(event, dataTree) {
         name: `Node ${node.params.node}`
       }
       stateTraces.push(stateTrace);
+      vstateTraces.push(vstateTrace);
       gammaTraces.push(gammaTrace);
       lambda = node.params.lambda / 1000000;
     }
@@ -62,6 +70,12 @@ async function updateDirectory(event, dataTree) {
       title: `Consensus Algorithm. lambda = ${lambda} `,
       xaxis: { title: 'Time [s]' },
       yaxis: { title: 'State' }
+    };
+    const vstateLayout = {
+      autosize: true,
+      title: `Consensus Algorithm. lambda = ${lambda} `,
+      xaxis: { title: 'Time [s]' },
+      yaxis: { title: 'Vstate' }
     };
     const gammaLayout = {
       autosize: true,
@@ -81,6 +95,7 @@ async function updateDirectory(event, dataTree) {
       }]
     }
     Plotly.newPlot('statePlot', stateTraces, stateLayout, modeBarButtons);
+    Plotly.newPlot('vstatePlot', vstateTraces, vstateLayout, modeBarButtons);
     Plotly.newPlot('gammaPlot', gammaTraces, gammaLayout, modeBarButtons);
   } catch (error) {
     console.error('Error fetching /data/<dir>/<id>.json:', error);
@@ -91,6 +106,10 @@ async function updateDirectory(event, dataTree) {
 // -> browser-ui: relayout size of plotly graph
 window.onresize = function() {
   Plotly.relayout('statePlot', {
+    'xaxis.autorange': true,
+    'yaxis.autorange': true
+  });
+  Plotly.relayout('vstatePlot', {
     'xaxis.autorange': true,
     'yaxis.autorange': true
   });

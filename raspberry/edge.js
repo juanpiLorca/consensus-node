@@ -122,7 +122,7 @@ if (TYPE == TYPE_BLE) {
             console.error('Error fetching from url');
         }
 
-        return { neighborVStates, neighborEnabled };
+        return { neighborVStates: neighborVStates, neighborEnabled: neighborEnabled };
     }
 
     // Consensus algorithm execution every clock period
@@ -149,7 +149,7 @@ if (TYPE == TYPE_BLE) {
 
     // Auxiliary function for starting BLE for bridge configuration (restarts the advertising process if any error)
     function startBleBridge() {
-        advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.state, state.vstate)}"`);
+        advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.vstate)}"`);
         advProcess.on('exit', (code, signal) => {
             if (code !== 0) {
                 console.log(`Advertise process exited with error code ${code}. Restarting advertising process...`); 

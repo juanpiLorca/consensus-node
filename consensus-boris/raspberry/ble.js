@@ -66,8 +66,8 @@ async function bleGetState(device) {
   const dataBuff = Object.values(dataRaw)[0];
   const netidEnabled = dataBuff.readUInt8(0);
   const node = dataBuff.readUInt8(1);
-  const state = dataBuff.readInt32LE(2);
-  return {state: state, enabled: (netidEnabled === 127)};   //127 = 0x7f = NETID_ENABLED
+  const vstate = dataBuff.readInt32LE(2);
+  return {vstate: vstate, enabled: (netidEnabled === 127)};   //127 = 0x7f = NETID_ENABLED
 }
 
 //

@@ -13,6 +13,12 @@ const stateLayout = {
   xaxis: { title: 'Time [s]' },
   yaxis: { title: 'State' },
 };
+const vstateLayout = {
+  autosize: true,
+  title: 'Server VStates',
+  xaxis: { title: 'Time [s]' },
+  yaxis: { title: 'VState' },
+};
 const gammaLayout = {
   autosize: true,
   title: 'Server Gammas',
@@ -39,7 +45,7 @@ getBackendIds();
 function renderPlot(BACKEND_IDS) {
 
   // Define the plot data, plot traces and the plot itself
-  let serverData = BACKEND_IDS.map(() => ({ time: [], state: [], gamma: []}));
+  let serverData = BACKEND_IDS.map(() => ({ time: [], state: [], vstate: [], gamma: []}));
   let stateTraces = BACKEND_IDS.map((id, i) => ({
     x: serverData[i].time,
     y: serverData[i].state,
@@ -49,6 +55,15 @@ function renderPlot(BACKEND_IDS) {
     line: { color: COLORS[i] },
   }));
   Plotly.newPlot('statePlot', stateTraces, stateLayout);
+  let vstateTraces = BACKEND_IDS.map((id, i) => ({
+    x: serverData[i].time,
+    y: serverData[i].vstate,
+    type: 'scatter',
+    mode: 'lines',
+    name: `Server ${id}`,
+    line: { color: COLORS[i] },
+  }));
+  Plotly.newPlot('vstatePlot', vstateTraces, vstateLayout);
   let gammaTraces = BACKEND_IDS.map((id, i) => ({
     x: serverData[i].time,
     y: serverData[i].gamma,
@@ -66,13 +81,16 @@ function renderPlot(BACKEND_IDS) {
       console.log(`Received from IO-Server-${id}: `, state);
       serverData[i].time.push(state.timestamp / 1000);
       serverData[i].state.push(state.state);
+      serverData[i].vstate.push(state.vstate);
       serverData[i].gamma.push(state.gamma);
       if (serverData[i].time.length > MAX_PLOT_POINTS) {
         serverData[i].time.shift();
         serverData[i].state.shift();
+        serverData[i].vstate.shift();
         serverData[i].gamma.shift();
       }
       Plotly.update('statePlot', { x: [serverData[i].time], y: [serverData[i].state] }, stateLayout, [i]);
+      Plotly.update('vstatePlot', { x: [serverData[i].time], y: [serverData[i].vstate] }, vstateLayout, [i]);
       Plotly.update('gammaPlot', { x: [serverData[i].time], y: [serverData[i].gamma] }, gammaLayout, [i]);
     });
   }
@@ -84,6 +102,10 @@ window.onresize = function() {
   Plotly.relayout('statePlot', {
       'xaxis.autorange': true,
       'yaxis.autorange': true
+  });
+  Plotly.relayout('vstatePlot', {
+    'xaxis.autorange': true,
+    'yaxis.autorange': true
   });
   Plotly.relayout('gammaPlot', {
     'xaxis.autorange': true,

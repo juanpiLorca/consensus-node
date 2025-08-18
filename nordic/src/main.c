@@ -116,8 +116,8 @@ static void update_consensus(consensus_params* cp) {
     // Dynamic variables & parameters
     float x = (float)(cp->state);
     float z = (float)(cp->vstate);
-    float vartheta = (float)(cp->vartheta);
-    float eta = (float)(cp->eta);
+    float vartheta = (float)(cp->vartheta * 0.001);
+    float eta = (float)(cp->eta * 0.000001);
 
     // Disturbance parameters
     float cnt = (float)cp->disturbance.counter;
