@@ -30,7 +30,7 @@ async function bleGetDevices(neighborsRequired) {
 
         // Filter devices based on: 
         // >>> UUID 
-        // >>> Node reuirements 
+        // >>> Node requirements 
         for (const uuid of uuids) {
             try { 
                 const device = await adapter.getDevice(uuid);

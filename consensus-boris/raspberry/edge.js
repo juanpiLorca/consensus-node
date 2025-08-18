@@ -169,7 +169,7 @@ process.on('message', async (updatedParams) => {
 
 // express-server: on get to /getState route
 app.get('/getState', (_req, res) => {
-  res.json({state: state.vstate, enabled: params.enabled});
+  res.json({vstate: state.vstate, enabled: params.enabled});
 });
 
 // http-server: start edge http server (express-server)
