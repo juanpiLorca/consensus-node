@@ -1,5 +1,5 @@
 const { createBluetooth } = require('node-ble');
-const { destroy, bluetooth } = createBluetooth();
+const { bluetooth, destroy } = createBluetooth();
 
 const DELAY_LOOP = 1000; // Delay between each loop iteration in milliseconds
 
@@ -117,13 +117,13 @@ function bleGenerateManufacturerData(enabled, node, vstate) {
     // Write 4-byte signed integer in little endian after node
     buffer.writeInt32LE(vstate, 1);
   
-    // Build result string
-    let result = enabled ? 'f' : '0';
-    for (let i = 0; i < buffer.length; i++) {
-      result += ` 0x${buffer.toString('hex', i, i + 1)}`;
-    }
-  
-    return result;
+    // Build result string;
+    return `${enabled ? 'f' : '0'}` +
+         ` 0x${buffer.toString('hex', 0, 1)}` +
+         ` 0x${buffer.toString('hex', 1, 2)}` + 
+         ` 0x${buffer.toString('hex', 2, 3)}` +
+         ` 0x${buffer.toString('hex', 3, 4)}` +
+         ` 0x${buffer.toString('hex', 4, 5)}`;
 }
 
 
