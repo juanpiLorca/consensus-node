@@ -17,6 +17,7 @@ pastTrigger = false;
 // -> edge-process: send state message to backend-process
 parser.on('data', (data) => {
   const line = data.replace(/\r/g, '').replace(/\n/g, '');
+  console.log('Nordic raw: ', line);
   const msgType = line[0];
   if (msgType == 'd') {
     const arr = line.slice(1).split(',');
