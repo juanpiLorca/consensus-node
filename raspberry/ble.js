@@ -103,8 +103,8 @@ async function bleGetState(device) {
  * 
  * Matches the behavior of the second version:
  * - Prepends "f" if enabled, "0" otherwise (not stored in buffer).
- * - Node: 1 byte at offset 0.
- * - State: 4 bytes signed int (little endian) at offsets 1–4.
+ * - node: 1 byte at offset 0.
+ * - vstate: 4 bytes signed int (little endian) at offsets 1–4.
  * 
  * Returns a string like "f 0x01 0x34 0x12 0x00 0x00".
  */
