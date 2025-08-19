@@ -31,7 +31,7 @@ async function loggerStart(params) {
 // Function to write the data lines of the .json logger file
 async function loggerLine(state) {
   try {
-    const arr = [state.timestamp, state.gamma, state.state, ...state.neighborStates];
+    const arr = [state.timestamp, state.gamma, state.state, state.vstate, ...state.neighborStates];
     if (isEnable) {
       if (isFirstLine) {
         await fs.appendFile(filepath, '\n' + JSON.stringify(arr));
@@ -60,8 +60,9 @@ async function loggerEnd(){
       objData.data.timestamp = dataTransposed[0];
       objData.data.gamma = dataTransposed[1];
       objData.data.state = dataTransposed[2];
+      objData.data.vstate = dataTransposed[3];
       for (let i in objData.params.neighbors) {
-        objData.data[objData.params.neighbors[i]] = dataTransposed[parseInt(i)+3];
+        objData.data[objData.params.neighbors[i]] = dataTransposed[parseInt(i)+4];
       }
       await fs.writeFile(filepath, JSON.stringify(objData, null, 2), 'utf8');
     }
