@@ -1,5 +1,5 @@
-const { createBluetooth } = require('node-ble'); 
-const { bluetooth, destroy } = createBluetooth();
+const { createBluetooth } = require('node-ble');
+const { destroy, bluetooth } = createBluetooth();
 
 const DELAY_LOOP = 1000; // Delay between each loop iteration in milliseconds
 
@@ -93,7 +93,7 @@ async function bleGetState(device) {
     const dataBuff = Object.values(dataRaw)[0];
     const netidEnabled = dataBuff.readUInt8(0);
     const node = dataBuff.readUInt8(1);
-    const vstate = readInt32BLE(2);
+    const vstate = dataBuff.readInt32LE(2);
 
     return {vstate: vstate, enabled: (netidEnabled === 127)};
 }

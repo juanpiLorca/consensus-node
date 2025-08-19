@@ -109,7 +109,7 @@ app.get('/getBackendIds', (_req, res) => {
 });
 
 // Express-server: on get to /getParams route
-app.get('/getParams', (_req, res) => {
+app.get('/getParams', (req, res) => {
     res.json(params);
 });
 

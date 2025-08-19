@@ -5,8 +5,8 @@ class Algorithm {
         // Controller parameters:
         this.state0 = Number(params.state);
         this.vstate0 = Number(params.vstate);
-        this.vartheta0 = Number(params.vartheta);
-        this.eta = Number(params.eta);
+        this.vartheta0 = (Number(params.vartheta) * 0.001);
+        this.eta = (Number(params.eta) * 0.000001);
 
         // Disturbance parameters:
         this.random = Boolean(params.disturbance.random);
