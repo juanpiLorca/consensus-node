@@ -89,7 +89,7 @@ if (TYPE == TYPE_BLE) {
 
     // Store data in RAM for consensus parameters/variables
     // { enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples }, trigger, 
-    //   neighborTypes: {}, neighborAddress: {} }
+    //   neighborTypes: {}, neighborAddresses: {} }
     // New configuration posted in /updateParams route
     let params = { trigger: false }; 
 
@@ -113,7 +113,7 @@ if (TYPE == TYPE_BLE) {
                     neighborVStates.push(Number(data.vstate));
                     neighborEnabled.push(Boolean(data.enabled));
                 } else {
-                    const response = await axios.get(`${params.neighborAddress[id]}/getVState`)
+                    const response = await axios.get(`${params.neighborAddresses[id]}/getVState`)
                     neighborVStates.push(Number(response.data.vstate));
                     neighborEnabled.push(Boolean(response.data.enabled));
                 }

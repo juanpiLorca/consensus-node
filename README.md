@@ -16,15 +16,17 @@ In this project, we need to keep in mind:
 
 1.- For all nrf52DK you need to burn the firmware which source code is in the folder `/consensus/nordic` (see the [nordic dev academy courses](https://academy.nordicsemi.com/) in order to do this). Use nordic SDK 2.7.0. 
 
-2.- For all the RaspberryPis create an SD card with Raspian Bookworm OS and enable SSH-server (username: `control`, password: `control1234`). Via a keyboard-screen (or SSH-client), you can then install nvm:0.40.1 and the node:22.11.0 and install "expect": `sudo apt install expect`. Then upload all the contents of `/consensus/raspberry` (except for `node_modules` nor `package-lock.json`) and install all node dependencies with `~/Desktop/consensus/raspberry$ npm install`. Additionally you need to connect to the LAN via wifi, use `sudo raspi-config` for setting the wifi credentials, and get the dynamic LAN ip address (which normally doesn't change in the router) with `ip a` and remember it.
+2.- For all the RaspberryPis create an SD card with Raspian Bookworm OS and enable SSH-server (username: `control`, password: `control1234`). Via a keyboard-screen (or SSH-client), you can then install nvm:0.40.1 and the node:22.11.0 and install "expect": `sudo apt install expect`. Then, make sure the `raspberry/bleadv.sh` is executable (`ls -l bleadv.sh`). If not, run the following command: `chmod +x bleadv.sh` 
 
-3.- In your laptop you need to have the `~/Desktop/consensus/raspberry`; with SSH-client, nmv and node installed (it's not necessary to install expect), with the node modules of the project installed and connected to the router LAN.
+3.- pload all the contents of `/consensus/raspberry` (except for `node_modules` nor `package-lock.json`) and install all node dependencies with `~/Desktop/consensus/raspberry$ npm install`. Additionally you need to connect to the LAN via wifi, use `sudo raspi-config` for setting the wifi credentials, and get the dynamic LAN ip address (which normally doesn't change in the router) with `ip a` and remember it.
 
-4.- In the physical world create a node by ataching 1 nrf52DK with 1 raspberry using a usb cable. Repeat the process for every node you want to have. Note that you can connect to a node via SSH-client with the RaspberryPi credentials and its LAN ip address.
+4.- In your laptop you need to have the `~/Desktop/consensus/raspberry`; with SSH-client, nmv and node installed (it's not necessary to install expect), with the node modules of the project installed and connected to the router LAN.
 
-5.- From your laptop open 3 terminals for each node and navigate to the `~/Desktop/consensus/raspberry` and the run 3 edge-devices processes on each terminal: `node back ble`, `node back wifi`, `node back bridge`.
+5.- In the physical world create a node by ataching 1 nrf52DK with 1 raspberry using a usb cable. Repeat the process for every node you want to have. Note that you can connect to a node via SSH-client with the RaspberryPi credentials and its LAN ip address.
 
-6.- From your laptop open the file `~/Desktop/consensus/raspberry/net.js` to edit the network graph and parameters by simply changing the `NODES` variable. Here is an example for 3 nodes:
+6.- From your laptop open 3 terminals for each node and navigate to the `~/Desktop/consensus/raspberry` and the run 3 edge-devices processes on each terminal: `node back ble`, `node back wifi`, `node back bridge`.
+
+7.- From your laptop open the file `~/Desktop/consensus/raspberry/net.js` to edit the network graph and parameters by simply changing the `NODES` variable. Here is an example for 3 nodes:
 ```js
 // file: /consensus/raspberry/net.js
 ...
@@ -49,9 +51,9 @@ NODES = {
 }
 ...
 ```
-7.- From your laptop open another terminal, navigate to the `~/Desktop/consensus/raspberry` and run: `node hub`. Open a browser at `http://localhost:3000`. This is optional but a good practice: press the reset button of all norf52DKs, this is a good idea when the preivious tests gives unstable results. In the user-interface select the type of the algorithm (1: pure adaptative integral, 2: adaptative PI + LPF), chande the name of the test and check the trigger option, then press `Update Params`.
+8.- From your laptop open another terminal, navigate to the `~/Desktop/consensus/raspberry` and run: `node hub`. Open a browser at `http://localhost:3000`. This is optional but a good practice: press the reset button of all norf52DKs, this is a good idea when the preivious tests gives unstable results. In the user-interface select the type of the algorithm (1: pure adaptative integral, 2: adaptative PI + LPF), chande the name of the test and check the trigger option, then press `Update Params`.
 
-8.- In the user interface you can see when the algorithm converges. At this point it is time to stop the test by unckecking the trigger button and pressing `Update Params`. You can now press the link `Open data history in a new window` and navigate to see the name of your test, click it and you can see your results.
+9.- In the user interface you can see when the algorithm converges. At this point it is time to stop the test by unckecking the trigger button and pressing `Update Params`. You can now press the link `Open data history in a new window` and navigate to see the name of your test, click it and you can see your results.
 
 
 ## Some results
