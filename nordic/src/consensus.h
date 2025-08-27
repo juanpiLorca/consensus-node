@@ -34,9 +34,16 @@ typedef struct {
 
     uint8_t* neighbors; 
 
+    float scale_factor; 
+    float inv_scale_factor; 
+    float scale_eta; 
+
     uint8_t N; 
     int64_t time0; 
     int32_t Ts; 
+
+    float dt; 
+
     int32_t state0; 
     int32_t vstate0; 
     int32_t vartheta0;
@@ -45,6 +52,8 @@ typedef struct {
     int32_t vstate;
     int32_t vartheta;
     int32_t sigma; // error term
+
+    float delta; 
     float gi;
     float ui;  
 

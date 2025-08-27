@@ -114,10 +114,10 @@ static void update_consensus(consensus_params* cp) {
     // 1. Cast to float for calculations: system and disturbance parameters
 
     // Dynamic variables & parameters
-    float x = (float)(cp->state);
-    float z = (float)(cp->vstate);
-    float vartheta = (float)(cp->vartheta * 0.001);
-    float eta = (float)(cp->eta * 0.000001);
+    float x = (float)(cp->state * cp->inv_scale_factor);
+    float z = (float)(cp->vstate * cp->inv_scale_factor);
+    float vartheta = (float)(cp->vartheta * cp->inv_scale_factor);
+    float eta = (float)(cp->eta * cp->scale_eta);
 
     // Disturbance parameters
     float cnt = (float)cp->disturbance.counter;
@@ -125,8 +125,9 @@ static void update_consensus(consensus_params* cp) {
 	float amp = (float)cp->disturbance.amplitude;
 	float pha = (float)(cp->disturbance.phase * 0.01);
 	float Ns = (float)cp->disturbance.samples;
-	float norm_noise = cp->disturbance.random ? (float)rand() / (float)RAND_MAX : sinf(2.0f * M_PI * ( (cnt/Ns) - pha ));
-	float disturbance = off + amp * norm_noise;
+    float norm_noise = cp->disturbance.random ? 2.0f * ((float)rand() / (float)RAND_MAX - 0.5f) : sinf(2.0f * M_PI * ((cnt / Ns) - pha));
+	// float norm_noise = cp->disturbance.random ? (float)rand() / (float)RAND_MAX : sinf(2.0f * M_PI * ( (cnt/Ns) - pha ));
+	float disturbance = (off + amp * norm_noise) * (cp->inv_scale_factor);
 
     // 2. Compute error term and gradients
     float sigma = x - z; 
@@ -137,15 +138,23 @@ static void update_consensus(consensus_params* cp) {
     float gi = vi; 
     float ui = gi - vartheta * grad; 
 
-    // 4. Update dynamic variables
-    cp->state = (int32_t)(x + ui + disturbance);
-    cp->vstate = (int32_t)(z + gi);
-    cp->vartheta = (int32_t)(vartheta + eta * sign(sigma) * sign(sigma));
-    cp->sigma = (int32_t)sigma;
+    // 4. Compute dvtheta (derivative of vartheta)
+    float dvtheta = 0.0; 
+    if (abs(sigma) > cp->delta) {
+        dvtheta = eta * 1.0f; 
+    } else {
+        dvtheta = 0.0f; 
+    }
+
+    // 5. Update dynamic variables
+    cp->state = (int32_t)((x + cp->dt * (ui + disturbance)) * cp->scale_factor);
+    cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
+    cp->vartheta = (int32_t)((vartheta + cp->dt * (eta * dvtheta)) * cp->scale_factor);
+    cp->sigma = (int32_t)(sigma * cp->scale_factor);
     cp->gi = gi;
     cp->ui = ui;
 
-    // 5. Update disturbance parameters & log info.
+    // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
 	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d, state: %d", (int32_t)x, (int32_t)z, (int32_t)vartheta, (int32_t)sigma, cp->state);
 }

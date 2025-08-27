@@ -2,17 +2,25 @@ class Algorithm {
 
     setParams(params) {
 
+        this.dt = 0.01; 
+
         // Controller parameters:
-        this.state0 = Number(params.state);
-        this.vstate0 = Number(params.vstate);
-        this.vartheta0 = (Number(params.vartheta) * 0.001);
-        this.eta = (Number(params.eta) * 0.000001);
+        this.scale_factor = 1000;
+        this.inv_scale_factor = 0.001;
+        this.scale_eta = 0.0001; 
+
+        this.state0 = (Number(params.state) * this.inv_scale_factor);
+        this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
+        this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
+        this.eta = (Number(params.eta) * this.scale_eta);
+
+        this.delta = 0.01; 
 
         // Disturbance parameters:
         this.random = Boolean(params.disturbance.random);
         this.offset = Number(params.disturbance.offset);
         this.amplitude = Number(params.disturbance.amplitude);
-        this.phase = Number(params.disturbance.phase);
+        this.phase = Number(params.disturbance.phase * 0.01);
         this.samples = Number(params.disturbance.samples);
     }
 
@@ -51,7 +59,7 @@ class Algorithm {
 
     update(neighborVStates, neighborEnabled) {
         let u = 0; 
-        const disturbance = this.computeDisturbance();
+        const disturbance = this.computeDisturbance() * this.inv_scale_factor;
 
         // 1. Compute consensus law for virtal state
         const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
@@ -64,15 +72,23 @@ class Algorithm {
         // 3. Compute control input
         u = this.gi - this.vartheta * this.grad;
 
-        // 4. Update state, virtual state and vartheta
-        this.state = Math.floor(this.state + u + disturbance);
-        this.vstate = Math.floor(this.vstate + this.gi);
-        this.vartheta = this.vartheta + this.eta * (Math.sign(this.sigma) * Math.sign(this.sigma));
+        // 4. Compute dvtheta (derivative of vartheta)
+        let dvtheta = 0.0; 
+        if (Math.abs(this.sigma) > this.delta) {
+            dvtheta = this.eta * 1.0;
+        } else {
+            dvtheta = 0.0; 
+        }
+
+        // 5. Update state, virtual state and vartheta
+        this.state = this.state + this.dt * (u + disturbance);
+        this.vstate = this.vstate + this.dt * this.gi;
+        this.vartheta = this.vartheta + this.dt * (this.eta * dvtheta);
 
         return {
-            state: this.state,
-            vstate: this.vstate,
-            vartheta: Math.floor(this.vartheta * 1000)
+            state: Math.floor(this.state * this.scale_factor),
+            vstate: Math.floor(this.vstate * this.scale_factor),
+            vartheta: Math.floor(this.vartheta * this.scale_factor)
         };
     }
 

@@ -20,9 +20,17 @@ consensus_params consensus = {
 	available_neighbors,	// avaliable_neighbors
 	0,						// node
 	neighbors,				// neigbors
+
+    1000.0f,                // scale_factpr
+    0.001f,                 // inv_scale_factor 
+    0.0001f,                // scale_eta
+
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
 	1000,					// period of the consensus task
+
+    0.01,                   // "dt": integration step (since there's no continuous process running) 
+
 	100,					// initial state
     50,						// initial vstate
     1,						// initial vartheta
@@ -31,6 +39,8 @@ consensus_params consensus = {
     50,                     // vstate
     1,                      // vartheta
     0,						// sigma
+
+    0.01f,                  // delta (for adaptative integration cut-off)
     0.0f,                   // gi
     0.0f,                   // ui
     neighbor_enabled,		// neighbor enabled
