@@ -40,7 +40,7 @@ consensus_params consensus = {
     1,                      // vartheta
     0,						// sigma
 
-    0.01f,                  // delta (for adaptative integration cut-off)
+    0.01f,                  // delta (for adaptative integration)
     0.0f,                   // gi
     0.0f,                   // ui
     neighbor_enabled,		// neighbor enabled
