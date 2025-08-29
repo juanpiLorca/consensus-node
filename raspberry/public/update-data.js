@@ -63,7 +63,7 @@ async function updateDirectory(event, dataTree) {
       stateTraces.push(stateTrace);
       vstateTraces.push(vstateTrace);
       varthetaTraces.push(varthetaTrace);
-      eta = node.params.eta / 1000000;
+      eta = node.params.eta / 10000;
     }
     // Define the plot layouts
     const stateLayout = {
