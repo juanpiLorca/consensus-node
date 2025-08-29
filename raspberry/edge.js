@@ -21,7 +21,7 @@ if (TYPE == TYPE_BLE) {
         const line = data.replace(/\r/g, '').replace(/\n/g, '');
 
         // Log to console the nordic serial logging: 
-        console.log(line);
+        //console.log(line);
 
         const msgType = line[0]; 
         if (msgType == 'd') {

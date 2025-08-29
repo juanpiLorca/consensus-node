@@ -151,7 +151,7 @@ static void update_consensus(consensus_params* cp) {
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-	LOG_INF("x: %.4f, z: %.4f, vartheta: %.4f, sigma: %.4f, state: %d", x, z, vartheta, sigma, cp->state);
+	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d", cp->state, cp->vstate, cp->vartheta, cp->sigma);
 }
 
 static void thread_consensus(void) {
