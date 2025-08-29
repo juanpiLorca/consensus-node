@@ -88,21 +88,21 @@ static void bt_init(void) {
 }
 
 static float sign(float x) {
-    if (x > 0) {
-        return 1.0;
-    } else if (x < 0) {
-        return -1.0;
+    if (x > 0.0f) {
+        return 1.0f;
+    } else if (x < 0.0f) {
+        return -1.0f;
     } else {
-        return 0.0;
+        return 0.0f;
     }
 }
 
 static float v_i(consensus_params* cp) {
-    float vstate_f = (float)cp->vstate;
+    float vstate_f = (float)(cp->vstate * cp->inv_scale_factor);
     float vi = 0.0f;
     for (int j = 0; j < cp->N; j++) {
         if (cp->neighbor_enabled[j]) {
-            float diff = vstate_f - (float)cp->neighbor_vstates[j];
+            float diff = vstate_f - (float)(cp->neighbor_vstates[j] * cp->inv_scale_factor);
             vi += -1.0f * sign(diff) * sqrtf(fabsf(diff));
         }
     }
@@ -151,8 +151,7 @@ static void update_consensus(consensus_params* cp) {
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-	LOG_INF("x: %.4f, z: %.4f, vartheta: %.4f, sigma: %.4f, state: %d",
-        (double)x, (double)z, (double)vartheta, (double)sigma, cp->state);
+	LOG_INF("x: %.4f, z: %.4f, vartheta: %.4f, sigma: %.4f, state: %d", x, z, vartheta, sigma, cp->state);
 }
 
 static void thread_consensus(void) {

@@ -42,7 +42,8 @@ class Algorithm {
 
         for (let j in neighborVStates) {
             if (neighborEnabled[j]) {
-                vi += (-1) * Math.sign(this.vstate - neighborVStates[j]) * Math.sqrt(Math.abs(this.vstate - neighborVStates[j]));
+                let diff = this.vstate - neighborVStates[j] * this.inv_scale_factor;
+                vi += (-1) * Math.sign(diff) * Math.sqrt(Math.abs(diff));
                 numberNeighbors++;
             }
         }
