@@ -139,24 +139,20 @@ static void update_consensus(consensus_params* cp) {
     float ui = gi - vartheta * grad; 
 
     // 4. Compute dvtheta (derivative of vartheta)
-    float dvtheta = 0.0; 
-    if (abs(sigma) > cp->delta) {
-        dvtheta = eta * 1.0f; 
-    } else {
-        dvtheta = 0.0f; 
-    }
+    float dvtheta = (fabsf(sigma) > cp->delta) ? eta * 1.0f : 0.0f; 
 
     // 5. Update dynamic variables
     cp->state = (int32_t)((x + cp->dt * (ui + disturbance)) * cp->scale_factor);
     cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
-    cp->vartheta = (int32_t)((vartheta + cp->dt * (eta * dvtheta)) * cp->scale_factor);
+    cp->vartheta = (int32_t)((vartheta + cp->dt * dvtheta) * cp->scale_factor);
     cp->sigma = (int32_t)(sigma * cp->scale_factor);
     cp->gi = gi;
     cp->ui = ui;
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d, state: %d", (int32_t)x, (int32_t)z, (int32_t)vartheta, (int32_t)sigma, cp->state);
+	LOG_INF("x: %.4f, z: %.4f, vartheta: %.4f, sigma: %.4f, state: %d",
+        (double)x, (double)z, (double)vartheta, (double)sigma, cp->state);
 }
 
 static void thread_consensus(void) {

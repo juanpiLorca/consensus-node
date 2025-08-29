@@ -19,6 +19,10 @@ if (TYPE == TYPE_BLE) {
     parser.on('data', (data) => {
         
         const line = data.replace(/\r/g, '').replace(/\n/g, '');
+
+        // Log to console the nordic serial logging: 
+        console.log(line);
+
         const msgType = line[0]; 
         if (msgType == 'd') {
             

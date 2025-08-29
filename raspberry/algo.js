@@ -73,17 +73,12 @@ class Algorithm {
         u = this.gi - this.vartheta * this.grad;
 
         // 4. Compute dvtheta (derivative of vartheta)
-        let dvtheta = 0.0; 
-        if (Math.abs(this.sigma) > this.delta) {
-            dvtheta = this.eta * 1.0;
-        } else {
-            dvtheta = 0.0; 
-        }
+        let dvtheta = (Math.abs(this.sigma) > this.delta) ? this.eta * 1.0 : 0.0;
 
         // 5. Update state, virtual state and vartheta
         this.state = this.state + this.dt * (u + disturbance);
         this.vstate = this.vstate + this.dt * this.gi;
-        this.vartheta = this.vartheta + this.dt * (this.eta * dvtheta);
+        this.vartheta = this.vartheta + this.dt * dvtheta;
 
         return {
             state: Math.floor(this.state * this.scale_factor),
