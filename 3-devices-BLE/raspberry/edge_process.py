@@ -24,7 +24,7 @@ def map_params(params: SimParameters, node_id: int, nodes=NODES):
     params.vtheta    = nodes[node_id]["vtheta"]
     params.eta       = nodes[node_id]["eta"]
 
-    params.msg_network += f"{params.enable},{params.node}" + ','.join(map(str, params.neighbors)) + "\n\r"
+    params.msg_network += f"{params.enable},{params.node}," + ','.join(map(str, params.neighbors)) + "\n\r"
     params.msg_algorithm += f"{params.Ts},{params.x0},{params.z0},{params.vtheta},{params.eta}\n\r"
     params.msg_trigger += f"{params.trigger}\n\r"
 

@@ -1,5 +1,5 @@
-import time 
-import serial 
+import serial
+import asyncio
 
 class SerialComm: 
 
@@ -7,15 +7,18 @@ class SerialComm:
         self.port = serial.Serial(port, baudrate=baudrate, timeout=1.0)
         self.debug = debug
 
-    def serial_write(self, msg): 
+    async def serial_write(self, msg): 
+        await asyncio.to_thread(self._serial_write, msg)
+
+    def _serial_write(self, msg): 
         try: 
             self.port.write(msg.encode())
             print(f"Sent message: {msg}")
         except Exception as e: 
             print(f"Error sending data: {e}")
 
-    def serial_delay(self, delay): 
-        time.sleep(delay)
+    async def serial_delay(self, delay): 
+        await asyncio.sleep(delay)
 
     def read_data(self): 
         if self.port.in_waiting > 0: 
