@@ -83,7 +83,7 @@ async def main():
 
     os.makedirs("data", exist_ok=True)
 
-    with SerialComm(SERIAL_PORT, BAUDRATE, debug=True) as comm, \
+    with SerialComm(SERIAL_PORT, BAUDRATE, debug=params.debug_mode) as comm, \
          open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["timestamp", "x", "z", "vtheta"])
