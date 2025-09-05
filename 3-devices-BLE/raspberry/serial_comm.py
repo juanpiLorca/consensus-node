@@ -1,6 +1,5 @@
-import asyncio
+import time 
 import serial 
-
 
 class SerialComm: 
 
@@ -16,7 +15,7 @@ class SerialComm:
             print(f"Error sending data: {e}")
 
     def serial_delay(self, delay): 
-        asyncio.sleep(delay)
+        time.sleep(delay)
 
     def read_data(self): 
         if self.port.in_waiting > 0: 
