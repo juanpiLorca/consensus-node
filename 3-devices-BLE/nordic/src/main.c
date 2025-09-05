@@ -147,8 +147,7 @@ static void update_consensus(consensus_params* cp) {
     cp->gi = gi;
     cp->ui = ui;
 
-    // 6. Update disturbance parameters & log info.
-    cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
+    // 6. Log info.
 	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d", cp->state, cp->vstate, cp->vartheta, cp->sigma);
 }
 

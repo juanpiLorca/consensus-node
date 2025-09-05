@@ -7,19 +7,6 @@
 #include "common.h"
 
 /**
- * Custom type to store disturbance parameters sent by user through UART
- */
-typedef struct {
-    uint32_t counter; 
-
-    bool random; 
-    int32_t offset;
-    int32_t amplitude;
-    int32_t phase;
-    uint32_t samples; 
-} disturbance_params;
-
-/**
  * Custom type to store consensus parameters sent by user through UART
  */
 typedef struct {
@@ -59,8 +46,6 @@ typedef struct {
 
     bool* neighbor_enabled; 
     int32_t* neighbor_vstates;
-
-    disturbance_params disturbance;
 } consensus_params;
 
 /**

@@ -45,7 +45,6 @@ consensus_params consensus = {
     0.0f,                   // ui
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
-	{false, 0, 0, 0, 0, 0}  // disturbance parameters
 };	
 
 /**
@@ -83,12 +82,11 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 consensus.running = true; 
                                 consensus.first_time_running = true; 
                                 consensus.all_neighbors_observed = false;
-								consensus.disturbance.counter = 0;
-								consensus.ui = 0.0;
                     			consensus.time0 = k_uptime_get();
                     			consensus.state = consensus.state0;
                                 consensus.vstate = consensus.vstate0;
                                 consensus.vartheta = consensus.vartheta0;
+                                consensus.ui = 0.0;
                     			for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
                     				consensus.available_neighbors[i] = false;
                     				consensus.neighbor_vstates[i] = consensus.vstate0;
@@ -99,6 +97,28 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                     		}
                     		LOG_INF("running: %d. time0: %lld", consensus.running, consensus.time0);
                     		break;
+
+                        // When receiving end message type: 'e'
+                        case 'e':
+                            if (evt->data.rx.buf[1] != '0') {
+                                consensus.running = false;
+                                consensus.first_time_running = false;
+                                consensus.all_neighbors_observed = false;
+                                consensus.state = 0;
+                                consensus.vstate = 0; 
+                                consensus.vartheta = 0;
+                                consensus.sigma = 0; 
+                                consensus.ui = 0.0;
+                                for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
+                                    consensus.available_neighbors[i] = false;
+                                    consensus.neighbor_vstates[i] = consensus.vstate
+                                    consensus.neighbor_enabled[i] = false;
+                                }
+                            } else {
+                                consensus.running = true;
+                            }
+                            LOG_INF("Simulation ended.");
+                            break;
 
                         // When receiving network configuration type: 'n'
                         case 'n':
@@ -152,24 +172,9 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                     case 4: 
                                         consensus.eta = value; 
                                         break; 
-                                    case 5: 
-                                        consensus.disturbance.random = (value == 1); 
-                                        break; 
-                                    case 6: 
-                                        consensus.disturbance.offset = value; 
-                                        break; 
-                                    case 7: 
-                                        consensus.disturbance.amplitude = value; 
-                                        break; 
-                                    case 8: 
-                                        consensus.disturbance.phase = value; 
-                                        break; 
-                                    case 9: 
-                                        consensus.disturbance.samples = value; 
                                     default:
                                         break;
                                 }
-
                                 cnt++; 
                                 pt = strtok(NULL, ",");
                             }
@@ -227,15 +232,9 @@ void serial_init() {
  */
 void serial_log_consensus() {
 
-    // Prepare the string format: "dtime,state,vstate,vartheta,neighbor_vstate1,neighbor_vstate2,...neighbor_vstateN\n\r"
+    // Prepare the string format: "dtime,state,vstate,vartheta\n\r"
     int64_t timestamp = k_uptime_get() - consensus.time0; 
     int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d", timestamp, consensus.state, consensus.vstate, consensus.vartheta);
-
-    // Append neighbor states to the buffer making sure we do not exceed de Tx buffer size
-    for (int i = 0; i < consensus.N; i++) {
-        len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, ",%d", consensus.neighbor_vstates[i]); 
-    }
-
     len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, "\n\r"); 
 
     // Send data asynchronously using uart_tx
