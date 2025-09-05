@@ -26,7 +26,7 @@ class SerialComm:
                 line = self.port.readline().decode().strip()
                 if self.debug:
                     print(f"[Rx]: {line}")
-                return line if line else None
+                return line 
             except Exception as e:
                 print(f"Error decoding data: {e}")
                 return None

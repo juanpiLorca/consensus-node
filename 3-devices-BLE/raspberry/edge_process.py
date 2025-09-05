@@ -46,6 +46,9 @@ async def run_state_0(comm, params):
 
 def run_state_1(comm, params, writer): 
     data = comm.read_data()
+
+    ## Safe check for None values 
+    
     try:
         print(data)
         arr = data[1:].split(',')
