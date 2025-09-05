@@ -57,7 +57,6 @@ def run_state_1(comm, params, writer):
             writer.writerow([timestamp, x, z, vtheta])
             return 1
         else:
-            print(f"Unexpected data format: {data}")
             return 0
 
     except (ValueError, IndexError) as e:
