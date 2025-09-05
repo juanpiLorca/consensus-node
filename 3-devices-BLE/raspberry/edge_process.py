@@ -9,22 +9,23 @@ from params import SimParameters, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FAC
 def parse_args(): 
     parser = argparse.ArgumentParser()
     parser.add_argument("node_id", type=int)
+    parser.add_argument("--debug", action="store_true", default=False)
     parser.add_argument("--samples", type=int, default=1000)
     return parser.parse_args()
 
-def map_params(params: SimParameters, node_id: int, nodes=NODES): 
-    print(f"Runing node: {node_id} loop")
+def map_params(params: SimParameters, node_id: int, debugging: bool, nodes=NODES): 
+    print(f"Runing node: {node_id} loop. Debugging: {debugging}")
 
-    params.node      = node_id
-    params.enable    = nodes[node_id]["enable"]
-    params.neighbors = nodes[node_id]["neighbors"]
-    params.Ts        = nodes[node_id]["dt"]
-    params.x0        = nodes[node_id]["x0"]
-    params.z0        = nodes[node_id]["z0"]
-    params.vtheta    = nodes[node_id]["vtheta"]
-    params.eta       = nodes[node_id]["eta"]
-
-    params.trigger   = nodes[node_id]["trigger"]
+    params.node       = node_id
+    params.debug_mode = debugging
+    params.enable     = nodes[node_id]["enable"]
+    params.neighbors  = nodes[node_id]["neighbors"]
+    params.Ts         = nodes[node_id]["dt"]
+    params.x0         = nodes[node_id]["x0"]
+    params.z0         = nodes[node_id]["z0"]
+    params.vtheta     = nodes[node_id]["vtheta"]
+    params.eta        = nodes[node_id]["eta"]
+    params.trigger    = nodes[node_id]["trigger"]
 
     params.msg_network += f"{params.enable},{params.node}," + ','.join(map(str, params.neighbors)) + "\n\r"
     params.msg_algorithm += f"{params.Ts},{params.x0},{params.z0},{params.vtheta},{params.eta}\n\r"
@@ -46,18 +47,18 @@ async def run_state_0(comm, params):
 
 def run_state_1(comm, params, writer): 
     data = comm.read_data()
-
-    ## Safe check for None values 
-
     try:
-        print(data)
-        arr = data[1:].split(',')
-        timestamp = int(arr[0])
-        x = int(arr[1]) / SCALE_FACTOR
-        z = int(arr[2]) / SCALE_FACTOR
-        vtheta = int(arr[3]) / SCALE_FACTOR
-        writer.writerow([timestamp, x, z, vtheta])
-        return 1
+        if data is not None and data[0] == 'd':
+            arr = data[1:].split(',')
+            timestamp = int(arr[0])
+            x = int(arr[1]) / SCALE_FACTOR
+            z = int(arr[2]) / SCALE_FACTOR
+            vtheta = int(arr[3]) / SCALE_FACTOR
+            writer.writerow([timestamp, x, z, vtheta])
+            return 1
+        else:
+            print(f"Unexpected data format: {data}")
+            return 0
 
     except (ValueError, IndexError) as e:
         print(f"Malformed data: {data} — Error: {e}")

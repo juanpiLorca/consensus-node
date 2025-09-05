@@ -34,4 +34,6 @@ class SimParameters:
     msg_trigger = "t"
     msg_end = "e"
 
+    # Debugging Boolean flags
+    debug_mode = False
 

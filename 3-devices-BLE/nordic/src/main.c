@@ -169,7 +169,9 @@ static void thread_consensus(void) {
 				broadcaster_init(&custom_data);
 				observer_init();
 				serial_log_consensus();
-				consensus.first_time_running = false;
+                if (consensus.all_neighbors_observed) {
+                    consensus.first_time_running = false;
+                }
 			}
 			if (consensus.all_neighbors_observed) {
 				if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
