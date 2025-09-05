@@ -44,9 +44,10 @@ async def run_state_0(comm, params):
         print(f"Error occurred: {e}")
         return False
 
-async def run_state_1(comm, params, writer): 
+def run_state_1(comm, params, writer): 
     data = comm.read_data()
     try:
+        print(data)
         arr = data[1:].split(',')
         timestamp = int(arr[0])
         x = int(arr[1]) / SCALE_FACTOR
@@ -98,7 +99,7 @@ async def run_simulation(comm, params, writer, num_samples):
                 state += 1
         
         elif state == 1:
-            data_read_count = await run_state_1(comm, params, writer)
+            data_read_count = run_state_1(comm, params, writer)
             sample_count += data_read_count
             if sample_count >= num_samples:
                 state += 1
