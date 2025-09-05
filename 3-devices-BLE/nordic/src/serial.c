@@ -111,7 +111,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 consensus.ui = 0.0;
                                 for (int i = 0; i < N_MAX_NEIGHBORS; i++) {
                                     consensus.available_neighbors[i] = false;
-                                    consensus.neighbor_vstates[i] = consensus.vstate
+                                    consensus.neighbor_vstates[i] = consensus.vstate; 
                                     consensus.neighbor_enabled[i] = false;
                                 }
                             } else {

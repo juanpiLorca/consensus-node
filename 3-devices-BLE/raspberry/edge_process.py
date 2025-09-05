@@ -1,6 +1,7 @@
 import os
 import csv 
 import argparse
+import asyncio
 from serial_comm import SerialComm
 from params import SimParameters, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FACTOR, NODES
 
@@ -8,6 +9,7 @@ from params import SimParameters, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FAC
 def parse_args(): 
     parser = argparse.ArgumentParser()
     parser.add_argument("node_id", type=int)
+    parser.add_argument("--samples", type=int, default=1000)
     return parser.parse_args()
 
 def map_params(params: SimParameters, node_id: int, nodes=NODES): 
@@ -27,76 +29,82 @@ def map_params(params: SimParameters, node_id: int, nodes=NODES):
     params.msg_trigger += f"{params.trigger}\n\r"
 
 
-# def run_state_0(comm, params): 
-#     try: 
-#         comm.serial_write(params.msg_network)
-#         comm.serial_delay(SERIAL_DELAY)
-#         comm.serial_write(params.msg_algorithm)
-#         comm.serial_delay(SERIAL_DELAY)
-#         comm.serial_write(params.msg_trigger)
-#     except Exception as e:
-#         print(f"Error occurred: {e}")
+async def run_state_0(comm, params): 
+    try: 
+        await comm.serial_write(params.msg_network)
+        await comm.serial_delay(SERIAL_DELAY)
+        await comm.serial_write(params.msg_algorithm)
+        await comm.serial_delay(SERIAL_DELAY)
+        await comm.serial_write(params.msg_trigger)
+        return True
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return False
 
-# def run_state_1(comm, params)
+async def run_state_1(comm, params, writer): 
+    data = comm.read_data()
+    try:
+        arr = data[1:].split(',')
+        timestamp = int(arr[0])
+        x = int(arr[1]) / SCALE_FACTOR
+        z = int(arr[2]) / SCALE_FACTOR
+        vtheta = int(arr[3]) / SCALE_FACTOR
+        writer.writerow([timestamp, x, z, vtheta])
+        return 1
 
+    except (ValueError, IndexError) as e:
+        print(f"Malformed data: {data} — Error: {e}")
+        return 0
 
-def main(): 
+async def run_state_2(comm, params): 
+    params.msg_end += f"1\n\r"
+    try: 
+        await comm.serial_write(params.msg_end)
+        await comm.serial_delay(SERIAL_DELAY)
+        print("Simulation ended.")
+        comm.close()
+        return True
+    
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return False
+
+async def main(): 
     args = parse_args()
     params = SimParameters()
     map_params(params, args.node_id)
 
-    comm = SerialComm(SERIAL_PORT, BAUDRATE)
-
     os.makedirs("data", exist_ok=True)
-    with open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
+
+    with SerialComm(SERIAL_PORT, BAUDRATE) as comm, \
+         open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["timestamp", "x", "z", "vtheta"])
 
-    sim_state = 0
-    num_samples = 1000
-    k = 0
-    while True: 
-        if sim_state == 0:
-            try: 
-                comm.serial_write(params.msg_network)
-                comm.serial_delay(SERIAL_DELAY)
-                comm.serial_write(params.msg_algorithm)
-                comm.serial_delay(SERIAL_DELAY)
-                comm.serial_write(params.msg_trigger)
-            except Exception as e:
-                print(f"Error occurred: {e}")
-            sim_state += 1
+        await run_simulation(comm, params, writer, args.samples)
 
-        elif sim_state == 1:
-            data = comm.read_data()
 
-            try:
-                arr = data[1:].split(',')
-                timestamp = int(arr[0])
-                x = int(arr[1]) / SCALE_FACTOR
-                z = int(arr[2]) / SCALE_FACTOR
-                vtheta = int(arr[3]) / SCALE_FACTOR
-                writer.writerow([timestamp, x, z, vtheta])
+async def run_simulation(comm, params, writer, num_samples):
+    state = 0
+    sample_count = 0
 
-                k += 1
-                if k >= num_samples:
-                    params.msg_end += f"{sim_state}\n\r"
-                    sim_state += 1
+    while True:
+        if state == 0:
+            success = await run_state_0(comm, params)
+            if success:
+                state += 1
+        
+        elif state == 1:
+            data_read_count = await run_state_1(comm, params, writer)
+            sample_count += data_read_count
+            if sample_count >= num_samples:
+                state += 1
 
-            except (ValueError, IndexError) as e:
-                print(f"Malformed data: {data} — Error: {e}")
-
-        elif sim_state == 2:
-            try: 
-                comm.serial_write(params.msg_end)
-                comm.serial_delay(SERIAL_DELAY)
-            except Exception as e:
-                print(f"Error occurred: {e}")
-
-            print("Simulation ended.")
-            comm.close()
-            break
+        elif state == 2:
+            success = await run_state_2(comm, params)
+            if success:
+                break 
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
