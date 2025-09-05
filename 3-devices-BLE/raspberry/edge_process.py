@@ -102,6 +102,7 @@ async def run_simulation(comm, params, writer, num_samples):
                 state += 1
         
         elif state == 1:
+            print(f"Sample: {sample_count}")
             data_read_count = run_state_1(comm, params, writer)
             sample_count += data_read_count
             if sample_count >= num_samples:
