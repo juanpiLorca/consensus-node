@@ -9,7 +9,7 @@ from params import SimParameters, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FAC
 def parse_args(): 
     parser = argparse.ArgumentParser()
     parser.add_argument("node_id", type=int)
-    parser.add_argument("--debug", action="store_true", default=False)
+    parser.add_argument("--debug", type=bool, default=False)
     parser.add_argument("--samples", type=int, default=1000)
     return parser.parse_args()
 
