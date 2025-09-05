@@ -80,7 +80,7 @@ async def run_state_2(comm, params):
 async def main(): 
     args = parse_args()
     params = SimParameters()
-    map_params(params, args.node_id)
+    map_params(params, args.node_id, args.debug)
 
     os.makedirs("data", exist_ok=True)
 
