@@ -13,7 +13,7 @@ def parse_args():
     return parser.parse_args()
 
 def map_params(params: SimParameters, node_id: int, nodes=NODES): 
-    print(f"Runnng node: {node_id} loop")
+    print(f"Runing node: {node_id} loop")
 
     params.node      = node_id
     params.enable    = nodes[node_id]["enable"]
@@ -48,7 +48,7 @@ def run_state_1(comm, params, writer):
     data = comm.read_data()
 
     ## Safe check for None values 
-    
+
     try:
         print(data)
         arr = data[1:].split(',')
@@ -83,7 +83,7 @@ async def main():
 
     os.makedirs("data", exist_ok=True)
 
-    with SerialComm(SERIAL_PORT, BAUDRATE) as comm, \
+    with SerialComm(SERIAL_PORT, BAUDRATE, debug=True) as comm, \
          open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["timestamp", "x", "z", "vtheta"])
