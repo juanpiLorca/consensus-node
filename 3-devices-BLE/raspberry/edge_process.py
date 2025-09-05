@@ -24,6 +24,8 @@ def map_params(params: SimParameters, node_id: int, nodes=NODES):
     params.vtheta    = nodes[node_id]["vtheta"]
     params.eta       = nodes[node_id]["eta"]
 
+    params.trigger   = nodes[node_id]["trigger"]
+
     params.msg_network += f"{params.enable},{params.node}," + ','.join(map(str, params.neighbors)) + "\n\r"
     params.msg_algorithm += f"{params.Ts},{params.x0},{params.z0},{params.vtheta},{params.eta}\n\r"
     params.msg_trigger += f"{params.trigger}\n\r"
@@ -36,6 +38,7 @@ async def run_state_0(comm, params):
         await comm.serial_write(params.msg_algorithm)
         await comm.serial_delay(SERIAL_DELAY)
         await comm.serial_write(params.msg_trigger)
+        await comm.serial_delay(SERIAL_DELAY)
         return True
     except Exception as e:
         print(f"Error occurred: {e}")
