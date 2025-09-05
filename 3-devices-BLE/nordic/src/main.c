@@ -168,7 +168,7 @@ static void thread_consensus(void) {
 				custom_data.vstate = consensus.vstate;
 				broadcaster_init(&custom_data);
 				observer_init();
-				serial_log_consensus();
+				//serial_log_consensus();
                 if (consensus.all_neighbors_observed) {
                     consensus.first_time_running = false;
                 }
