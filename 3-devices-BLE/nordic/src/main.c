@@ -144,6 +144,8 @@ static void update_consensus(consensus_params* cp) {
     cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
     cp->vartheta = (int32_t)((vartheta + cp->dt * dvtheta) * cp->scale_factor);
     cp->sigma = (int32_t)(sigma * cp->scale_factor);
+    cp->g = (int32_t)(gi * cp->scale_factor);
+    cp->u = (int32_t)(ui * cp->scale_factor);
     cp->gi = gi;
     cp->ui = ui;
 

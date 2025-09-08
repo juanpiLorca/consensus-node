@@ -2,8 +2,9 @@ import os
 import csv 
 import argparse
 import asyncio
+import socket 
 from serial_comm import SerialComm
-from params import SimParameters, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FACTOR, NODES
+from params import SimParameters, HOST_IP, PORT, SERIAL_PORT, SERIAL_DELAY, BAUDRATE, SCALE_FACTOR, NODES
 
 
 def parse_args(): 
@@ -12,6 +13,19 @@ def parse_args():
     parser.add_argument("--debug", type=bool, default=False)
     parser.add_argument("--samples", type=int, default=1000)
     return parser.parse_args()
+
+
+def connect_to_server(): 
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((HOST_IP, PORT))
+    print("[*] Connected to server. Waiting for start signal...")
+
+    while True:
+        data = client.recv(1024)
+        if data == b'start':
+            print("[!] Start signal received. Beginning simulation.")
+            break
+
 
 def map_params(params: SimParameters, node_id: int, debugging: bool, nodes=NODES): 
     print(f"Runing node: {node_id} loop. Debugging: {debugging}")
@@ -45,6 +59,7 @@ async def run_state_0(comm, params):
         print(f"Error occurred: {e}")
         return False
 
+
 def run_state_1(comm, params, writer): 
     data = comm.read_data()
     try:
@@ -54,7 +69,9 @@ def run_state_1(comm, params, writer):
             x = int(arr[1]) / SCALE_FACTOR
             z = int(arr[2]) / SCALE_FACTOR
             vtheta = int(arr[3]) / SCALE_FACTOR
-            writer.writerow([timestamp, x, z, vtheta])
+            g = int(arr[4]) / SCALE_FACTOR
+            u = int(arr[5]) / SCALE_FACTOR
+            writer.writerow([timestamp, x, z, vtheta, g, u])
             return 1
         else:
             return 0
@@ -62,6 +79,7 @@ def run_state_1(comm, params, writer):
     except (ValueError, IndexError) as e:
         print(f"Malformed data: {data} — Error: {e}")
         return 0
+
 
 async def run_state_2(comm, params): 
     params.msg_end += f"1\n\r"
@@ -76,6 +94,7 @@ async def run_state_2(comm, params):
         print(f"Error occurred: {e}")
         return False
 
+
 async def main(): 
     args = parse_args()
     params = SimParameters()
@@ -86,7 +105,9 @@ async def main():
     with SerialComm(SERIAL_PORT, BAUDRATE, debug=params.debug_mode) as comm, \
          open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["timestamp", "x", "z", "vtheta"])
+        writer.writerow(["timestamp", "x", "z", "vtheta", "g", "u"])  
+
+        connect_to_server()
 
         await run_simulation(comm, params, writer, args.samples)
 
