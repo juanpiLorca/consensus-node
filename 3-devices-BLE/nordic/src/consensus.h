@@ -32,6 +32,7 @@ typedef struct {
     int32_t vstate;
     int32_t vartheta;
     int32_t sigma; // error term
+    int32_t grad; 
     int32_t g; 
     int32_t u; 
     float delta; 

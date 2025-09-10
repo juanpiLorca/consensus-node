@@ -35,6 +35,7 @@ consensus_params consensus = {
     50,                     // vstate
     1,                      // vartheta
     0,						// sigma
+    0,                      // grad
     0,                      // g
     0,                      // u
     0.01f,                  // delta (for adaptative integration)
@@ -233,11 +234,12 @@ void serial_log_consensus() {
     int64_t timestamp = k_uptime_get() - consensus.time0;
     int len = snprintf(
         (char *)tx_buf, sizeof(tx_buf),
-        "d%lld,%d,%d,%d,%d,%d\n\r",
+        "d%lld,%d,%d,%d,%d,%d,%d\n\r",
         timestamp,
         consensus.state,
         consensus.vstate,
         consensus.vartheta,
+        consensus.grad,
         consensus.g,
         consensus.u
     );

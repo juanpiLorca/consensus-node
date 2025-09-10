@@ -10,8 +10,8 @@ from params import SimParameters, HOST_IP, PORT, SERIAL_PORT, SERIAL_DELAY, BAUD
 def parse_args(): 
     parser = argparse.ArgumentParser()
     parser.add_argument("node_id", type=int)
-    parser.add_argument("--debug", type=bool, default=False)
-    parser.add_argument("--samples", type=int, default=1000)
+    parser.add_argument("--debug", type=int, default=0)
+    parser.add_argument("--samples", type=int, default=800)
     return parser.parse_args()
 
 
