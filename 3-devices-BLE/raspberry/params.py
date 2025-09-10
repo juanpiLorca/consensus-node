@@ -8,9 +8,9 @@ BAUDRATE=115200
 SCALE_FACTOR=1000
 
 NODES = {
-    1 : {'dt': 1000, 'enable': 1, 'x0': 5000, 'z0': 5000, 'vtheta': 0, 'eta': 5000, 'neighbors': [2], 'trigger': 1}, #z=4
-    2 : {'dt': 1000, 'enable': 1, 'x0': 1000, 'z0': 1000, 'vtheta': 0, 'eta': 5000, 'neighbors': [3], 'trigger': 1}, #z=2
-    3 : {'dt': 1000, 'enable': 1, 'x0': 8000, 'z0': 8000, 'vtheta': 0, 'eta': 5000, 'neighbors': [1], 'trigger': 1}, #z=7
+    1 : {'dt': 1000, 'enable': 1, 'x0': 5000, 'z0': 6000, 'vtheta': 0, 'eta': 5000, 'neighbors': [2], 'trigger': 1}, #z=6
+    2 : {'dt': 1000, 'enable': 1, 'x0': 1000, 'z0': 2000, 'vtheta': 0, 'eta': 5000, 'neighbors': [3], 'trigger': 1}, #z=2
+    3 : {'dt': 1000, 'enable': 1, 'x0': 8000, 'z0': 9000, 'vtheta': 0, 'eta': 5000, 'neighbors': [1], 'trigger': 1}, #z=9
 }
 
 class SimParameters: 
