@@ -34,6 +34,7 @@ LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 static void leds_init(void);                        // Auxiliary function for starting LEDs
 static void bt_init(void);                          // Auxiliary function for starting Bluetooth
 static float disturbance(void);                     // Auxiliary function to compute disturbance
+static float one(float sigma);                      // Auxiliary function to compute the one() function
 static float sign(float x);                         // Auxiliary function to get the sign of a float number
 static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
 static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
@@ -92,6 +93,14 @@ static float disturbance() {
     return 0.5f * ((float)rand() / RAND_MAX - 0.5f);
 }
 
+static float one(float sigma) {
+    if (sigma == 0.0f) {
+        return 0.0f;
+    } else {
+        return 1.0f;
+    }
+}
+
 static float sign(float x) {
     if (x > 0.0f) {
         return 1.0f;
@@ -137,7 +146,7 @@ static void update_consensus(consensus_params* cp) {
     float ui = gi - vartheta * grad; 
 
     // 4. Compute dvtheta (derivative of vartheta)
-    float dvtheta = (fabsf(sigma) > cp->delta) ? eta * 1.0f : 0.0f; 
+    float dvtheta = ((fabsf(sigma) > cp->delta) ? eta * 1.0f : 0.0f) * one(sigma); 
 
     // 5. Update dynamic variables
     cp->state = (int32_t)((x + cp->dt * (ui + nu)) * cp->scale_factor);
