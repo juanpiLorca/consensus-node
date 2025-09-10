@@ -69,9 +69,10 @@ def run_state_1(comm, params, writer):
             x = int(arr[1]) / SCALE_FACTOR
             z = int(arr[2]) / SCALE_FACTOR
             vtheta = int(arr[3]) / SCALE_FACTOR
-            g = int(arr[4]) / SCALE_FACTOR
-            u = int(arr[5]) / SCALE_FACTOR
-            writer.writerow([timestamp, x, z, vtheta, g, u])
+            grad = int(arr[4]) / SCALE_FACTOR
+            g = int(arr[5]) / SCALE_FACTOR
+            u = int(arr[6]) / SCALE_FACTOR
+            writer.writerow([timestamp, x, z, vtheta, grad, g, u])
             return 1
         else:
             return 0
@@ -105,7 +106,7 @@ async def main():
     with SerialComm(SERIAL_PORT, BAUDRATE, debug=params.debug_mode) as comm, \
          open(f"data/node_{params.node}_log.csv", 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(["timestamp", "x", "z", "vtheta", "g", "u"])  
+        writer.writerow(["timestamp", "x", "z", "vtheta", "grad", "g", "u"])  
 
         connect_to_server()
 
