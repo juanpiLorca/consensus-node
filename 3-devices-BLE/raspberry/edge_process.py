@@ -99,7 +99,7 @@ async def run_state_2(comm, params):
 async def main(): 
     args = parse_args()
     params = SimParameters()
-    map_params(params, args.node_id, args.debug)
+    map_params(params, int(args.node_id), int(args.debug))
 
     os.makedirs("data", exist_ok=True)
 
@@ -110,7 +110,7 @@ async def main():
 
         connect_to_server()
 
-        await run_simulation(comm, params, writer, args.samples)
+        await run_simulation(comm, params, writer, int(args.samples))
 
 
 async def run_simulation(comm, params, writer, num_samples):

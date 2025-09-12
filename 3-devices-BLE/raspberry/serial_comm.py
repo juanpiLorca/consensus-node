@@ -26,6 +26,10 @@ class SerialComm:
                 line = self.port.readline().decode().strip()
                 if line == "":
                     return None
+                elif line[0] == "o": 
+                    if self.debug:
+                        line = line[1:]
+                        print(f"[Rx]: {line}")
                 elif line[0] == "d":
                     if self.debug:
                         print(f"[Rx]: {line}")

@@ -226,6 +226,25 @@ void serial_init() {
 }
 
 /**
+ * Function to log that all neighbors have been observed:
+ */
+void serial_log_all_neighbors_observed() {
+    int len = snprintf(
+        (char *)tx_buf, sizeof(tx_buf),
+        "oObserved node ids by node (%d): ", 
+        consensus.node
+    );
+    for (int i = 0; i < consensus.N; i++) {
+        len += snprintf(
+            (char *)tx_buf + len, sizeof(tx_buf) - len,
+            "%d,", consensus.neighbors[i]
+        );
+    }
+    len += snprintf((char *)tx_buf + len, sizeof(tx_buf) - len, "\n\r");
+    uart_tx(uart, tx_buf, len, SYS_FOREVER_US); 
+}
+
+/**
  * Function to send the logged data over serial:
  */
 void serial_log_consensus() {

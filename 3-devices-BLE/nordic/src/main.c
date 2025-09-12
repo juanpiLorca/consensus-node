@@ -180,10 +180,13 @@ static void thread_consensus(void) {
 				custom_data.vstate = consensus.vstate;
 				broadcaster_init(&custom_data);
 				observer_init();
-				//serial_log_consensus();
+
                 if (consensus.all_neighbors_observed) {
+                    serial_log_all_neighbors_observed();
                     consensus.first_time_running = false;
+                    k_sleep(K_MSEC(consensus.Ts));
                 }
+                
 			}
 			if (consensus.all_neighbors_observed) {
 				if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {

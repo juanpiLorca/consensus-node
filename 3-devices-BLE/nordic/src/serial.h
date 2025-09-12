@@ -11,6 +11,7 @@
 
 // Declare public functions
 void serial_init(void);
+void serial_log_all_neighbors_observed();
 void serial_log_consensus();
 
 #endif // SERIAL_H
