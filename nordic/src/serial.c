@@ -21,9 +21,9 @@ consensus_params consensus = {
 	0,						// node
 	neighbors,				// neigbors
 
-    1000.0f,                // scale_factpr
-    0.001f,                 // inv_scale_factor 
-    0.0001f,                // scale_eta
+    1000.0f,                // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.001f,                 // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.0001f,                // scale_eta <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
 
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
@@ -40,9 +40,7 @@ consensus_params consensus = {
     1,                      // vartheta
     0,						// sigma
 
-    0.01f,                  // delta (for adaptative integration)
-    0.0f,                   // gi
-    0.0f,                   // ui
+    0.025f,                  // delta (for adaptative integration) <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
 	{false, 0, 0, 0, 0, 0}  // disturbance parameters
@@ -153,18 +151,12 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                         consensus.eta = value; 
                                         break; 
                                     case 5: 
-                                        consensus.disturbance.random = (value == 1); 
+                                        consensus.disturbance.amplitude = value;
                                         break; 
                                     case 6: 
                                         consensus.disturbance.offset = value; 
                                         break; 
                                     case 7: 
-                                        consensus.disturbance.amplitude = value; 
-                                        break; 
-                                    case 8: 
-                                        consensus.disturbance.phase = value; 
-                                        break; 
-                                    case 9: 
                                         consensus.disturbance.samples = value; 
                                     default:
                                         break;
@@ -229,7 +221,14 @@ void serial_log_consensus() {
 
     // Prepare the string format: "dtime,state,vstate,vartheta,neighbor_vstate1,neighbor_vstate2,...neighbor_vstateN\n\r"
     int64_t timestamp = k_uptime_get() - consensus.time0; 
-    int len = snprintf((char *)tx_buf, sizeof(tx_buf), "d%lld,%d,%d,%d", timestamp, consensus.state, consensus.vstate, consensus.vartheta);
+    int len = snprintf(
+        (char *)tx_buf, sizeof(tx_buf), 
+        "d%lld,%d,%d,%d,%d", 
+        timestamp, 
+        consensus.state, 
+        consensus.vstate, 
+        consensus.vartheta
+    );
 
     // Append neighbor states to the buffer making sure we do not exceed de Tx buffer size
     for (int i = 0; i < consensus.N; i++) {

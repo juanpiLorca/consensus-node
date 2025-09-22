@@ -54,8 +54,6 @@ typedef struct {
     int32_t sigma; // error term
 
     float delta; 
-    float gi;
-    float ui;  
 
     bool* neighbor_enabled; 
     int32_t* neighbor_vstates;

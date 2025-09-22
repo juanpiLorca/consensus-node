@@ -33,6 +33,7 @@ LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
  */
 static void leds_init(void);                        // Auxiliary function for starting LEDs
 static void bt_init(void);                          // Auxiliary function for starting Bluetooth
+static float disturbance(consensus_params* cp);     // Auxiliary function to compute disturbance
 static float sign(float x);                         // Auxiliary function to get the sign of a float number
 static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
 static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
@@ -87,6 +88,12 @@ static void bt_init(void) {
 	LOG_INF("Bluetooth successfully started\n");
 }
 
+static float disturbance(consensus_params* cp) {
+    float amp = (float)cp->disturbance.amplitude * cp->inv_scale_factor;
+    float off = (float)cp->disturbance.offset * cp->inv_scale_factor;
+    return amp * ((float)rand() / (float)RAND_MAX - off);
+}
+
 static float sign(float x) {
     if (x > 0.0f) {
         return 1.0f;
@@ -119,15 +126,8 @@ static void update_consensus(consensus_params* cp) {
     float vartheta = (float)(cp->vartheta * cp->inv_scale_factor);
     float eta = (float)(cp->eta * cp->scale_eta);
 
-    // Disturbance parameters
-    float cnt = (float)cp->disturbance.counter;
-	float off = (float)cp->disturbance.offset;
-	float amp = (float)cp->disturbance.amplitude;
-	float pha = (float)(cp->disturbance.phase * 0.01);
-	float Ns = (float)cp->disturbance.samples;
-    float norm_noise = cp->disturbance.random ? 2.0f * ((float)rand() / (float)RAND_MAX - 0.5f) : sinf(2.0f * M_PI * ((cnt / Ns) - pha));
-	// float norm_noise = cp->disturbance.random ? (float)rand() / (float)RAND_MAX : sinf(2.0f * M_PI * ( (cnt/Ns) - pha ));
-	float disturbance = (off + amp * norm_noise) * (cp->inv_scale_factor);
+    // Disturbance: 
+    float nu = disturbance(cp);
 
     // 2. Compute error term and gradients
     float sigma = x - z; 
@@ -142,12 +142,12 @@ static void update_consensus(consensus_params* cp) {
     float dvtheta = (fabsf(sigma) > cp->delta) ? eta * 1.0f : 0.0f; 
 
     // 5. Update dynamic variables
-    cp->state = (int32_t)((x + cp->dt * (ui + disturbance)) * cp->scale_factor);
+    cp->state = (int32_t)((x + cp->dt * (ui + nu)) * cp->scale_factor);
     cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
     cp->vartheta = (int32_t)((vartheta + cp->dt * dvtheta) * cp->scale_factor);
     cp->sigma = (int32_t)(sigma * cp->scale_factor);
-    cp->gi = gi;
-    cp->ui = ui;
+    cp->g = (int32_t)(gi * cp->scale_factor);
+    cp->u = (int32_t)(ui * cp->scale_factor);
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;

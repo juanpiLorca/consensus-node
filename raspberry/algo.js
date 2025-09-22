@@ -14,13 +14,11 @@ class Algorithm {
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
         this.eta = (Number(params.eta) * this.scale_eta);
 
-        this.delta = 0.01; 
+        this.delta = 0.025; 
 
         // Disturbance parameters:
-        this.random = Boolean(params.disturbance.random);
-        this.offset = Number(params.disturbance.offset);
-        this.amplitude = Number(params.disturbance.amplitude);
-        this.phase = Number(params.disturbance.phase * 0.01);
+        this.offset = Number(params.disturbance.offset) * Number(this.inv_scale_factor);
+        this.amplitude = Number(params.disturbance.amplitude) * Number(this.inv_scale_factor);
         this.samples = Number(params.disturbance.samples);
     }
 
@@ -52,8 +50,7 @@ class Algorithm {
     }
 
     computeDisturbance() {
-        const normNoise = (this.random) ? 2 * (Math.random() - 0.5) : Math.sin(2*Math.PI*(this.cnt/this.samples - this.phase)); 
-        const disturbance = this.offset + this.amplitude * normNoise;
+        const disturbance = this.amplitude * (Math.random() - this.offset);
         this.cnt = (this.cnt + 1) % this.samples;
         return disturbance;
     }

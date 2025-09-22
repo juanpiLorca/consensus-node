@@ -47,8 +47,8 @@ if (TYPE == TYPE_BLE) {
         // (2) Consensus params: { clock, state, vstate, vartheta, eta, disturbance.random, disturbance.offset, disturbance.amplitude, disturbance.phase, disturbance.samples } --> 'a'
         // (3) Trigger params: { trigger } --> 't'
         const msgNetwork = `n${params.enabled ? 1 : 0},${params.node},${params.neighbors.join(',')}\n\r`;
-        const msgConsensus = `a${params.clock},${params.state},${params.vstate},${params.vartheta},${params.eta},${params.disturbance.random ? 1 : 0},` + 
-            `${params.disturbance.offset},${params.disturbance.amplitude},${params.disturbance.phase},${params.disturbance.samples}\n\r`;
+        const msgConsensus = `a${params.clock},${params.state},${params.vstate},${params.vartheta},${params.eta},${params.disturbance.amplitude},` + 
+            `${params.disturbance.offset},${params.disturbance.samples}\n\r`;
         const msgTrigger = `t${params.trigger ? 1 : 0}\n\r`;
 
         try {

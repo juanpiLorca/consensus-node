@@ -6,4 +6,4 @@ raspberry/node_modules/
 raspberry/package-lock.json
 raspberry/data/
 3-devices-BLE/nordic/build*/
-3-devices-BLE/data
+3-devices-BLE/raspberry/__pycache__/
