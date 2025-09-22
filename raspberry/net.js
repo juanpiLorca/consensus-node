@@ -69,15 +69,15 @@ let NODES;
 //  \   /       \   /
 //    4           5
 NODES = {
-  1: {ip: '192.168.1.125', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 1000, state: 4000, vstate: 2000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  2: {ip: '192.168.1.125', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 1000, state: 5000, vstate: 8000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  3: {ip: '192.168.1.125', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 1000, state: 8000, vstate: 7000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  4: {ip: '192.168.1.126', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 1000, state: 7000, vstate: 9000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  5: {ip: '192.168.1.126', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 1000, state: 9000, vstate: 2000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  6: {ip: '192.168.1.126', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 1000, state: 2000, vstate: 4000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  7: {ip: '192.168.1.127', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 1000, state: 3000, vstate: 5000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  8: {ip: '192.168.1.127', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 1000, state: 6000, vstate: 1000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  9: {ip: '192.168.1.127', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 1000, state: 1000, vstate: 3000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 1000, state: 4000, vstate: 2000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 1000, state: 5000, vstate: 8000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  3: {ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 1000, state: 8000, vstate: 7000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  4: {ip: '192.168.0.101', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 1000, state: 7000, vstate: 9000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  5: {ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 1000, state: 9000, vstate: 2000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  6: {ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 1000, state: 2000, vstate: 4000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  7: {ip: '192.168.0.134', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 1000, state: 3000, vstate: 5000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  8: {ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 1000, state: 6000, vstate: 1000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  9: {ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 1000, state: 1000, vstate: 3000, vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
 }; 
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
