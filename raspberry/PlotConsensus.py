@@ -56,13 +56,13 @@ class PlotConsensus:
 
             self.data[i] = node_data
 
-    def plot(self):
+    def plot(self, ref_node=1):
         fig, axs = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
 
         for node_id in sorted(self.data.keys()):
             node_data = self.data[node_id]
-            
-            t = node_data[:, 0] / 1000.0  # Convert ms to seconds
+
+            t = node_data[:, 0] * 0.01 / 1000.0  # Convert ms to seconds
             x = node_data[:, 1] / self.conversion_factor
             z = node_data[:, 2] / self.conversion_factor
             vtheta = node_data[:, 3] / self.conversion_factor
@@ -70,6 +70,11 @@ class PlotConsensus:
             axs[0].plot(t, x, label=f'$x_{{{node_id}}}$')
             axs[1].plot(t, z, label=f'$z_{{{node_id}}}$')
             axs[2].plot(t, vtheta, label=f'$\\vartheta_{{{node_id}}}$')
+
+        z_data = self.data[ref_node]
+        t = z_data[:, 0] * 0.01 / 1000.0
+        z = z_data[:, 2] / self.conversion_factor
+        axs[0].plot(t, z, '--k', label=f'$z_{{{ref_node}}}$ (ref.)')  
 
         axs[0].set_ylabel('$x(t)$')
         axs[1].set_ylabel('$z(t)$')
@@ -87,4 +92,4 @@ class PlotConsensus:
 if __name__ == "__main__":
     plotter = PlotConsensus(filename_template="data/sim_{}/{}.json", number_simulation=2, total_nodes=9)
     plotter.load_data()
-    plotter.plot()
+    plotter.plot(ref_node=1)

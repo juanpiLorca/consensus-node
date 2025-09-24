@@ -17,8 +17,8 @@ class Algorithm {
         this.delta = 0.025; 
 
         // Disturbance parameters:
-        this.offset = Number(params.disturbance.offset) * Number(this.inv_scale_factor);
-        this.amplitude = Number(params.disturbance.amplitude) * Number(this.inv_scale_factor);
+        this.offset = Number(params.disturbance.offset) * this.inv_scale_factor;
+        this.amplitude = Number(params.disturbance.amplitude) * this.inv_scale_factor;
         this.samples = Number(params.disturbance.samples);
     }
 
@@ -57,7 +57,7 @@ class Algorithm {
 
     update(neighborVStates, neighborEnabled) {
         let u = 0; 
-        const disturbance = this.computeDisturbance() * this.inv_scale_factor;
+        const disturbance = this.computeDisturbance(); 
 
         // 1. Compute consensus law for virtal state
         const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
