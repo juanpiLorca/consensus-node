@@ -4,16 +4,16 @@ import matplotlib.pyplot as plt
 import os
 
 class PlotConsensus:
-    def __init__(self, filename_template, number_simulation, total_nodes, conversion_factor=1000):
-        self.filename_template = filename_template  # e.g., "data/sim_{}/{}.json"
-        self.number_simulation = number_simulation
+    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1000):
+        self.filename_template = filename_template  # e.g., "data/{}/{}.json"
+        self.simulation = simulation
         self.total_nodes = total_nodes
         self.conversion_factor = conversion_factor
         self.data = {}  # Store data for each node as {node_id: np.array}
 
     def load_data(self):
         for i in range(1, self.total_nodes + 1):
-            filename = self.filename_template.format(self.number_simulation, i)
+            filename = self.filename_template.format(self.simulation, i)
 
             if not os.path.exists(filename):
                 print(f"[Warning] File not found: {filename}")
@@ -57,7 +57,7 @@ class PlotConsensus:
             self.data[i] = node_data
 
     def plot(self, ref_node=1):
-        fig, axs = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+        fig, axs = plt.subplots(3, 1, figsize=(12, 8), sharex=True)
 
         for node_id in sorted(self.data.keys()):
             node_data = self.data[node_id]
@@ -90,6 +90,6 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    plotter = PlotConsensus(filename_template="data/sim_{}/{}.json", number_simulation=2, total_nodes=9)
+    plotter = PlotConsensus(filename_template="data/{}/{}.json", simulation="9node_cluster", total_nodes=9)
     plotter.load_data()
     plotter.plot(ref_node=1)
