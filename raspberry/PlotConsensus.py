@@ -90,6 +90,6 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    plotter = PlotConsensus(filename_template="data/{}/{}.json", simulation="9node_cluster", total_nodes=9)
+    plotter = PlotConsensus(filename_template="data/{}/{}.json", simulation="9node_ring_dir", total_nodes=9)
     plotter.load_data()
     plotter.plot(ref_node=1)

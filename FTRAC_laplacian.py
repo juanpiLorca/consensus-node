@@ -47,29 +47,26 @@ print("Laplacian Matrix:\n", L)
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 10.0
+T        = 15.0
 dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
 
 ## Adaptive gain: 
-eta               = 0.5                     # adaptation gain
-error_timer       = False                   # enable timer to stop gain evolution
-small_error_timer = np.zeros(n_agents)      # timer to stop gain evolution
-freeze_threshold  = 0.025                   # error-threshold to freeze gain evolution ("δ" or "ε" in paper)
-freeze_time       = 1.0                     # time to freeze gain evolution after threshold is reached   
-freeze_steps      = int(freeze_time / dt)   # time steps to freeze gain evolution after threshold is reached
+eta                   = 0.5    # adaptation gain
+freeze_threshold_off  = 0.01   # error-threshold to freeze gain evolution ("δ" or "ε" in paper)
+freeze_threshold_on   = 0.02   # error-threshold to re-activate gain evolution ("Δ" or "ε̄" in paper)
+active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
     "dt": dt,
     "n_points": n_points,
     "n_agents": n_agents,
     "eta": eta,
-    "delta": freeze_threshold,
-    "error_timer": error_timer,
-    "small_error_timer": small_error_timer,
-    "freeze_steps": freeze_steps,
+    "epsilon_off": freeze_threshold_off,
+    "epsilon_on": freeze_threshold_on,
+    "active": active,
 }
 
 ## Disturbance: bounded known input
@@ -83,7 +80,7 @@ init_conditions = {
 }
 
 #% >>> Plotting aux:
-def plot_simulation_grid(t, x, z, vartheta, mv, n_agents, save_path=None, epsilon=freeze_threshold):
+def plot_simulation_grid(t, x, z, vartheta, mv, n_agents, save_path=None, epsilon=(freeze_threshold_off, freeze_threshold_on)):
     """
     Plot x, z, vartheta, and u in a 2x2 grid.
     
@@ -122,9 +119,11 @@ def plot_simulation_grid(t, x, z, vartheta, mv, n_agents, save_path=None, epsilo
     # --- Top-right: sigma_i ---
     for i in range(n_agents):
         axs[0,1].plot(t, sigma[i,:], label=f'$\\sigma_{i+1}$')
-    axs[0,1].axhline(epsilon, color='k', linestyle='--', label='$\\pm \\delta$')
-    axs[0,1].axhline(-epsilon, color='k', linestyle='--')
-    axs[0,1].set_ylim([-(epsilon * 2), (epsilon * 2)])
+    axs[0,1].axhline(epsilon[0], color='k', linestyle='--', label='$\\pm \\epsilon$')
+    axs[0,1].axhline(-epsilon[0], color='k', linestyle='--')
+    axs[0,1].axhline(epsilon[1], color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
+    axs[0,1].axhline(-epsilon[1], color='r', linestyle='--')
+    axs[0,1].set_ylim([-(epsilon[1] * 1.5), (epsilon[1] * 1.5)])
     axs[0,1].set_title('Error term $\\sigma_i$')
     axs[0,1].set_xlabel('Time [s]')
     axs[0,1].set_ylabel('$\\sigma(t)$')
@@ -187,6 +186,37 @@ def plot_states(t, x, z, n_agents, save_path=None, ref_state_num=1):
         print(f"Figure saved to {save_path}")
     plt.show()
 
+def plot_sign_function(t, x, z, agent=1):
+    sigma = x - z
+    grad = np.sign(sigma)
+
+    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+
+    # --- Top plot: grad vs time ---
+    axs[0].step(t, grad[agent-1, :], lw=2, where='post',
+                label=rf'$\nabla |\sigma_{{{agent}}}|_1$')
+    axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
+    axs[0].set_title(f'Sign function evolution for Agent {agent}', fontsize=14)
+    axs[0].set_xlabel('Time [s]', fontsize=12)
+    axs[0].set_ylabel('Sign value', fontsize=12)
+    axs[0].legend()
+    axs[0].grid(True, linestyle='--', alpha=0.7)
+
+    # --- Bottom plot: grad vs sigma ---
+    axs[1].scatter(sigma[agent-1, :], grad[agent-1, :],
+                   c=t, cmap='viridis', s=25, alpha=0.7,
+                   label=rf'$\nabla |\sigma_{{{agent}}}|_1$ vs $\sigma_{{{agent}}}$')
+    axs[1].axhline(0, color='k', linestyle='--', linewidth=1)
+    axs[1].axvline(0, color='k', linestyle='--', linewidth=1)
+    axs[1].set_title(f'Sign function vs Error for Agent {agent}', fontsize=14)
+    axs[1].set_xlabel(r'$\sigma(t)$', fontsize=12)
+    axs[1].set_ylabel('Sign value', fontsize=12)
+    axs[1].legend()
+    axs[1].grid(True, linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    plt.show()
+              
 #%% Dynamics:
 def dynamics(t, y, n_agents, nu, mv, params): 
     dydt = np.zeros_like(y)
@@ -204,21 +234,21 @@ def dynamics(t, y, n_agents, nu, mv, params):
 
     dvtheta = np.zeros(n_agents)
     for i in range(n_agents):
-        if np.abs(sigma[i]) > params["delta"]:
-            if params["error_timer"]:
-                params["small_error_timer"][i] = 0
-            dvtheta[i] = params["eta"] * 1.0
-        else:
-            if params["error_timer"]:
-                params["small_error_timer"][i] += 1
-                if params["small_error_timer"][i] < params["freeze_steps"]:
-                    dvtheta[i] = params["eta"] * 1.0
-                else:
-                    dvtheta[i] = 0.0   
-            else:
+        if params["active"][i] == 0: 
+            if np.abs(sigma[i]) > params["epsilon_on"]:
+                params["active"][i] = 1
+                dvtheta[i] = params["eta"] * 1.0
+            else: 
                 dvtheta[i] = 0.0
+
+        else:
+            if np.abs(sigma[i]) <= params["epsilon_off"]:
+                params["active"][i] = 0
+                dvtheta[i] = 0.0
+            else:
+                dvtheta[i] = params["eta"] * 1.0
     
-    dvthadt = dvtheta
+    dvthdt = dvtheta
     u = g - vtheta * grad
 
     k = int(t / params["dt"])
@@ -229,7 +259,7 @@ def dynamics(t, y, n_agents, nu, mv, params):
 
     dydt[:n_agents] = dxdt
     dydt[n_agents:2*n_agents] = dzdt
-    dydt[2*n_agents:3*n_agents] = dvthadt
+    dydt[2*n_agents:3*n_agents] = dvthdt
 
     return dydt
 
@@ -278,8 +308,9 @@ def simulate_dynamics(params, init_conditions):
 
 x, z, vtheta, mv = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
-plot_simulation_grid(t, x, z, vtheta, mv, n_agents, epsilon=freeze_threshold)
+plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
 plot_states(t, x, z, n_agents, ref_state_num=1)
+plot_sign_function(t, x, z, agent=1)
 
 #%% Simulation: solve_ivp integration
 def simulate_dynamics_solve_ivp(params, init_conditions):
@@ -308,5 +339,6 @@ def simulate_dynamics_solve_ivp(params, init_conditions):
 
 x, z, vtheta, mv = simulate_dynamics_solve_ivp(params, init_conditions)
 t = np.linspace(0, T, n_points)
-plot_simulation_grid(t, x, z, vtheta, mv, n_agents, epsilon=freeze_threshold)
+plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
 plot_states(t, x, z, n_agents, ref_state_num=1)
+plot_sign_function(t, x, z, agent=1)
