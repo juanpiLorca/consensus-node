@@ -47,8 +47,8 @@ print("Laplacian Matrix:\n", L)
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 15.0
-dt       = 0.01
+T        = 8.0
+dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
@@ -193,32 +193,68 @@ def plot_sign_function(t, x, z, agent=1):
     fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
     # --- Top plot: grad vs time ---
-    axs[0].step(t, grad[agent-1, :], lw=2, where='post',
-                label=rf'$\nabla |\sigma_{{{agent}}}|_1$')
+    axs[0].plot(t, grad[agent-1, :], lw=2,
+                label=rf'$\nabla |\sigma_{{{agent}}}|_1$', color='tab:blue')
     axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
-    axs[0].set_title(f'Sign function evolution for Agent {agent}', fontsize=14)
+    axs[0].set_title(f'Gradient of error signal for Agent {agent}', fontsize=14)
     axs[0].set_xlabel('Time [s]', fontsize=12)
-    axs[0].set_ylabel('Sign value', fontsize=12)
+    axs[0].set_ylabel(r'$\nabla |\sigma(t)|$', fontsize=12)
     axs[0].legend()
     axs[0].grid(True, linestyle='--', alpha=0.7)
 
-    # --- Bottom plot: grad vs sigma ---
-    axs[1].scatter(sigma[agent-1, :], grad[agent-1, :],
-                   c=t, cmap='viridis', s=25, alpha=0.7,
-                   label=rf'$\nabla |\sigma_{{{agent}}}|_1$ vs $\sigma_{{{agent}}}$')
-    axs[1].axhline(0, color='k', linestyle='--', linewidth=1)
-    axs[1].axvline(0, color='k', linestyle='--', linewidth=1)
-    axs[1].set_title(f'Sign function vs Error for Agent {agent}', fontsize=14)
-    axs[1].set_xlabel(r'$\sigma(t)$', fontsize=12)
-    axs[1].set_ylabel('Sign value', fontsize=12)
-    axs[1].legend()
-    axs[1].grid(True, linestyle='--', alpha=0.7)
+    # --- Bottom plot: histogram of grad values ---
+    grad_vals = grad[agent-1, :]
+    bins = [-1.5, -0.5, 0.5, 1.5]   # bins centered at -1, 0, +1
+    counts, _, _ = axs[1].hist(grad_vals, bins=bins, rwidth=0.6,
+                               color='tab:orange', edgecolor='k')
+    
+    axs[1].set_xticks([-1, 0, 1])
+    axs[1].set_title(f'Histogram of sign values for Agent {agent}', fontsize=14)
+    axs[1].set_xlabel('Sign value', fontsize=12)
+    axs[1].set_ylabel('Count', fontsize=12)
+    axs[1].grid(axis='y', linestyle='--', alpha=0.7)
+
+    # annotate counts above bars
+    for x_pos, c in zip([-1, 0, 1], counts):
+        axs[1].text(x_pos, c + 0.5, str(int(c)), ha='center', fontsize=12)
 
     plt.tight_layout()
     plt.show()
-              
+
+def plot_hysteresis(sigma, dvtheta, params, agent=1):
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    sigma = np.abs(sigma)
+    
+    # Main hysteresis curve
+    ax.step(sigma[agent-1, :], dvtheta[agent-1, :], where='post', lw=2,
+            label=rf'$\dot{{\vartheta}}_{{{agent}}}$ vs $|\sigma_{{{agent}}}|$',
+            color='tab:blue')
+    ax.set_xlim(0, (2) * params["epsilon_on"])
+    # Reference lines
+    ax.axhline(0, color='k', linestyle='--', linewidth=1)
+    ax.axvline(0, color='k', linestyle='--', linewidth=1)
+
+    # Hysteresis thresholds
+    ax.axvline(params["epsilon_off"], color='r', linestyle='--', 
+               label=r'$\pm \epsilon_{\text{off}}$')
+    ax.axvline(-params["epsilon_off"], color='r', linestyle='--')
+    ax.axvline(params["epsilon_on"], color='g', linestyle='--', 
+               label=r'$\pm \epsilon_{\text{on}}$')
+    ax.axvline(-params["epsilon_on"], color='g', linestyle='--')
+
+    # Labels and styling
+    ax.set_title(f'Hysteresis behavior for Agent {agent}', fontsize=14)
+    ax.set_xlabel(r'$|\sigma(t)|$', fontsize=12)
+    ax.set_ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
+    ax.legend()
+    ax.grid(True, linestyle='--', alpha=0.7)
+
+    plt.tight_layout()
+    plt.show()
+
 #%% Dynamics:
-def dynamics(t, y, n_agents, nu, mv, params): 
+def dynamics(t, y, n_agents, nu, mv, dvth, params): 
     dydt = np.zeros_like(y)
 
     x = y[:n_agents]
@@ -253,6 +289,7 @@ def dynamics(t, y, n_agents, nu, mv, params):
 
     k = int(t / params["dt"])
     if k < params["n_points"]:
+        dvth[:,k] = dvthdt
         mv[:,k] = u
 
     dxdt = u + nu 
@@ -262,7 +299,6 @@ def dynamics(t, y, n_agents, nu, mv, params):
     dydt[2*n_agents:3*n_agents] = dvthdt
 
     return dydt
-
 
 def rk4_step(f, t, y, dt, *args):
     """
@@ -290,6 +326,7 @@ def simulate_dynamics(params, init_conditions):
     x = np.zeros(shape=(n_agents, n_points))
     z = np.zeros(shape=(n_agents, n_points))
     vtheta = np.zeros(shape=(n_agents, n_points))
+    dvth = np.zeros(shape=(n_agents, n_points))
     mv = np.zeros(shape=(n_agents, n_points))
     y = np.concatenate(
         [init_conditions["x"], init_conditions["z"], init_conditions["vtheta"]]
@@ -301,16 +338,17 @@ def simulate_dynamics(params, init_conditions):
         x[:, k] = y[:n_agents]
         z[:, k] = y[n_agents:2*n_agents]
         vtheta[:, k] = y[2*n_agents:3*n_agents]
-        y = rk4_step(dynamics, t, y, dt, n_agents, nu[:, k], mv, params)
+        y = rk4_step(dynamics, t, y, dt, n_agents, nu[:, k], mv, dvth, params)
 
         t += dt
-    return x, z, vtheta, mv
+    return x, z, vtheta, mv, dvth
 
-x, z, vtheta, mv = simulate_dynamics(params, init_conditions)
+x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
 plot_states(t, x, z, n_agents, ref_state_num=1)
 plot_sign_function(t, x, z, agent=1)
+plot_hysteresis(x - z, dvth, params, agent=1)
 
 #%% Simulation: solve_ivp integration
 def simulate_dynamics_solve_ivp(params, init_conditions):
@@ -324,10 +362,11 @@ def simulate_dynamics_solve_ivp(params, init_conditions):
         [init_conditions["x"], init_conditions["z"], init_conditions["vtheta"]]
     )
 
+    dvth = np.zeros(shape=(n_agents, n_points))
     mv = np.zeros(shape=(n_agents, n_points))
 
     def dyn(t, y):
-        return dynamics(t, y, n_agents, nu[:, int(t/dt)], mv, params)
+        return dynamics(t, y, n_agents, nu[:, int(t/dt)], mv, dvth, params)
 
     sol = solve_ivp(dyn, t_span, y0, t_eval=t_eval, method='RK45')
 
@@ -335,10 +374,14 @@ def simulate_dynamics_solve_ivp(params, init_conditions):
     z = sol.y[n_agents:2*n_agents, :]
     vtheta = sol.y[2*n_agents:3*n_agents, :]
 
-    return x, z, vtheta, mv
+    return x, z, vtheta, mv, dvth
 
-x, z, vtheta, mv = simulate_dynamics_solve_ivp(params, init_conditions)
+x, z, vtheta, mv, dvth = simulate_dynamics_solve_ivp(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
 plot_states(t, x, z, n_agents, ref_state_num=1)
 plot_sign_function(t, x, z, agent=1)
+plot_hysteresis(x - z, dvth, params, agent=1)
+
+#%% END OF FILE
+print(np.sign(0.0))  # Just to avoid linting error
