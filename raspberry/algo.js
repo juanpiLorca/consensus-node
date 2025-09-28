@@ -8,18 +8,22 @@ class Algorithm {
         this.scale_factor = 1000;
         this.inv_scale_factor = 0.001;
         this.scale_eta = 0.0001; 
+        this.active = 0;
+        this.epsilonOFF = 0.01;
+        this.epsilonON = 0.02;
 
         this.state0 = (Number(params.state) * this.inv_scale_factor);
         this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
         this.eta = (Number(params.eta) * this.scale_eta);
 
-        this.delta = 0.025; 
-
         // Disturbance parameters:
         this.offset = Number(params.disturbance.offset) * this.inv_scale_factor;
         this.amplitude = Number(params.disturbance.amplitude) * this.inv_scale_factor;
         this.samples = Number(params.disturbance.samples);
+        
+        // Use Laplacian or not:
+        this.laplacian = Boolean(params.laplacian);
     }
 
     resetInitialConditions() {
@@ -45,7 +49,23 @@ class Algorithm {
                 numberNeighbors++;
             }
         }
+        return {vi: vi, numberNeighbors: numberNeighbors};
+    }
 
+    laplacian(neighborVStates, neighborEnabled) {
+        
+        let vi = 0; 
+        let vstate_neighbor_sum = 0;
+        let numberNeighbors = 0;
+
+        for (let j in neighborVStates) {
+            if (neighborEnabled[j]) {
+                vstate_neighbor_sum += neighborVStates[j] * this.inv_scale_factor;
+                numberNeighbors++;
+            }
+        }
+        
+        vi = (numberNeighbors * this.vstate) - vstate_neighbor_sum;
         return {vi: vi, numberNeighbors: numberNeighbors};
     }
 
@@ -60,7 +80,11 @@ class Algorithm {
         const disturbance = this.computeDisturbance(); 
 
         // 1. Compute consensus law for virtal state
-        const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
+        if (this.laplacian){
+            const {vi, numberNeighbors} = this.laplacian(neighborVStates, neighborEnabled);
+        } else {
+            const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
+        }
         this.gi = vi;
 
         // 2. Compute error term (sigma) and gradient
@@ -71,7 +95,22 @@ class Algorithm {
         u = this.gi - this.vartheta * this.grad;
 
         // 4. Compute dvtheta (derivative of vartheta)
-        let dvtheta = (Math.abs(this.sigma) > this.delta) ? this.eta * 1.0 : 0.0;
+        let dvtheta = 0;
+        if (this.active == 0) {
+            if (Math.abs(this.sigma) > this.epsilonON) {
+                this.active = 1;
+                dvtheta = this.eta * 1.0;
+            } else {
+                dvtheta = 0.0;
+            }
+        } else {
+            if (Math.abs(this.sigma) <= this.epsilonOFF) {
+                this.active = 0;
+                dvtheta = 0.0;
+            } else {
+                dvtheta = this.eta * 1.0;
+            }
+        }
 
         // 5. Update state, virtual state and vartheta
         this.state = this.state + this.dt * (u + disturbance);

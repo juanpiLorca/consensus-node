@@ -36,6 +36,7 @@ static void bt_init(void);                          // Auxiliary function for st
 static float disturbance(consensus_params* cp);     // Auxiliary function to compute disturbance
 static float sign(float x);                         // Auxiliary function to get the sign of a float number
 static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
+static float laplacian(consensus_params* cp);       // Function to compute the Laplacian term in the consensus algorithm
 static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
 static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
 /*
@@ -116,6 +117,21 @@ static float v_i(consensus_params* cp) {
     return vi;
 }
 
+static float laplacian(consensus_params* cp){
+    float vstate_neighbor_sum = 0.0f; 
+    int degree = 0; 
+
+    float vi = 0.0f; 
+    for (int i = ; i < cp->N; i++){
+        if (cp->neighbor_enabled[i]){
+            vstate_neighbor_sum += (float)(cp->neighbor_vstates[i] * cp->inv_scale_factor); 
+            degree++;
+        }
+    }
+    vi = (float)(degree * cp->vstate * cp->inv_scale_factor) - vstate_neighbor_sum;
+    return vi;
+}
+
 static void update_consensus(consensus_params* cp) {
 
     // 1. Cast to float for calculations: system and disturbance parameters
@@ -134,24 +150,39 @@ static void update_consensus(consensus_params* cp) {
     float grad = sign(sigma); 
 
     // 3. Compute control input
-    float vi = v_i(cp);
+    if (cp->laplacian){
+        float vi = laplacian(cp);
+    } else {
+        float vi = v_i(cp);
+    }
     float gi = vi; 
     float ui = gi - vartheta * grad; 
 
-    // 4. Compute dvtheta (derivative of vartheta)
-    float dvtheta = (fabsf(sigma) > cp->delta) ? eta * 1.0f : 0.0f; 
+    // 4. Compute dvtheta (derivative of vartheta): hysteresis bounding 
+    float dvtheta = 0.0f; 
+    if (cp->active == 0){ 
+        if (fabs(sigma) > cp->epsilonON){
+            cp->active = 1;
+            dvtheta = eta * 1.0f; 
+        } else {
+            dvtheta = 0.0f; 
+        }
+    } else {
+        if (fabs(sigma) <= cp->epsilonOFF){
+            cp->active = 0;
+            dvtheta = 0.0f; 
+        } else {
+            dvtheta = eta * 1.0f; 
+        }
+    }
 
     // 5. Update dynamic variables
     cp->state = (int32_t)((x + cp->dt * (ui + nu)) * cp->scale_factor);
     cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
     cp->vartheta = (int32_t)((vartheta + cp->dt * dvtheta) * cp->scale_factor);
-    cp->sigma = (int32_t)(sigma * cp->scale_factor);
-    cp->g = (int32_t)(gi * cp->scale_factor);
-    cp->u = (int32_t)(ui * cp->scale_factor);
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-	LOG_INF("x: %d, z: %d, vartheta: %d, sigma: %d", cp->state, cp->vstate, cp->vartheta, cp->sigma);
 }
 
 static void thread_consensus(void) {

@@ -47,8 +47,8 @@ print("Laplacian Matrix:\n", L)
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 8.0
-dt       = 0.001
+T        = 20.0
+dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)

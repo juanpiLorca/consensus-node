@@ -31,8 +31,8 @@ typedef struct {
     bool* available_neighbors; 
 
     uint8_t node; 
-
     uint8_t* neighbors; 
+    bool laplacian;
 
     float scale_factor; 
     float inv_scale_factor; 
@@ -51,9 +51,10 @@ typedef struct {
     int32_t state; 
     int32_t vstate;
     int32_t vartheta;
-    int32_t sigma; // error term
 
-    float delta; 
+    uint8_t active; 
+    float epsilonON;
+    float epsilonOFF; 
 
     bool* neighbor_enabled; 
     int32_t* neighbor_vstates;

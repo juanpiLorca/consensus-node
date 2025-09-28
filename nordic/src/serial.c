@@ -20,17 +20,14 @@ consensus_params consensus = {
 	available_neighbors,	// avaliable_neighbors
 	0,						// node
 	neighbors,				// neigbors
-
+    false,					// laplacian
     1000.0f,                // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     0.001f,                 // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     0.0001f,                // scale_eta <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
 	1000,					// period of the consensus task
-
     0.01,                   // "dt": integration step (since there's no continuous process running) 
-
 	100,					// initial state
     50,						// initial vstate
     1,						// initial vartheta
@@ -38,9 +35,9 @@ consensus_params consensus = {
     100,                    // state 
     50,                     // vstate
     1,                      // vartheta
-    0,						// sigma
-
-    0.025f,                  // delta (for adaptative integration) <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0,                      // active boolean --> for hysteresis bounding
+    0.02f,                  // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.01f,                  // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
 	{false, 0, 0, 0, 0, 0}  // disturbance parameters
@@ -82,7 +79,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 consensus.first_time_running = true; 
                                 consensus.all_neighbors_observed = false;
 								consensus.disturbance.counter = 0;
-								consensus.ui = 0.0;
                     			consensus.time0 = k_uptime_get();
                     			consensus.state = consensus.state0;
                                 consensus.vstate = consensus.vstate0;
@@ -95,7 +91,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                     		} else {
                     			consensus.running = false;
                     		}
-                    		LOG_INF("running: %d. time0: %lld", consensus.running, consensus.time0);
                     		break;
 
                         // When receiving network configuration type: 'n'
@@ -119,11 +114,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                             }
 
                             consensus.N = cnt - 2; 
-                            LOG_INF("enabled: %d. node: %d. N: %d", consensus.enabled, consensus.node, consensus.N); 
-
-                            for (int i = 0; i < consensus.N; i++) {
-                                LOG_INF("neighbor: index = %d. id: %d.", i, consensus.neighbors[i]); 
-                            }
                             break; 
 
                         // When receiving algorithm realted type
@@ -158,6 +148,10 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                         break; 
                                     case 7: 
                                         consensus.disturbance.samples = value; 
+                                        break; 
+                                    case 8: 
+                                        consensus.laplacian = (value == 1);
+                                        break;
                                     default:
                                         break;
                                 }
@@ -165,7 +159,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 cnt++; 
                                 pt = strtok(NULL, ",");
                             }
-                            LOG_INF("Ts: %d. state0: %d. vstate0: %d. vartheta0: %d. eta: %d", consensus.Ts, consensus.state0, consensus.vstate0, consensus.vartheta0, consensus.eta); 
                             break; 
                         
                         default: 
