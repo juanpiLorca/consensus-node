@@ -1,6 +1,6 @@
 {
     "nrf-connect.applications": [
-        "${workspaceFolder}/3-devices-BLE/nordic"
+        "${workspaceFolder}/nordic"
     ],
     "files.associations": {
         "random": "c"

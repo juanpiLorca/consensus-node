@@ -122,7 +122,7 @@ static float laplacian(consensus_params* cp){
     int degree = 0; 
 
     float vi = 0.0f; 
-    for (int i = ; i < cp->N; i++){
+    for (int i = 0; i < cp->N; i++){
         if (cp->neighbor_enabled[i]){
             vstate_neighbor_sum += (float)(cp->neighbor_vstates[i] * cp->inv_scale_factor); 
             degree++;
@@ -150,10 +150,11 @@ static void update_consensus(consensus_params* cp) {
     float grad = sign(sigma); 
 
     // 3. Compute control input
+    float vi = 0.0f;
     if (cp->laplacian){
-        float vi = laplacian(cp);
+        vi = laplacian(cp);
     } else {
-        float vi = v_i(cp);
+        vi = v_i(cp);
     }
     float gi = vi; 
     float ui = gi - vartheta * grad; 
@@ -161,14 +162,14 @@ static void update_consensus(consensus_params* cp) {
     // 4. Compute dvtheta (derivative of vartheta): hysteresis bounding 
     float dvtheta = 0.0f; 
     if (cp->active == 0){ 
-        if (fabs(sigma) > cp->epsilonON){
+        if ((float)fabs(sigma) > cp->epsilonON){
             cp->active = 1;
             dvtheta = eta * 1.0f; 
         } else {
             dvtheta = 0.0f; 
         }
     } else {
-        if (fabs(sigma) <= cp->epsilonOFF){
+        if ((float)fabs(sigma) <= cp->epsilonOFF){
             cp->active = 0;
             dvtheta = 0.0f; 
         } else {

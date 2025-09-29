@@ -52,16 +52,16 @@ print("Laplacian Matrix:\n", L)
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 20.0
-dt       = 0.001
+T        = 12.0
+dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
 
 ## Adaptive gain: 
-eta                   = 0.5    # adaptation gain
-freeze_threshold_off  = 0.01   # error-threshold to freeze gain evolution ("δ" or "ε" in paper)
-freeze_threshold_on   = 0.02   # error-threshold to re-activate gain evolution ("Δ" or "ε̄" in paper)
+eta                   = 0.5      # adaptation gain
+freeze_threshold_off  = 0.0125   # error-threshold to freeze gain evolution ("δ" or "ε" in paper)
+freeze_threshold_on   = 0.0250   # error-threshold to re-activate gain evolution ("Δ" or "ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
@@ -242,10 +242,10 @@ def plot_hysteresis(sigma, dvtheta, params, agent=1):
 
     # Hysteresis thresholds
     ax.axvline(params["epsilon_off"], color='r', linestyle='--', 
-               label=r'$\pm \epsilon_{\text{off}}$')
+               label=r'$\pm \epsilon_{\mathrm{off}}$')
     ax.axvline(-params["epsilon_off"], color='r', linestyle='--')
     ax.axvline(params["epsilon_on"], color='g', linestyle='--', 
-               label=r'$\pm \epsilon_{\text{on}}$')
+               label=r'$\pm \epsilon_{\mathrm{on}}$')
     ax.axvline(-params["epsilon_on"], color='g', linestyle='--')
 
     # Labels and styling

@@ -36,8 +36,8 @@ consensus_params consensus = {
     50,                     // vstate
     1,                      // vartheta
     0,                      // active boolean --> for hysteresis bounding
-    0.02f,                  // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-    0.01f,                  // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.0250f,                // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.0125f,                // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
 	{false, 0, 0, 0, 0, 0}  // disturbance parameters
@@ -216,7 +216,7 @@ void serial_log_consensus() {
     int64_t timestamp = k_uptime_get() - consensus.time0; 
     int len = snprintf(
         (char *)tx_buf, sizeof(tx_buf), 
-        "d%lld,%d,%d,%d,%d", 
+        "d%lld,%d,%d,%d", 
         timestamp, 
         consensus.state, 
         consensus.vstate, 
