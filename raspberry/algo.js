@@ -80,10 +80,11 @@ class Algorithm {
         const disturbance = this.computeDisturbance(); 
 
         // 1. Compute consensus law for virtal state
-        if (this.laplacian){
-            const {vi, numberNeighbors} = this.compueLaplacian(neighborVStates, neighborEnabled);
+        let vi = 0, numberNeighbors = 0;
+        if (this.laplacian) {
+            ({ vi, numberNeighbors } = this.computeLaplacian(neighborVStates, neighborEnabled)); 
         } else {
-            const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
+            ({ vi, numberNeighbors } = this.v_i(neighborVStates, neighborEnabled));
         }
         this.gi = vi;
 
