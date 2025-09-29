@@ -52,7 +52,7 @@ class Algorithm {
         return {vi: vi, numberNeighbors: numberNeighbors};
     }
 
-    laplacian(neighborVStates, neighborEnabled) {
+    computeLaplacian(neighborVStates, neighborEnabled) {
         
         let vi = 0; 
         let vstate_neighbor_sum = 0;
@@ -81,7 +81,7 @@ class Algorithm {
 
         // 1. Compute consensus law for virtal state
         if (this.laplacian){
-            const {vi, numberNeighbors} = this.laplacian(neighborVStates, neighborEnabled);
+            const {vi, numberNeighbors} = this.compueLaplacian(neighborVStates, neighborEnabled);
         } else {
             const {vi, numberNeighbors} = this.v_i(neighborVStates, neighborEnabled);
         }
