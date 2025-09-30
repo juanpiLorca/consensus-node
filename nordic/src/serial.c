@@ -150,7 +150,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                         consensus.disturbance.samples = value; 
                                         break; 
                                     case 8: 
-                                        consensus.laplacian = (value == 1);
+                                        consensus.laplacian = value;
                                         break;
                                     default:
                                         break;

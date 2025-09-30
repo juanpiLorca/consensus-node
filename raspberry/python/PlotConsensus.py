@@ -60,9 +60,6 @@ class PlotConsensus:
         fig, axs = plt.subplots(2, 1, figsize=(15, 9), sharex=True)
 
         # Build turbo colormap, skipping extremes
-        cmap = plt.cm.turbo
-        num_colors = len(self.data)
-        colors = cmap(np.linspace(0.1, 0.9, num_colors))
 
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
@@ -71,8 +68,8 @@ class PlotConsensus:
             x = node_data[:, 1] / self.conversion_factor
             vtheta = node_data[:, 3] / self.conversion_factor
 
-            axs[0].plot(t, x, label=f'$x_{{{node_id}}}$', color=colors[idx])
-            axs[1].plot(t, vtheta, label=f'$\\vartheta_{{{node_id}}}$', color=colors[idx])
+            axs[0].plot(t, x, label=f'$x_{{{node_id}}}$')
+            axs[1].plot(t, vtheta, label=f'$\\vartheta_{{{node_id}}}$')
 
         # Reference z trajectory in black dashed line
         z_data = self.data[ref_node]
@@ -102,7 +99,7 @@ class PlotConsensus:
             node_data = self.data[node_id]
             t = node_data[:, 0] * 0.01 / 1000.0
             vstate = node_data[:, 2] / self.conversion_factor
-            plt.plot(t, vstate, label=f'$z_{{{node_id}}}$', color=colors[idx])
+            plt.plot(t, vstate, label=f'$z_{{{node_id}}}$')
 
         plt.xlim([0, t_max])
         plt.xlabel('Time (s)')
@@ -114,7 +111,7 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_cluster"
+    sim_name = "9node_ring_dir"
     num_agents = 9
     plotter = PlotConsensus(
         filename_template="../data/{}/{}.json",

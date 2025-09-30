@@ -9,8 +9,8 @@ class PostSimulation:
         self.num_agents = num_agents
         self.conversion_factor = 1000  
 
-        self.epsilon_on = 0.02
-        self.epsilon_off = 0.01
+        self.epsilon_on = 0.0250
+        self.epsilon_off = 0.0125
 
         self.data = {}  
 
@@ -81,10 +81,14 @@ class PostSimulation:
                 if np.abs(sigma[k]) > self.epsilon_on:
                     active = 1
                     dvtheta[k] = 1
+                else: 
+                    dvtheta[k] = 0
             else:
                 if np.abs(sigma[k]) <= self.epsilon_off:
                     active = 0
-                dvtheta[k] = int(active)
+                    dvtheta[k] = 0
+                else:
+                    dvtheta[k] = 1
 
         # --- Create figure ---
         fig, axs = plt.subplots(2, 1, figsize=(10, 8), sharex=False)
@@ -142,10 +146,10 @@ class PostSimulation:
             sigma = x - z
 
             ax.plot(t, sigma, label=f'$\sigma_{{{node_id}}}$')
-        
-        ax.axhline(self.epsilon_off, color='k', linestyle='--', label='$\\pm \\epsilon$')
+
+        ax.axhline(self.epsilon_off, color='k', linestyle='--', label='$\\pm \\epsilon = 0.0125$')
         ax.axhline(-self.epsilon_off, color='k', linestyle='--')
-        ax.axhline(self.epsilon_on, color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
+        ax.axhline(self.epsilon_on, color='r', linestyle='--', label='$\\pm \\bar{\\epsilon} = 0.0250$')
         ax.axhline(-self.epsilon_on, color='r', linestyle='--')
         ax.set_ylim([-(self.epsilon_on * 1.5), (self.epsilon_on * 1.5)])
         ax.set_title('Error term $\\sigma_i$')
@@ -157,6 +161,67 @@ class PostSimulation:
         plt.tight_layout()
         plt.show()
 
+    def numerical_results(self):
+        """
+        Computes and stores numerical metrics for each agent.
+        Returns:
+            dict: A dictionary with agent IDs as keys and their metrics as values.
+                results = {
+                    agent_id: {
+                        'convergence_time_epsilon_off': float,
+                        'convergence_time_epsilon_on': float,
+                        'max_adaptive_gain': float,
+                        'max_bounding_error': float,
+                        'min_bounding_error': float, 
+                        'steady_state_error': float,
+                        'rmse_error_above_epsilon_off': float
+                    },
+                    ...
+                }
+        """
+        results = {}
+        for idx, node_id in enumerate(sorted(self.data.keys())):
+            node_data = self.data[node_id]
+
+            t = node_data[:, 0] * 0.01 / 1000.0  
+            x = node_data[:, 1] / self.conversion_factor
+            z = node_data[:, 2] / self.conversion_factor
+            vartheta = node_data[:, 3] / self.conversion_factor
+            sigma = x - z
+
+            # Convergence times
+            above_epsilon_on_idx = np.where(np.abs(sigma) <= self.epsilon_on)[0][0]
+            convergence_time_epsilon_on = t[above_epsilon_on_idx]
+
+            below_epsilon_off_idx= np.where(np.abs(sigma) <= self.epsilon_off)[0][0]
+            convergence_time_epsilon_off = t[below_epsilon_off_idx]
+
+            max_adaptive_gain = np.max(vartheta)
+            max_bounding_error = np.max(sigma[below_epsilon_off_idx:])
+            min_bounding_error = np.min(sigma[below_epsilon_off_idx:])
+            steady_state_error = np.mean(sigma[below_epsilon_off_idx:])
+
+            # RMSE above epsilon_off
+            above_epsilon_off_idxs = np.where(np.abs(sigma[below_epsilon_off_idx:]) > self.epsilon_off)[0]
+            if len(above_epsilon_off_idxs) > 0:
+                rmse_error_above_epsilon_off = np.sqrt(np.mean(sigma[below_epsilon_off_idx:][above_epsilon_off_idxs]**2))
+            else:
+                rmse_error_above_epsilon_off = 0.0
+
+            results[node_id] = {
+                'convergence_time_epsilon_off': convergence_time_epsilon_off,
+                'convergence_time_epsilon_on': convergence_time_epsilon_on,
+                'max_adaptive_gain': max_adaptive_gain,
+                'max_bounding_error': max_bounding_error,
+                'min_bounding_error': min_bounding_error,
+                'steady_state_error': steady_state_error,
+                'rmse_error_above_epsilon_off': rmse_error_above_epsilon_off
+            }
+
+        with open(f"{self.simulation_dir}/numerical_results.json", 'w') as f:
+            json.dump(results, f, indent=4)
+        print(f"Numerical results saved to {self.simulation_dir}/numerical_results.json")
+
 
 if __name__ == "__main__":
     sim_name = "9node_cluster"
@@ -165,3 +230,4 @@ if __name__ == "__main__":
     post_sim.load_data()
     post_sim.hysteresis_analysis(agent=1)
     post_sim.plot_errors()
+    post_sim.numerical_results()
