@@ -19,16 +19,28 @@ def darken_color(color, amount=0.6):
 ## Graph definition: 
 np.random.seed(42)  # For reproducibility
 
+# NODES = {
+#     1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
+#     2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
+#     3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
+#     4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
+#     5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
+#     6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
+#     7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
+#     8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
+#     9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+# }
+
 NODES = {
-    1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
-    2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
-    3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
-    4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
-    5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
-    6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
-    7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
-    8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
-    9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+    1: {'x0': 0.2, 'z0': 0.05, 'neighbors': [4]},
+    2: {'x0': 0.5, 'z0': 0.35, 'neighbors': [5]},
+    3: {'x0': 0.8, 'z0': 0.65, 'neighbors': [8]},
+    4: {'x0': 0.3, 'z0': 0.15, 'neighbors': [7]},
+    5: {'x0': 0.4, 'z0': 0.25, 'neighbors': [9]},
+    6: {'x0': 0.9, 'z0': 0.75, 'neighbors': [2]},
+    7: {'x0': 0.2, 'z0': 0.45, 'neighbors': [3]},
+    8: {'x0': 0.7, 'z0': 0.55, 'neighbors': [6]},
+    9: {'x0': 1.0, 'z0': 0.85, 'neighbors': [1]},
 }
 
 G = nx.DiGraph()

@@ -7,3 +7,4 @@ raspberry/package-lock.json
 raspberry/data/
 3-devices-BLE/nordic/build*/
 3-devices-BLE/raspberry/__pycache__/
+consensus_platform_exp.pdf
