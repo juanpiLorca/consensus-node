@@ -224,7 +224,7 @@ class PostSimulation:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_cluster"
+    sim_name = "9node_ring_dir"
     num_agents = 9
     post_sim = PostSimulation(simulation_dir=f"../data/{sim_name}", num_agents=num_agents)
     post_sim.load_data()

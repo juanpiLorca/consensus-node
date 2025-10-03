@@ -19,29 +19,30 @@ def darken_color(color, amount=0.6):
 ## Graph definition: 
 np.random.seed(42)  # For reproducibility
 
+NODES = {
+    1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
+    2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
+    3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
+    4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
+    5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
+    6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
+    7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
+    8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
+    9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+}
+
 # NODES = {
-#     1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
-#     2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
-#     3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
-#     4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
-#     5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
-#     6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
-#     7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
-#     8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
-#     9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+#     1: {'x0': 0.2, 'z0': 0.05, 'neighbors': [4]},
+#     2: {'x0': 0.5, 'z0': 0.35, 'neighbors': [5]},
+#     3: {'x0': 0.8, 'z0': 0.65, 'neighbors': [8]},
+#     4: {'x0': 0.3, 'z0': 0.15, 'neighbors': [7]},
+#     5: {'x0': 0.4, 'z0': 0.25, 'neighbors': [9]},
+#     6: {'x0': 0.9, 'z0': 0.75, 'neighbors': [2]},
+#     7: {'x0': 0.3, 'z0': 0.45, 'neighbors': [3]},
+#     8: {'x0': 0.7, 'z0': 0.55, 'neighbors': [6]},
+#     9: {'x0': 1.0, 'z0': 0.85, 'neighbors': [1]},
 # }
 
-NODES = {
-    1: {'x0': 0.2, 'z0': 0.05, 'neighbors': [4]},
-    2: {'x0': 0.5, 'z0': 0.35, 'neighbors': [5]},
-    3: {'x0': 0.8, 'z0': 0.65, 'neighbors': [8]},
-    4: {'x0': 0.3, 'z0': 0.15, 'neighbors': [7]},
-    5: {'x0': 0.4, 'z0': 0.25, 'neighbors': [9]},
-    6: {'x0': 0.9, 'z0': 0.75, 'neighbors': [2]},
-    7: {'x0': 0.2, 'z0': 0.45, 'neighbors': [3]},
-    8: {'x0': 0.7, 'z0': 0.55, 'neighbors': [6]},
-    9: {'x0': 1.0, 'z0': 0.85, 'neighbors': [1]},
-}
 
 G = nx.DiGraph()
 for node, props in NODES.items():
@@ -61,10 +62,11 @@ plt.show()
 L = nx.linalg.directed_laplacian_matrix(G)
 L = np.array(L)
 print("Laplacian Matrix:\n", L) 
+use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 12.0
+T        = 30.0
 dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -72,18 +74,20 @@ n_agents = len(NODES)
 
 ## Adaptive gain: 
 eta                   = 0.5      # adaptation gain
-freeze_threshold_off  = 0.0125   # error-threshold to freeze gain evolution ("δ" or "ε" in paper)
-freeze_threshold_on   = 0.0250   # error-threshold to re-activate gain evolution ("Δ" or "ε̄" in paper)
+freeze_threshold_off  = 0.0125   # error-threshold to freeze gain evolution ("ε" in paper)
+freeze_threshold_on   = 0.0250   # error-threshold to re-activate gain evolution ("ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
     "dt": dt,
-    "n_points": n_points,
-    "n_agents": n_agents,
-    "eta": eta,
-    "epsilon_off": freeze_threshold_off,
-    "epsilon_on": freeze_threshold_on,
-    "active": active,
+    "n_points":      n_points,
+    "n_agents":      n_agents,
+    "use_laplacian": use_laplacian, 
+    "eta":           eta,
+    "epsilon_off":   freeze_threshold_off,
+    "epsilon_on":    freeze_threshold_on,
+    "active":        active,
+    "nodes":         NODES,
 }
 
 ## Disturbance: bounded known input
@@ -97,25 +101,24 @@ init_conditions = {
 }
 
 #% >>> Plotting aux:
-def plot_simulation_grid(t, x, z, vartheta, mv, n_agents, save_path=None, epsilon=(freeze_threshold_off, freeze_threshold_on)):
+def plot_simulation(t, x, z, vartheta, mv, params):
     """
     Plot x, z, vartheta, and u in a 2x2 grid.
     
     Parameters:
     - t: time vector
     - x, z, vartheta, mv: 2D arrays of shape (n_agents, n_points)
-    - n_agents: number of agents
-    - save_path: path to save figure (optional)
     """
     # Trim last time step (if necessary)
+    n_agents = params["n_agents"]
+
     t = t[:-1]
     x = x[:,:-1]
     z = z[:,:-1]
-    sigma = x - z
     vartheta = vartheta[:,:-1]
     mv = mv[:,:-1]
 
-    fig, axs = plt.subplots(2, 2, figsize=(14, 8))
+    fig, axs = plt.subplots(2, 1, figsize=(12, 9))
     
     # --- Top-left: x_i ---
     colors = plt.cm.tab10.colors  
@@ -124,54 +127,28 @@ def plot_simulation_grid(t, x, z, vartheta, mv, n_agents, save_path=None, epsilo
         base_color = colors[i % len(colors)]
         ref_color = darken_color(base_color, amount=0.75)  
 
-        axs[0,0].plot(t, x[i,:], color=base_color, linestyle='-', label=f'$x_{{{i+1}}}$')
-        axs[0,0].plot(t, z[i,:], color=ref_color, linestyle='--', label=f'$z_{{{i+1}}}$ (ref.)')
+        axs[0].plot(t, x[i,:], color=base_color, linestyle='-', label=f'$x_{{{i+1}}}$')
+        axs[0].plot(t, z[i,:], color=ref_color, linestyle='--', label=f'$z_{{{i+1}}}$ (ref.)')
     
-    axs[0,0].set_title('States $x_i$')
-    axs[0,0].set_xlabel('Time [s]')
-    axs[0,0].set_ylabel('$x(t)$')
-    axs[0,0].legend(ncol=3)
-    axs[0,0].grid(True)  # uniformly distributed between -0.25 and 0.25
-    
-    # --- Top-right: sigma_i ---
-    for i in range(n_agents):
-        axs[0,1].plot(t, sigma[i,:], label=f'$\\sigma_{i+1}$')
-    axs[0,1].axhline(epsilon[0], color='k', linestyle='--', label='$\\pm \\epsilon$')
-    axs[0,1].axhline(-epsilon[0], color='k', linestyle='--')
-    axs[0,1].axhline(epsilon[1], color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
-    axs[0,1].axhline(-epsilon[1], color='r', linestyle='--')
-    axs[0,1].set_ylim([-(epsilon[1] * 1.5), (epsilon[1] * 1.5)])
-    axs[0,1].set_title('Error term $\\sigma_i$')
-    axs[0,1].set_xlabel('Time [s]')
-    axs[0,1].set_ylabel('$\\sigma(t)$')
-    axs[0,1].legend(ncol=3)
-    axs[0,1].grid(True)
+    axs[0].set_title('States $x_i$')
+    axs[0].set_xlabel('Time (s)')
+    axs[0].set_ylabel('$x(t)$')
+    axs[0].legend(ncol=3)
+    axs[0].grid(True) 
     
     # --- Bottom-left: vartheta_i ---
     for i in range(n_agents):
-        axs[1,0].plot(t, vartheta[i,:], label=f'$\\vartheta_{i+1}$')
-    axs[1,0].set_title('Adaptive gains $\\vartheta_i$')
-    axs[1,0].set_xlabel('Time [s]')
-    axs[1,0].set_ylabel('$\\vartheta(t)$')
-    axs[1,0].legend(ncol=3)
-    axs[1,0].grid(True)
-    
-    # --- Bottom-right: control u (example: first agent) ---
-    axs[1,1].plot(t, mv[0,:], label='$u_1$')
-    axs[1,1].set_title('Control input $u_1$')
-    axs[1,1].set_xlabel('Time [s]')
-    axs[1,1].set_ylabel('$u(t)$')
-    axs[1,1].legend()
-    axs[1,1].grid(True)
+        axs[1].plot(t, vartheta[i,:], label=f'$\\vartheta_{i+1}$')
+    axs[1].set_title('Adaptive gains $\\vartheta_i$')
+    axs[1].set_xlabel('Time (s)')
+    axs[1].set_ylabel('$\\vartheta(t)$')
+    axs[1].legend(ncol=3)
+    axs[1].grid(True)
     
     plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path)
-        print(f"Figure saved to {save_path}")
     plt.show()
 
-def plot_states(t, x, z, n_agents, save_path=None, ref_state_num=1):
+def plot_states(t, x, z, n_agents, ref_state_num=1):
     """
     Plot x and z states for all agents.
     
@@ -184,93 +161,106 @@ def plot_states(t, x, z, n_agents, save_path=None, ref_state_num=1):
     # Trim last time step (if necessary)
     t = t[:-1]
     x = x[:,:-1]
-    z = z[ref_state_num-1,:-1]
+    z = z[:,:-1]
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, axs = plt.subplots(2, 1, figsize=(12, 9))
     for i in range(n_agents):
-        ax.plot(t, x[i,:], linestyle='-', label=f'$x_{{{i+1}}}$')
-    ax.plot(t, z, '--k', label=f'$z_{{{ref_state_num}}}$ (ref.)')
-    ax.set_title('States $x_i$')
-    ax.set_xlabel('Time [s]')
-    ax.set_ylabel('$x(t)$')
-    ax.legend(ncol=3)
-    ax.grid(True)
-    
+        axs[0].plot(t, x[i,:], linestyle='-', label=f'$x_{{{i+1}}}$')
+    axs[0].plot(t, z[ref_state_num-1,:], '--k', label=f'$z_{{{ref_state_num}}}$ (ref.)')
+    axs[0].set_title('States $x_i$')
+    axs[0].set_xlabel('Time (s)')
+    axs[0].set_ylabel('$x(t)$')
+    axs[0].legend(ncol=3)
+    axs[0].grid(True)
+
+    for i in range(n_agents):
+        axs[1].plot(t, z[i,:], linestyle='-', label=f'$z_{{{i+1}}}$ (ref.)')
+
+    axs[1].set_title('Reference states $z_i$')
+    axs[1].set_xlabel('Time (s)')
+    axs[1].set_ylabel('$z(t)$')
+    axs[1].legend(ncol=3)
+    axs[1].grid(True)
+
     plt.tight_layout()
-    
-    if save_path:
-        plt.savefig(save_path)
-        print(f"Figure saved to {save_path}")
     plt.show()
 
-def plot_sign_function(t, x, z, agent=1):
+def plot_sign_function(x, z, agent=1):
     sigma = x - z
     grad = np.sign(sigma)
 
-    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
-
-    # --- Top plot: grad vs time ---
-    axs[0].plot(t, grad[agent-1, :], lw=2,
-                label=rf'$\nabla |\sigma_{{{agent}}}|_1$', color='tab:blue')
-    axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
-    axs[0].set_title(f'Gradient of error signal for Agent {agent}', fontsize=14)
-    axs[0].set_xlabel('Time [s]', fontsize=12)
-    axs[0].set_ylabel(r'$\nabla |\sigma(t)|$', fontsize=12)
-    axs[0].legend()
-    axs[0].grid(True, linestyle='--', alpha=0.7)
-
-    # --- Bottom plot: histogram of grad values ---
+    fig, ax = plt.subplots(figsize=(6, 4))
+    # --- histogram of grad values ---
     grad_vals = grad[agent-1, :]
     bins = [-1.5, -0.5, 0.5, 1.5]   # bins centered at -1, 0, +1
-    counts, _, _ = axs[1].hist(grad_vals, bins=bins, rwidth=0.6,
+    counts, _, _ = ax.hist(grad_vals, bins=bins, rwidth=0.6,
                                color='tab:orange', edgecolor='k')
-    
-    axs[1].set_xticks([-1, 0, 1])
-    axs[1].set_title(f'Histogram of sign values for Agent {agent}', fontsize=14)
-    axs[1].set_xlabel('Sign value', fontsize=12)
-    axs[1].set_ylabel('Count', fontsize=12)
-    axs[1].grid(axis='y', linestyle='--', alpha=0.7)
+
+    ax.set_xticks([-1, 0, 1])
+    ax.set_title(f'Histogram of sign values for Agent {agent}', fontsize=14)
+    ax.set_xlabel('Sign value', fontsize=12)
+    ax.set_ylabel('Count', fontsize=12)
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
 
     # annotate counts above bars
     for x_pos, c in zip([-1, 0, 1], counts):
-        axs[1].text(x_pos, c + 0.5, str(int(c)), ha='center', fontsize=12)
+        ax.text(x_pos, c + 0.5, str(int(c)), ha='center', fontsize=12)
 
     plt.tight_layout()
     plt.show()
 
 def plot_hysteresis(sigma, dvtheta, params, agent=1):
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
 
-    sigma = np.abs(sigma)
+    n_agents = params["n_agents"]
+    epsilon = (params["epsilon_off"], params["epsilon_on"])
     
     # Main hysteresis curve
-    ax.step(sigma[agent-1, :], dvtheta[agent-1, :], where='post', lw=2,
+    axs[0].step(np.abs(sigma[agent-1, :]), dvtheta[agent-1, :], where='post', lw=2,
             label=rf'$\dot{{\vartheta}}_{{{agent}}}$ vs $|\sigma_{{{agent}}}|$',
             color='tab:blue')
-    ax.set_xlim(0, (2) * params["epsilon_on"])
+    axs[0].set_xlim(0, (2) * params["epsilon_on"])
     # Reference lines
-    ax.axhline(0, color='k', linestyle='--', linewidth=1)
-    ax.axvline(0, color='k', linestyle='--', linewidth=1)
+    axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
+    axs[0].axvline(0, color='k', linestyle='--', linewidth=1)
 
     # Hysteresis thresholds
-    ax.axvline(params["epsilon_off"], color='r', linestyle='--', 
+    axs[0].axvline(params["epsilon_off"], color='r', linestyle='--', 
                label=r'$\pm \epsilon_{\mathrm{off}}$')
-    ax.axvline(-params["epsilon_off"], color='r', linestyle='--')
-    ax.axvline(params["epsilon_on"], color='g', linestyle='--', 
+    axs[0].axvline(-params["epsilon_off"], color='r', linestyle='--')
+    axs[0].axvline(params["epsilon_on"], color='g', linestyle='--', 
                label=r'$\pm \epsilon_{\mathrm{on}}$')
-    ax.axvline(-params["epsilon_on"], color='g', linestyle='--')
+    axs[0].axvline(-params["epsilon_on"], color='g', linestyle='--')
 
     # Labels and styling
-    ax.set_title(f'Hysteresis behavior for Agent {agent}', fontsize=14)
-    ax.set_xlabel(r'$|\sigma(t)|$', fontsize=12)
-    ax.set_ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
-    ax.legend()
-    ax.grid(True, linestyle='--', alpha=0.7)
+    axs[0].set_title(f'Hysteresis behavior for Agent {agent}', fontsize=14)
+    axs[0].set_xlabel(r'$|\sigma(t)|$', fontsize=12)
+    axs[0].set_ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
+    axs[0].legend()
+    axs[0].grid(True, linestyle='--', alpha=0.7)
+
+    for i in range(n_agents):
+        axs[1].plot(t, sigma[i,:], label=f'$\\sigma_{i+1}$')
+    axs[1].axhline(epsilon[0], color='k', linestyle='--', label='$\\pm \\epsilon$')
+    axs[1].axhline(-epsilon[0], color='k', linestyle='--')
+    axs[1].axhline(epsilon[1], color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
+    axs[1].axhline(-epsilon[1], color='r', linestyle='--')
+    axs[1].set_ylim([-(epsilon[1] * 1.5), (epsilon[1] * 1.5)])
+    axs[1].set_title('Error term $\\sigma_i$')
+    axs[1].set_xlabel('Time (s)')
+    axs[1].set_ylabel('$\\sigma(t)$')
+    axs[1].legend(ncol=3)
+    axs[1].grid(True)
 
     plt.tight_layout()
     plt.show()
 
 #%% Dynamics:
+## Consensus law (Javier's design): 
+def vi(i, z, neighbors): 
+    diffs = z[i] - z[neighbors]
+    return -np.sum(np.sign(diffs) * np.sqrt(np.abs(diffs)))
+
 def dynamics(t, y, n_agents, nu, mv, dvth, params): 
     dydt = np.zeros_like(y)
 
@@ -278,7 +268,14 @@ def dynamics(t, y, n_agents, nu, mv, dvth, params):
     z = y[n_agents:2*n_agents]
     vtheta = y[2*n_agents:3*n_agents]
 
-    v = -L @ z
+    v = np.zeros(n_agents)
+    if params["use_laplacian"]:
+        v = -L @ z
+    else:
+        for i in range(n_agents):
+            neighbors = params["nodes"][i+1]['neighbors']
+            neighbors_index = [n-1 for n in neighbors]  # Convert to 0-based index
+            v[i] = vi(i, z, neighbors_index)
     g = v
     dzdt = g
 
@@ -362,9 +359,9 @@ def simulate_dynamics(params, init_conditions):
 
 x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
-plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
+plot_simulation(t, x, z, vtheta, mv, params)
 plot_states(t, x, z, n_agents, ref_state_num=1)
-plot_sign_function(t, x, z, agent=1)
+plot_sign_function(x, z, agent=1)
 plot_hysteresis(x - z, dvth, params, agent=1)
 
 #%% Simulation: solve_ivp integration
@@ -395,9 +392,9 @@ def simulate_dynamics_solve_ivp(params, init_conditions):
 
 x, z, vtheta, mv, dvth = simulate_dynamics_solve_ivp(params, init_conditions)
 t = np.linspace(0, T, n_points)
-plot_simulation_grid(t, x, z, vtheta, mv, n_agents)
+plot_simulation(t, x, z, vtheta, mv, params)
 plot_states(t, x, z, n_agents, ref_state_num=1)
-plot_sign_function(t, x, z, agent=1)
+plot_sign_function(x, z, agent=1)
 plot_hysteresis(x - z, dvth, params, agent=1)
 
 #%% END OF FILE
