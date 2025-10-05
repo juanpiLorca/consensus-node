@@ -19,17 +19,17 @@ def darken_color(color, amount=0.6):
 ## Graph definition: 
 np.random.seed(42)  # For reproducibility
 
-NODES = {
-    1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
-    2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
-    3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
-    4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
-    5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
-    6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
-    7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
-    8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
-    9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
-}
+# NODES = {
+#     1: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
+#     2: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
+#     3: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
+#     4: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
+#     5: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
+#     6: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
+#     7: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
+#     8: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
+#     9: {'x0': np.random.uniform(-2,2), 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+# }
 
 # NODES = {
 #     1: {'x0': 0.2, 'z0': 0.05, 'neighbors': [4]},
@@ -42,6 +42,18 @@ NODES = {
 #     8: {'x0': 0.7, 'z0': 0.55, 'neighbors': [6]},
 #     9: {'x0': 1.0, 'z0': 0.85, 'neighbors': [1]},
 # }
+
+NODES = {
+    1: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [4]},
+    2: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [5]},
+    3: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [8]},
+    4: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [7]},
+    5: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [9]},
+    6: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [2]},
+    7: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [3]},
+    8: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [6]},
+    9: {'x0': 0, 'z0': np.random.uniform(-2,2), 'neighbors': [1]},
+}
 
 
 G = nx.DiGraph()
@@ -66,7 +78,7 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 30.0
+T        = 15
 dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -74,8 +86,8 @@ n_agents = len(NODES)
 
 ## Adaptive gain: 
 eta                   = 0.5      # adaptation gain
-freeze_threshold_off  = 0.0125   # error-threshold to freeze gain evolution ("ε" in paper)
-freeze_threshold_on   = 0.0250   # error-threshold to re-activate gain evolution ("ε̄" in paper)
+freeze_threshold_off  = 0.01     # error-threshold to freeze gain evolution ("ε" in paper)
+freeze_threshold_on   = 0.02     # error-threshold to re-activate gain evolution ("ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
@@ -91,7 +103,7 @@ params = {
 }
 
 ## Disturbance: bounded known input
-nu = np.random.uniform(-0.25, 0.25, (n_agents, n_points))  # uniformly distributed between -0.25 and 0.25
+nu = np.random.uniform(-0.5, 0.5, (n_agents, n_points))  # uniformly distributed between -0.25 and 0.25
 
 ## Initial conditions:
 init_conditions = {
@@ -214,11 +226,36 @@ def plot_hysteresis(sigma, dvtheta, params, agent=1):
 
     n_agents = params["n_agents"]
     epsilon = (params["epsilon_off"], params["epsilon_on"])
+    eta = params["eta"]
+
+    error = sigma # error term
+    sigma = sigma[agent-1, :]
+    dvtheta_t = dvtheta[agent-1, :]
+
+    # --- Apply hysteresis logic ---
+    active = 0
+    dvtheta = np.zeros_like(sigma)
+    for k in range(len(sigma) - 1):
+        if active == 0:
+            if np.abs(sigma[k]) > epsilon[1]:
+                active = 1
+                dvtheta[k] = 1 * eta
+            else: 
+                dvtheta[k] = 0
+        else:
+            if np.abs(sigma[k]) <= epsilon[0]:
+                active = 0
+                dvtheta[k] = 0
+            else:
+                dvtheta[k] = 1 * eta
     
     # Main hysteresis curve
-    axs[0].step(np.abs(sigma[agent-1, :]), dvtheta[agent-1, :], where='post', lw=2,
-            label=rf'$\dot{{\vartheta}}_{{{agent}}}$ vs $|\sigma_{{{agent}}}|$',
+    axs[0].step(np.abs(sigma), dvtheta_t, where='post', lw=2,
+            label=rf'$\dot{{\vartheta}}_{{{agent}}}(|\sigma_{{{agent}}}|)$ simulated',
             color='tab:blue')
+    axs[0].step(np.abs(sigma), dvtheta, where='post', lw=2,
+            label=rf'$\dot{{\vartheta}}_{{{agent}}}(|\sigma_{{{agent}}}|)$ ideal',
+            color='tab:orange', linestyle='--')
     axs[0].set_xlim(0, (2) * params["epsilon_on"])
     # Reference lines
     axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
@@ -240,7 +277,7 @@ def plot_hysteresis(sigma, dvtheta, params, agent=1):
     axs[0].grid(True, linestyle='--', alpha=0.7)
 
     for i in range(n_agents):
-        axs[1].plot(t, sigma[i,:], label=f'$\\sigma_{i+1}$')
+        axs[1].plot(t, error[i,:], label=f'$\\sigma_{i+1}$')
     axs[1].axhline(epsilon[0], color='k', linestyle='--', label='$\\pm \\epsilon$')
     axs[1].axhline(-epsilon[0], color='k', linestyle='--')
     axs[1].axhline(epsilon[1], color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
@@ -255,7 +292,7 @@ def plot_hysteresis(sigma, dvtheta, params, agent=1):
     plt.tight_layout()
     plt.show()
 
-#%% Dynamics:
+## Dynamics:
 ## Consensus law (Javier's design): 
 def vi(i, z, neighbors): 
     diffs = z[i] - z[neighbors]
@@ -360,9 +397,9 @@ def simulate_dynamics(params, init_conditions):
 x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation(t, x, z, vtheta, mv, params)
-plot_states(t, x, z, n_agents, ref_state_num=1)
-plot_sign_function(x, z, agent=1)
-plot_hysteresis(x - z, dvth, params, agent=1)
+plot_states(t, x, z, n_agents, ref_state_num=2)
+plot_sign_function(x, z, agent=2)
+plot_hysteresis(x - z, dvth, params, agent=2)
 
 #%% Simulation: solve_ivp integration
 def simulate_dynamics_solve_ivp(params, init_conditions):

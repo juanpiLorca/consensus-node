@@ -21,8 +21,8 @@ consensus_params consensus = {
 	0,						// node
 	neighbors,				// neigbors
     false,					// laplacian
-    1000.0f,                // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-    0.001f,                 // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    100000.0f,              // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.00001f,               // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     0.0001f,                // scale_eta <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
@@ -36,8 +36,8 @@ consensus_params consensus = {
     50,                     // vstate
     1,                      // vartheta
     0,                      // active boolean --> for hysteresis bounding
-    0.0250f,                // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-    0.0125f,                // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.020f,                 // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.010f,                 // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
 	{false, 0, 0, 0, 0, 0}  // disturbance parameters

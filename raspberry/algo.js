@@ -5,12 +5,12 @@ class Algorithm {
         this.dt = 0.01; 
 
         // Controller parameters:
-        this.scale_factor = 1000;
-        this.inv_scale_factor = 0.001;
+        this.scale_factor = 10000;
+        this.inv_scale_factor = 0.0001;
         this.scale_eta = 0.0001; 
         this.active = 0;
-        this.epsilonOFF = 0.0125;
-        this.epsilonON = 0.0250;
+        this.epsilonON = 0.020;
+        this.epsilonOFF = 0.010;
 
         this.state0 = (Number(params.state) * this.inv_scale_factor);
         this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
