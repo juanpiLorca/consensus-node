@@ -26,7 +26,7 @@ consensus_params consensus = {
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
 	1000,					// period of the consensus task
-    0.01,                   // "dt": integration step (since there's no continuous process running) 
+    1e-3,                   // "dt": integration step (since there's no continuous process running) 
 	100,					// initial state
     50,						// initial vstate
     1,						// initial vartheta

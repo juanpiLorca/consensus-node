@@ -3,7 +3,6 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-from scipy.integrate import solve_ivp
 
 def darken_color(color, amount=0.6):
     """
@@ -18,18 +17,6 @@ def darken_color(color, amount=0.6):
 
 ## Graph definition: 
 np.random.seed(42)  # For reproducibility
-
-# NODES = {
-#     1: {'x0': 0.2, 'z0': 0.05, 'neighbors': [4]},
-#     2: {'x0': 0.5, 'z0': 0.35, 'neighbors': [5]},
-#     3: {'x0': 0.8, 'z0': 0.65, 'neighbors': [8]},
-#     4: {'x0': 0.3, 'z0': 0.15, 'neighbors': [7]},
-#     5: {'x0': 0.4, 'z0': 0.25, 'neighbors': [9]},
-#     6: {'x0': 0.9, 'z0': 0.75, 'neighbors': [2]},
-#     7: {'x0': 0.3, 'z0': 0.45, 'neighbors': [3]},
-#     8: {'x0': 0.7, 'z0': 0.55, 'neighbors': [6]},
-#     9: {'x0': 1.0, 'z0': 0.85, 'neighbors': [1]},
-# }
 
 NODES = {
     1: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4]},
@@ -73,13 +60,15 @@ n_points = len(time)
 n_agents = len(NODES)
 
 ## Adaptive gain: 
+omega                 = 1.0      # Timer oscillator frequency (rad/s) --> slope 1s/1s
 eta                   = 0.5      # adaptation gain
 freeze_threshold_off  = 0.01     # error-threshold to freeze gain evolution ("ε" in paper)
 freeze_threshold_on   = 0.02     # error-threshold to re-activate gain evolution ("ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
-    "dt": dt,
+    "dt":            dt,
+    "omega":         omega,
     "n_points":      n_points,
     "n_agents":      n_agents,
     "use_laplacian": use_laplacian, 
@@ -301,7 +290,7 @@ def dynamics(t, y, n_agents, nu, mv, dvth, params):
             neighbors = params["nodes"][i+1]['neighbors']
             neighbors_index = [n-1 for n in neighbors]  # Convert to 0-based index
             v[i] = vi(i, z, neighbors_index)
-    g = v
+    g = v + params["omega"]
     dzdt = g
 
     sigma = x - z
@@ -331,7 +320,7 @@ def dynamics(t, y, n_agents, nu, mv, dvth, params):
         dvth[:,k] = dvthdt
         mv[:,k] = u
 
-    dxdt = u + nu 
+    dxdt = params["omega"] + u + nu
 
     dydt[:n_agents] = dxdt
     dydt[n_agents:2*n_agents] = dzdt
@@ -389,38 +378,102 @@ plot_states(t, x, z, n_agents, ref_state_num=2)
 plot_sign_function(x, z, agent=2)
 plot_hysteresis(x - z, dvth, params, agent=2)
 
-#%% Simulation: solve_ivp integration
-def simulate_dynamics_solve_ivp(params, init_conditions):
-    n_agents = params["n_agents"]
-    n_points = params["n_points"]
-    dt = params["dt"]
-    t_span = (0, params["dt"] * (n_points - 1))
-    t_eval = np.linspace(t_span[0], t_span[1], n_points)
+#%% Simulation: sampled dynamics (to mimic microcontroller and network behavior)
+def dyn2sample(t, y, u, nu, dvth, n_agents, params): 
+    dydt = np.zeros_like(y)
 
-    y0 = np.concatenate(
+    x = y[:n_agents]
+    z = y[n_agents:2*n_agents]
+    vtheta = y[2*n_agents:3*n_agents]
+
+    if params["use_laplacian"]:
+        v = -L @ z
+    else:
+        v = np.zeros(n_agents)
+        for i in range(n_agents):
+            neighbors = params["nodes"][i+1]['neighbors']
+            neighbors_index = [n-1 for n in neighbors]  # Convert to 0-based index
+            v[i] = vi(i, z, neighbors_index)
+    g = v   
+
+    dxdt = u + nu
+    dzdt = g
+    dvthdt = dvth
+
+    dydt[:n_agents] = dxdt
+    dydt[n_agents:2*n_agents] = dzdt
+    dydt[2*n_agents:3*n_agents] = dvthdt
+    return dydt
+
+def simulate_sampled_dynamics(params, init_conditions):
+    # Preallocate variables: states, manipulated variables and derivatives
+    n_points = params["n_points"]
+    n_agents = params["n_agents"]
+    dt = params["dt"]
+
+    x = np.zeros(shape=(n_agents, n_points))
+    z = np.zeros(shape=(n_agents, n_points))
+    vtheta = np.zeros(shape=(n_agents, n_points))
+    dvth = np.zeros(shape=(n_agents, n_points))
+    mv = np.zeros(shape=(n_agents, n_points))
+    y = np.concatenate(
         [init_conditions["x"], init_conditions["z"], init_conditions["vtheta"]]
     )
 
-    dvth = np.zeros(shape=(n_agents, n_points))
-    mv = np.zeros(shape=(n_agents, n_points))
+    t = 0.0
+    for k in range(n_points):
 
-    def dyn(t, y):
-        return dynamics(t, y, n_agents, nu[:, int(t/dt)], mv, dvth, params)
+        x[:, k] = y[:n_agents]
+        z[:, k] = y[n_agents:2*n_agents]
+        vtheta[:, k] = y[2*n_agents:3*n_agents]
 
-    sol = solve_ivp(dyn, t_span, y0, t_eval=t_eval, method='RK45')
+        v = np.zeros(n_agents)
+        if params["use_laplacian"]:
+            v = -L @ z[:, k]
+        else:
+            for i in range(n_agents):
+                neighbors = params["nodes"][i+1]['neighbors']
+                neighbors_index = [n-1 for n in neighbors]
+                v[i] = vi(i, z[:, k], neighbors_index)
+        g = v
 
-    x = sol.y[:n_agents, :]
-    z = sol.y[n_agents:2*n_agents, :]
-    vtheta = sol.y[2*n_agents:3*n_agents, :]
+        sigma = x[:, k] - z[:, k]
+        grad = np.sign(sigma)
+
+        u = np.zeros(n_agents)
+        dvtheta = np.zeros(n_agents)
+        for i in range(n_agents):
+            if params["active"][i] == 0: 
+                if np.abs(sigma[i]) > params["epsilon_on"]:
+                    params["active"][i] = 1
+                    dvtheta[i] = params["eta"] * 1.0
+                else: 
+                    dvtheta[i] = 0.0
+
+            else:
+                if np.abs(sigma[i]) <= params["epsilon_off"]:
+                    params["active"][i] = 0
+                    dvtheta[i] = 0.0
+                else:
+                    dvtheta[i] = params["eta"] * 1.0
+
+            if k % 2 == 0:  # Update control every 10 steps (10 ms if dt=1ms)
+                u[i] = g[i] - vtheta[i, k] * grad[i]
+
+        mv[:, k] = u
+        dvth[:, k] = dvtheta
+
+        y = rk4_step(dyn2sample, t, y, dt, u, nu[:, k], dvtheta, n_agents, params)
+
+        t += dt
 
     return x, z, vtheta, mv, dvth
 
-x, z, vtheta, mv, dvth = simulate_dynamics_solve_ivp(params, init_conditions)
+x, z, vtheta, mv, dvth = simulate_sampled_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation(t, x, z, vtheta, mv, params)
-plot_states(t, x, z, n_agents, ref_state_num=1)
-plot_sign_function(x, z, agent=1)
-plot_hysteresis(x - z, dvth, params, agent=1)
-
+plot_states(t, x, z, n_agents, ref_state_num=2)
+plot_sign_function(x, z, agent=2)
+plot_hysteresis(x - z, dvth, params, agent=2)
 #%% END OF FILE
 print(np.sign(0.0))  # Just to avoid linting error

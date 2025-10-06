@@ -9,12 +9,12 @@ LOG_MODULE_REGISTER(Module_Broadcaster, LOG_LEVEL_INF);
  * Type variable to control many aspects of the advertising 
  * --> it could replace the default advertising parameters given by BT_LE_ADV_NCONN
  */
-static const struct bt_le_adv_param *adv_param =
-	BT_LE_ADV_PARAM(BT_LE_ADV_OPT_NONE, /* No options specified */
-	800, /* Min Advertising Interval 500ms (800*0.625ms) */
-	801, /* Max Advertising Interval 500.625ms (801*0.625ms) */
-	NULL /* Set to NULL for undirected advertising */
-); /* Set to NULL for undirected advertising */
+// static const struct bt_le_adv_param *adv_param =
+// 	BT_LE_ADV_PARAM(BT_LE_ADV_OPT_NONE, /* No options specified */
+// 	800, /* Min Advertising Interval 500ms (800*0.625ms) */
+// 	801, /* Max Advertising Interval 500.625ms (801*0.625ms) */
+// 	NULL /* Set to NULL for undirected advertising */
+// ); /* Set to NULL for undirected advertising */
             
 
 /** 
