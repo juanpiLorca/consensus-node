@@ -20,10 +20,9 @@ consensus_params consensus = {
 	available_neighbors,	// avaliable_neighbors
 	0,						// node
 	neighbors,				// neigbors
-    false,					// laplacian
-    100000.0f,              // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-    0.00001f,               // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
-    0.0001f,                // scale_eta <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    1e6f,                   // scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    1e-6f,                  // inv_scale_factor <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    1e-4f,                  // scale_eta <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
 	1000,					// period of the consensus task
@@ -149,9 +148,6 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                     case 7: 
                                         consensus.disturbance.samples = value; 
                                         break; 
-                                    case 8: 
-                                        consensus.laplacian = value;
-                                        break;
                                     default:
                                         break;
                                 }

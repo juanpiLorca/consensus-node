@@ -5,9 +5,9 @@ class Algorithm {
         this.dt = 0.01; 
 
         // Controller parameters:
-        this.scale_factor = 10000;
-        this.inv_scale_factor = 0.0001;
-        this.scale_eta = 0.0001; 
+        this.scale_factor = 1e6;
+        this.inv_scale_factor = 1e-6;
+        this.scale_eta = 1e-4; 
         this.active = 0;
         this.epsilonON = 0.020;
         this.epsilonOFF = 0.010;
@@ -21,9 +21,6 @@ class Algorithm {
         this.offset = Number(params.disturbance.offset) * this.inv_scale_factor;
         this.amplitude = Number(params.disturbance.amplitude) * this.inv_scale_factor;
         this.samples = Number(params.disturbance.samples);
-        
-        // Use Laplacian or not:
-        this.laplacian = Boolean(params.laplacian);
     }
 
     resetInitialConditions() {
@@ -52,23 +49,6 @@ class Algorithm {
         return {vi: vi, numberNeighbors: numberNeighbors};
     }
 
-    computeLaplacian(neighborVStates, neighborEnabled) {
-        
-        let vi = 0; 
-        let vstate_neighbor_sum = 0;
-        let numberNeighbors = 0;
-
-        for (let j in neighborVStates) {
-            if (neighborEnabled[j]) {
-                vstate_neighbor_sum += neighborVStates[j] * this.inv_scale_factor;
-                numberNeighbors++;
-            }
-        }
-        
-        vi = (numberNeighbors * this.vstate) - vstate_neighbor_sum;
-        return {vi: vi, numberNeighbors: numberNeighbors};
-    }
-
     computeDisturbance() {
         const disturbance = this.amplitude * (Math.random() - this.offset);
         this.cnt = (this.cnt + 1) % this.samples;
@@ -81,11 +61,7 @@ class Algorithm {
 
         // 1. Compute consensus law for virtal state
         let vi = 0, numberNeighbors = 0;
-        if (this.laplacian) {
-            ({ vi, numberNeighbors } = this.computeLaplacian(neighborVStates, neighborEnabled)); 
-        } else {
-            ({ vi, numberNeighbors } = this.v_i(neighborVStates, neighborEnabled));
-        }
+        ({ vi, numberNeighbors } = this.v_i(neighborVStates, neighborEnabled));
         this.gi = vi;
 
         // 2. Compute error term (sigma) and gradient

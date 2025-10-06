@@ -32,7 +32,6 @@ typedef struct {
 
     uint8_t node; 
     uint8_t* neighbors; 
-    bool laplacian;
 
     float scale_factor; 
     float inv_scale_factor; 

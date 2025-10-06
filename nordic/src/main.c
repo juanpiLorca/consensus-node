@@ -36,7 +36,6 @@ static void bt_init(void);                          // Auxiliary function for st
 static float disturbance(consensus_params* cp);     // Auxiliary function to compute disturbance
 static float sign(float x);                         // Auxiliary function to get the sign of a float number
 static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
-static float laplacian(consensus_params* cp);       // Function to compute the Laplacian term in the consensus algorithm
 static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
 static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
 /*
@@ -117,21 +116,6 @@ static float v_i(consensus_params* cp) {
     return vi;
 }
 
-static float laplacian(consensus_params* cp){
-    float vstate_neighbor_sum = 0.0f; 
-    int degree = 0; 
-
-    float vi = 0.0f; 
-    for (int i = 0; i < cp->N; i++){
-        if (cp->neighbor_enabled[i]){
-            vstate_neighbor_sum += (float)(cp->neighbor_vstates[i] * cp->inv_scale_factor); 
-            degree++;
-        }
-    }
-    vi = (float)(degree * cp->vstate * cp->inv_scale_factor) - vstate_neighbor_sum;
-    return vi;
-}
-
 static void update_consensus(consensus_params* cp) {
 
     // 1. Cast to float for calculations: system and disturbance parameters
@@ -150,12 +134,7 @@ static void update_consensus(consensus_params* cp) {
     float grad = sign(sigma); 
 
     // 3. Compute control input
-    float vi = 0.0f;
-    if (cp->laplacian){
-        vi = laplacian(cp);
-    } else {
-        vi = v_i(cp);
-    }
+    float vi = v_i(cp);
     float gi = vi; 
     float ui = gi - vartheta * grad; 
 
