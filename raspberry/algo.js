@@ -2,7 +2,7 @@ class Algorithm {
 
     setParams(params) {
 
-        this.dt = 0.01; 
+        this.dt = 1e-3; 
 
         // Controller parameters:
         this.scale_factor = 1e6;

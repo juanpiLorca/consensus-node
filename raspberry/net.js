@@ -56,15 +56,15 @@ let NODES;
 
 // 9node-ring-dir: ... ---> 4 ---> 1 ---> 9 ---> 5 ---> 2 ---> 6 ---> 8 ---> 3 ---> 7 ---> ...
 NODES = {
-  1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true, neighbors: [4], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true, neighbors: [5], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  3: {ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true, neighbors: [8], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  4: {ip: '192.168.0.101', type: TYPE_BLE,    enabled: true, neighbors: [7], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  5: {ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true, neighbors: [9], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  6: {ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: true, neighbors: [2], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  7: {ip: '192.168.0.134', type: TYPE_BLE,    enabled: true, neighbors: [3], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  8: {ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true, neighbors: [6], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
-  9: {ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true, neighbors: [1], clock: 100, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  1: {ip: '192.168.0.136', type: TYPE_BLE,    enabled: true, neighbors: [4], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  2: {ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true, neighbors: [5], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  3: {ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true, neighbors: [8], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  4: {ip: '192.168.0.101', type: TYPE_BLE,    enabled: true, neighbors: [7], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  5: {ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true, neighbors: [9], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  6: {ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: true, neighbors: [2], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  7: {ip: '192.168.0.134', type: TYPE_BLE,    enabled: true, neighbors: [3], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  8: {ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true, neighbors: [6], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
+  9: {ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true, neighbors: [1], clock: 500, state: encodeFloat(Math.random() * 10), vstate: encodeFloat(Math.random() * 10), vartheta: 0, eta: 5000, disturbance: {amplitude: 500, offset: 500, samples: 1}},
 }; 
 
 // 9node-clusters

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 
 class PlotConsensus:
-    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1000):
+    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1e6):
         self.filename_template = filename_template  # e.g., "data/{}/{}.json"
         self.simulation = simulation
         self.total_nodes = total_nodes

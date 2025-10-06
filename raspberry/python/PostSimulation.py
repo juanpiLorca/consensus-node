@@ -7,7 +7,7 @@ class PostSimulation:
     def __init__(self, simulation_dir, num_agents):
         self.simulation_dir = simulation_dir
         self.num_agents = num_agents
-        self.conversion_factor = 1000  
+        self.conversion_factor = 1e6
 
         self.epsilon_on = 0.0250
         self.epsilon_off = 0.0125
