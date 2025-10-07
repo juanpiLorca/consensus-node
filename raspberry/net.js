@@ -57,6 +57,7 @@ const rng = seedrandom('consensus');
 // Pre-generated initial states for up to 30 nodes: 
 const INITIAL_STATES = Array.from({length: NUM_NODES}, () => encodeFloat(rng() * 10));
 const INITIAL_VSTATES = Array.from({length: NUM_NODES}, () => encodeFloat(rng() * 10));
+const INITIAL_PHASES = Array.from({length: NUM_NODES}, () => encodeFloat(rng()));
 
 function createNodes(topologyConfig) {
     const nodes = {}; 
@@ -72,14 +73,15 @@ function createNodes(topologyConfig) {
             vstate: INITIAL_VSTATES[cfg.id],
             vartheta: 0,
             eta: 5000,
-            disturbance: {          // --> Disturbance model: m(t) = nu(t) + beta + A*sin(2*pi*f*(t-phi)) f = 10
-                random: true,
-                amplitude: 500000,
-                offset: 500000,
+            disturbance: {                    // --> Disturbance model: m(t) = nu(t) + beta + A*sin(2*pi*f*(t-phi)) f = 10
+                disturbance_on: true,
+                amplitude: 1500000,
+                offset: 1500000,
                 beta: 0, 
-                A: 0,   
-                phi: 0, // [0,1]
-                samples: 1
+                Amp: 500000,   
+                frequency: 10,  
+                phase: INITIAL_PHASES[cfg.id],  // [0,1]
+                samples: 1000
             }
         }
     }

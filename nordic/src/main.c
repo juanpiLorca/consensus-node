@@ -89,9 +89,25 @@ static void bt_init(void) {
 }
 
 static float disturbance(consensus_params* cp) {
-    float amp = (float)cp->disturbance.amplitude * cp->inv_scale_factor;
-    float off = (float)cp->disturbance.offset * cp->inv_scale_factor;
-    return amp * ((float)rand() / (float)RAND_MAX - off);
+    float nu = 0.0f;
+    if (!cp->disturbance.disturbance_on) {
+        nu = 0.0f; 
+    } else {
+        // Scaling factors
+        float amp = (float)cp->disturbance.amplitude * cp->inv_scale_factor;
+        float off = (float)cp->disturbance.offset * cp->inv_scale_factor;
+        float beta = (float)cp->disturbance.beta * cp->inv_scale_factor;
+        float A = (float)cp->disturbance.A * cp->inv_scale_factor; 
+        float f = (float)cp->disturbance.frequency;                                    
+        float phi_shift_s = (float)cp->disturbance.phase * cp->inv_scale_factor;       
+        float t = (float)cp->disturbance.counter * (float)cp->dt; 
+
+        float m = amp * ((float)rand() / (float)RAND_MAX - off); 
+        
+        float sinusoidal = A * sinf(2.0f * M_PI * f * (t - phi_shift_s));
+        nu = m + beta + sinusoidal;
+    } 
+    return nu; 
 }
 
 static float sign(float x) {

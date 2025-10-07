@@ -44,11 +44,13 @@ if (TYPE == TYPE_BLE) {
 
         // 3 types of messages from backend-process: n -> network, a -> consensus (used to be 'a' as algorithm), t -> trigger
         // (1) Network params: { enabled, node, neighbors } --> 'n'
-        // (2) Consensus params updated to: { clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, samples }, laplacian } --> 'a'
+        // (2) Consensus params updated to: { clock, state, vstate, vartheta, eta, disturbance: { ... }} --> 'a'
         // (3) Trigger params: { trigger } --> 't'
         const msgNetwork = `n${params.enabled ? 1 : 0},${params.node},${params.neighbors.join(',')}\n\r`;
-        const msgConsensus = `a${params.clock},${params.state},${params.vstate},${params.vartheta},${params.eta},${params.disturbance.amplitude},` + 
-            `${params.disturbance.offset},${params.disturbance.samples},${params.laplacian}\n\r`;
+        const msgConsensus = `a${params.clock},${params.state},${params.vstate},${params.vartheta},${params.eta},` +
+        `${params.disturbance.disturbance_on ? 1 : 0},${params.disturbance.amplitude},${params.disturbance.offset},` +
+        `${params.disturbance.beta},${params.disturbance.Amp},${params.disturbance.frequency},${params.disturbance.phase},` +
+        `${params.disturbance.samples}\n\r`;
         const msgTrigger = `t${params.trigger ? 1 : 0}\n\r`;
 
         try {

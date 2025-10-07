@@ -39,7 +39,7 @@ consensus_params consensus = {
     0.010f,                 // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
-	{false, 0, 0, 0, 0, 0, 0}  // disturbance parameters
+	{false, 0, 0, 0, 0, 0, 0, 0, 0}  // disturbance parameters
 };	
 
 /**
@@ -121,35 +121,22 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                             cnt = 0; 
                             
                             while (pt != NULL) {
-
                                 int32_t value = atoi(pt); 
                                 switch (cnt) {
-                                    case 0:
-                                        consensus.Ts = value; 
-                                        break;
-                                    case 1: 
-                                        consensus.state0 = value; 
-                                        break; 
-                                    case 2: 
-                                        consensus.vstate0 = value; 
-                                        break; 
-                                    case 3: 
-                                        consensus.vartheta0 = value; 
-                                        break; 
-                                    case 4: 
-                                        consensus.eta = value; 
-                                        break; 
-                                    case 5: 
-                                        consensus.disturbance.amplitude = value;
-                                        break; 
-                                    case 6: 
-                                        consensus.disturbance.offset = value; 
-                                        break; 
-                                    case 7: 
-                                        consensus.disturbance.samples = value; 
-                                        break; 
-                                    default:
-                                        break;
+                                    case 0:  consensus.Ts                         = value;        break;
+                                    case 1:  consensus.state0                     = value;        break; 
+                                    case 2:  consensus.vstate0                    = value;        break; 
+                                    case 3:  consensus.vartheta0                  = value;        break; 
+                                    case 4:  consensus.eta                        = value;        break; 
+                                    case 5:  consensus.disturbance.disturbance_on = (value == 1); break;
+                                    case 6:  consensus.disturbance.amplitude      = value;        break; 
+                                    case 7:  consensus.disturbance.offset         = value;        break; 
+                                    case 8:  consensus.disturbance.beta           = value;        break;
+                                    case 9:  consensus.disturbance.A              = value;        break;
+                                    case 10: consensus.disturbance.frequency      = value;        break;
+                                    case 11: consensus.disturbance.phase          = value;        break;
+                                    case 12: consensus.disurbance.samples         = value;        break; 
+                                    default: break;
                                 }
 
                                 cnt++; 

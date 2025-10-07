@@ -1,7 +1,9 @@
+const M_PI = Math.PI;
+
 class Algorithm {
 
     setParams(params) {
-
+        // Keeping dt as the general integration step
         this.dt = 1e-3; 
 
         // Controller parameters:
@@ -17,9 +19,18 @@ class Algorithm {
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
         this.eta = (Number(params.eta) * this.scale_eta);
 
-        // Disturbance parameters:
-        this.offset = Number(params.disturbance.offset) * this.inv_scale_factor;
-        this.amplitude = Number(params.disturbance.amplitude) * this.inv_scale_factor;
+        // --- DISTURBANCE PARAMETERS (Matching the Noridic structure) ---
+        this.dist_on = params.disturbance.disturbance_on; 
+        // Random Component
+        this.dist_offset = Number(params.disturbance.offset) * this.inv_scale_factor;
+        this.dist_amplitude = Number(params.disturbance.amplitude) * this.inv_scale_factor;
+        // Constant Bias Component
+        this.dist_beta = Number(params.disturbance.beta) * this.inv_scale_factor;
+        // Sinusoidal Component
+        this.dist_A = Number(params.disturbance.Amp) * this.inv_scale_factor;                 // Amplitude A
+        this.dist_frequency = Number(params.disturbance.frequency);                         // Frequency f (in Hz)
+        this.dist_phase_shift = Number(params.disturbance.phase) * this.inv_scale_factor;   // Phase phi (treated as time shift in seconds)
+
         this.samples = Number(params.disturbance.samples);
     }
 
@@ -27,7 +38,6 @@ class Algorithm {
         this.state = this.state0;
         this.vstate = this.vstate0;
         this.vartheta = this.vartheta0;
-
         this.cnt = 0; 
         this.sigma = 0;
         this.grad = 0;  
@@ -35,64 +45,65 @@ class Algorithm {
     }
 
     v_i(neighborVStates, neighborEnabled) {
-
         let vi = 0; 
-        let numberNeighbors = 0;
-
         for (let j in neighborVStates) {
             if (neighborEnabled[j]) {
+                // Ensure neighborVStates[j] is scaled if it's coming in as an integer
                 let diff = this.vstate - neighborVStates[j] * this.inv_scale_factor;
                 vi += (-1) * Math.sign(diff) * Math.sqrt(Math.abs(diff));
-                numberNeighbors++;
             }
         }
-        return {vi: vi, numberNeighbors: numberNeighbors};
+        return {vi: vi};
     }
 
     computeDisturbance() {
-        const disturbance = this.amplitude * (Math.random() - this.offset);
-        this.cnt = (this.cnt + 1) % this.samples;
-        return disturbance;
+        if (!this.dist_on) {
+            return 0.0;
+        }
+
+        const t = this.cnt * this.dt; 
+        const m = this.dist_amplitude * (Math.random() - this.dist_offset);
+        const sinusoidal = this.dist_A * Math.sin(
+            2.0 * M_PI * this.dist_frequency * (t - this.dist_phase_shift)
+        );
+        
+        const nu = m + this.dist_beta + sinusoidal;
+        return nu;
     }
 
-    update(neighborVStates, neighborEnabled) {
-        let u = 0; 
-        const disturbance = this.computeDisturbance(); 
 
-        // 1. Compute consensus law for virtal state
-        let vi = 0, numberNeighbors = 0;
-        ({ vi, numberNeighbors } = this.v_i(neighborVStates, neighborEnabled));
+    update(neighborVStates, neighborEnabled) {
+        
+        const disturbance = this.computeDisturbance(); 
+        
+        let vi = 0;
+        ({ vi } = this.v_i(neighborVStates, neighborEnabled));
         this.gi = vi;
 
-        // 2. Compute error term (sigma) and gradient
         this.sigma = this.state - this.vstate;
         this.grad = Math.sign(this.sigma); 
 
-        // 3. Compute control input
-        u = this.gi - this.vartheta * this.grad;
+        const u = this.gi - this.vartheta * this.grad;
 
-        // 4. Compute dvtheta (derivative of vartheta)
         let dvtheta = 0;
         if (this.active == 0) {
             if (Math.abs(this.sigma) > this.epsilonON) {
                 this.active = 1;
-                dvtheta = this.eta * 1.0;
-            } else {
-                dvtheta = 0.0;
+                dvtheta = this.eta;
             }
         } else {
             if (Math.abs(this.sigma) <= this.epsilonOFF) {
                 this.active = 0;
-                dvtheta = 0.0;
             } else {
-                dvtheta = this.eta * 1.0;
+                dvtheta = this.eta;
             }
         }
 
-        // 5. Update state, virtual state and vartheta
         this.state = this.state + this.dt * (u + disturbance);
         this.vstate = this.vstate + this.dt * this.gi;
         this.vartheta = this.vartheta + this.dt * dvtheta;
+        
+        this.cnt = (this.cnt + 1) % this.samples;
 
         return {
             state: Math.floor(this.state * this.scale_factor),
@@ -104,7 +115,7 @@ class Algorithm {
 }
 
 // Exports:
-algo = new Algorithm();
+const algo = new Algorithm();
 module.exports = {
     algo
 };

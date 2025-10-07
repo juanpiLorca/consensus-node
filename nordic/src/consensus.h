@@ -10,12 +10,18 @@
  * Custom type to store disturbance parameters sent by user through UART
  */
 typedef struct {
-    bool random; 
+    bool disturbance_on; 
+    // Uniform disturbance parameters:
     int32_t offset;
     int32_t amplitude;
-    int32_t phase;
-    uint32_t samples; 
+    // Constant disturbance parameter:
+    int32_t beta;
+    // Sinusoidal disturbance parameters:
+    int32_t A;
+    int32_t frequency;
+    int32_t phase; 
     uint32_t counter; 
+    uint32_t samples; 
 } disturbance_params;
 
 /**
