@@ -72,10 +72,13 @@ function createNodes(topologyConfig) {
             vstate: INITIAL_VSTATES[cfg.id],
             vartheta: 0,
             eta: 5000,
-            disturbance: {
+            disturbance: {          // --> Disturbance model: m(t) = nu(t) + beta + A*sin(2*pi*f*(t-phi)) f = 10
                 random: true,
                 amplitude: 500000,
                 offset: 500000,
+                beta: 0, 
+                A: 0,   
+                phi: 0, // [0,1]
                 samples: 1
             }
         }
