@@ -29,17 +29,17 @@ consensus_params consensus = {
     1e-3,                   // "dt": integration step (since there's no continuous process running) 
 	100,					// initial state
     50,						// initial vstate
-    1,						// initial vartheta
-    1,                      // eta
+    0,						// initial vartheta
+    0,                      // eta
     100,                    // state 
     50,                     // vstate
     1,                      // vartheta
     0,                      // active boolean --> for hysteresis bounding
-    0.020f,                 // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
+    0.075f,                 // epsilonON <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     0.010f,                 // epsilonOFF <-- Make sure this is consistent with the one in algo.js - Make it as a loading parameter
     neighbor_enabled,		// neighbor enabled
     neighbor_vstates,		// neighbor vstates
-	{false, 0, 0, 0, 0, 0}  // disturbance parameters
+	{false, 0, 0, 0, 0, 0, 0}  // disturbance parameters
 };	
 
 /**

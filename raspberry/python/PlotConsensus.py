@@ -64,7 +64,7 @@ class PlotConsensus:
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
 
-            t = node_data[:, 0] * 0.01 / 1000.0  # Convert ms to seconds
+            t = node_data[:, 0] * 0.001 / 1000.0  # Convert ms to seconds
             x = node_data[:, 1] / self.conversion_factor
             vtheta = node_data[:, 3] / self.conversion_factor
 
@@ -97,7 +97,7 @@ class PlotConsensus:
         plt.figure(figsize=(12, 6))
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
-            t = node_data[:, 0] * 0.01 / 1000.0
+            t = node_data[:, 0] * 0.001 / 1000.0
             vstate = node_data[:, 2] / self.conversion_factor
             plt.plot(t, vstate, label=f'$z_{{{node_id}}}$')
 

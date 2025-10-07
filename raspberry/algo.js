@@ -9,7 +9,7 @@ class Algorithm {
         this.inv_scale_factor = 1e-6;
         this.scale_eta = 1e-4; 
         this.active = 0;
-        this.epsilonON = 0.020;
+        this.epsilonON = 0.075;
         this.epsilonOFF = 0.010;
 
         this.state0 = (Number(params.state) * this.inv_scale_factor);

@@ -9,8 +9,8 @@ class PostSimulation:
         self.num_agents = num_agents
         self.conversion_factor = 1e6
 
-        self.epsilon_on = 0.0250
-        self.epsilon_off = 0.0125
+        self.epsilon_on = 0.02
+        self.epsilon_off = 0.01
 
         self.data = {}  
 
@@ -140,16 +140,16 @@ class PostSimulation:
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
 
-            t = node_data[:, 0] * 0.01 / 1000.0 
+            t = node_data[:, 0] * 0.001 / 1000.0 
             x = node_data[:, 1] / self.conversion_factor
             z = node_data[:, 2] / self.conversion_factor
             sigma = x - z
 
             ax.plot(t, sigma, label=f'$\sigma_{{{node_id}}}$')
 
-        ax.axhline(self.epsilon_off, color='k', linestyle='--', label='$\\pm \\epsilon = 0.0125$')
+        ax.axhline(self.epsilon_off, color='k', linestyle='--', label='$\\pm \\epsilon = 0.01$')
         ax.axhline(-self.epsilon_off, color='k', linestyle='--')
-        ax.axhline(self.epsilon_on, color='r', linestyle='--', label='$\\pm \\bar{\\epsilon} = 0.0250$')
+        ax.axhline(self.epsilon_on, color='r', linestyle='--', label='$\\pm \\bar{\\epsilon} = 0.02$')
         ax.axhline(-self.epsilon_on, color='r', linestyle='--')
         ax.set_ylim([-(self.epsilon_on * 1.5), (self.epsilon_on * 1.5)])
         ax.set_title('Error term $\\sigma_i$')
@@ -224,7 +224,7 @@ class PostSimulation:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_ring_dir"
+    sim_name = "9node_cluster"
     num_agents = 9
     post_sim = PostSimulation(simulation_dir=f"../data/{sim_name}", num_agents=num_agents)
     post_sim.load_data()

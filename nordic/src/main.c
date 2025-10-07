@@ -203,3 +203,43 @@ static void thread_consensus(void) {
     }
 }
 
+
+// static void thread_consensus(void) {
+//     custom_data_type custom_data = { ... };
+//     static neighbor_info_type neighbor_info; 
+    
+//     while (1) {
+//         if (consensus.running) {
+            
+//             // 1. ASYNCHRONOUS NETWORK INPUT UPDATE (0.1s rate)
+//             // Executes the following block ONLY when a new message arrives from the observer thread.
+//             if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_NO_WAIT)) { 
+//                 if (consensus.all_neighbors_observed) {
+//                     // Update the neighbor inputs used by the dynamics
+//                     memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
+//                     memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
+//                 }
+                
+//                 // 3. SLOW ASYNCHRONOUS OUTPUT REPORTING (0.1s rate)
+//                 // Executes ONLY when the input is updated, giving you the flexibility you want.
+//                 serial_log_consensus(); // <-- This is executed at the 0.1s rate
+//             }
+            
+//             if (consensus.enabled) {
+//                 // 2. SYNCHRONOUS DYNAMICS EXECUTION (1ms rate)
+//                 // Runs every 1ms, using the neighbor data updated at 0.1s.
+//                 update_consensus(&consensus);
+//             }
+            
+//             // 4. BROADCAST UPDATE (can be 1ms or 0.1s, depending on BLE load)
+//             // It's often best to only update the broadcast state (which neighbors read) when the
+//             // consensus calculation *uses* a new network input (i.e., inside the k_msgq_get block).
+//             // For simplicity, let's keep it inside the k_msgq_get block alongside serial_log_consensus.
+//             // If you put it here, it will run every 1ms, increasing BLE advertising load. 
+
+//         }
+        
+//         // 5. FAST LOOP TIMER (1ms rate)
+//         k_sleep(K_MSEC(consensus.Ts));
+//     }
+// }

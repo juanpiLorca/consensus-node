@@ -53,17 +53,17 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 15
-dt       = 0.001
+T        = 20
+dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
 
 ## Adaptive gain: 
-omega                 = 1.0      # Timer oscillator frequency (rad/s) --> slope 1s/1s
-eta                   = 0.5      # adaptation gain
-freeze_threshold_off  = 0.01     # error-threshold to freeze gain evolution ("ε" in paper)
-freeze_threshold_on   = 0.02     # error-threshold to re-activate gain evolution ("ε̄" in paper)
+omega                 = 1.0     # Timer oscillator frequency (rad/s) --> slope 1s/1s
+eta                   = 0.5     # adaptation gain
+freeze_threshold_off  = 0.010   # error-threshold to freeze gain evolution ("ε" in paper)
+freeze_threshold_on   = 0.075   # error-threshold to re-activate gain evolution ("ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
@@ -79,8 +79,16 @@ params = {
     "nodes":         NODES,
 }
 
+for id in G.nodes:
+    print(f"Node {id}: T = V_{id}(0)/ε {np.abs(NODES[id]['x0'] - NODES[id]['z0'])/params['epsilon_off']} [s]")
+
 ## Disturbance: bounded known input
-nu = np.random.uniform(-0.5, 0.5, (n_agents, n_points))  # uniformly distributed between -0.25 and 0.25
+#nu = np.random.uniform(-3, 3, (n_agents, n_points))  # uniformly distributed between -0.5 and +0.5
+alpha   = 1.5
+beta    = 0.1
+kappa   = 0.4
+phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
+nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 
 ## Initial conditions:
 init_conditions = {
@@ -90,7 +98,7 @@ init_conditions = {
 }
 
 #% >>> Plotting aux:
-def plot_simulation(t, x, z, vartheta, mv, params):
+def plot_simulation(t, x, z, vartheta, params):
     """
     Plot x, z, vartheta, and u in a 2x2 grid.
     
@@ -105,7 +113,6 @@ def plot_simulation(t, x, z, vartheta, mv, params):
     x = x[:,:-1]
     z = z[:,:-1]
     vartheta = vartheta[:,:-1]
-    mv = mv[:,:-1]
 
     fig, axs = plt.subplots(2, 1, figsize=(12, 9))
     
@@ -328,6 +335,42 @@ def dynamics(t, y, n_agents, nu, mv, dvth, params):
 
     return dydt
 
+def dyn2sample(t, y, g, nu, n_agents, params): 
+    dydt = np.zeros_like(y)
+
+    x = y[:n_agents]
+    z = y[n_agents:2*n_agents]
+    vtheta = y[2*n_agents:3*n_agents]
+
+    sigma = x - z
+    grad = np.sign(sigma)
+
+    dvtheta = np.zeros(n_agents)
+    for i in range(n_agents):
+        if params["active"][i] == 0: 
+            if np.abs(sigma[i]) > params["epsilon_on"]:
+                params["active"][i] = 1
+                dvtheta[i] = params["eta"] * 1.0
+            else: 
+                dvtheta[i] = 0.0
+
+        else:
+            if np.abs(sigma[i]) <= params["epsilon_off"]:
+                params["active"][i] = 0
+                dvtheta[i] = 0.0
+            else:
+                dvtheta[i] = params["eta"] * 1.0
+
+    u = g - vtheta * grad
+    dxdt = u + nu
+    dzdt = g    # consensus law
+    dvthdt = dvtheta
+
+    dydt[:n_agents] = dxdt
+    dydt[n_agents:2*n_agents] = dzdt
+    dydt[2*n_agents:3*n_agents] = dvthdt
+    return dydt
+
 def rk4_step(f, t, y, dt, *args):
     """
     One step of fixed-step RK4 integration.
@@ -373,61 +416,108 @@ def simulate_dynamics(params, init_conditions):
 
 x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
-plot_simulation(t, x, z, vtheta, mv, params)
+plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
 plot_sign_function(x, z, agent=2)
 plot_hysteresis(x - z, dvth, params, agent=2)
 
 #%% Simulation: sampled dynamics (to mimic microcontroller and network behavior)
-def dyn2sample(t, y, u, nu, dvth, n_agents, params): 
-    dydt = np.zeros_like(y)
-
-    x = y[:n_agents]
-    z = y[n_agents:2*n_agents]
-    vtheta = y[2*n_agents:3*n_agents]
-
-    if params["use_laplacian"]:
-        v = -L @ z
-    else:
-        v = np.zeros(n_agents)
-        for i in range(n_agents):
-            neighbors = params["nodes"][i+1]['neighbors']
-            neighbors_index = [n-1 for n in neighbors]  # Convert to 0-based index
-            v[i] = vi(i, z, neighbors_index)
-    g = v   
-
-    dxdt = u + nu
-    dzdt = g
-    dvthdt = dvth
-
-    dydt[:n_agents] = dxdt
-    dydt[n_agents:2*n_agents] = dzdt
-    dydt[2*n_agents:3*n_agents] = dvthdt
-    return dydt
-
-def simulate_sampled_dynamics(params, init_conditions):
-    # Preallocate variables: states, manipulated variables and derivatives
+def simulate_sampled_dynamics(params, init_conditions, sample_time=0.1):
     n_points = params["n_points"]
     n_agents = params["n_agents"]
     dt = params["dt"]
 
-    x = np.zeros(shape=(n_agents, n_points))
-    z = np.zeros(shape=(n_agents, n_points))
-    vtheta = np.zeros(shape=(n_agents, n_points))
-    dvth = np.zeros(shape=(n_agents, n_points))
-    mv = np.zeros(shape=(n_agents, n_points))
+    # Full trajectories
+    x = np.zeros((n_agents, n_points))
+    z = np.zeros((n_agents, n_points))
+    vtheta = np.zeros((n_agents, n_points))
+
+    # Initial condition vector
     y = np.concatenate(
         [init_conditions["x"], init_conditions["z"], init_conditions["vtheta"]]
     )
 
+    v = np.zeros(n_agents)
+
+    # Sampling setup
+    sample_interval = int(sample_time / dt)   # how many steps between samples
+    sample_points = n_points // sample_interval
+    xs = np.zeros((n_agents, sample_points))
+    zs = np.zeros((n_agents, sample_points))
+    vthetas = np.zeros((n_agents, sample_points))
+
     t = 0.0
     for k in range(n_points):
 
+        # Store full trajectory
         x[:, k] = y[:n_agents]
         z[:, k] = y[n_agents:2*n_agents]
         vtheta[:, k] = y[2*n_agents:3*n_agents]
 
-        v = np.zeros(n_agents)
+        # Compute consensus input
+        if k % sample_interval == 0:
+            if params["use_laplacian"]:
+                v = -L @ z[:, k]
+            else:
+                for i in range(n_agents):
+                    neighbors = params["nodes"][i+1]['neighbors']
+                    neighbors_index = [n-1 for n in neighbors]
+                    v[i] = vi(i, z[:, k], neighbors_index)
+
+            # Store sampled trajectories
+            sample_idx = k // sample_interval
+            if sample_idx < sample_points:
+                xs[:, sample_idx] = x[:, k]
+                zs[:, sample_idx] = z[:, k]
+                vthetas[:, sample_idx] = vtheta[:, k]
+
+        # RK4 integration
+        g = v
+        y = rk4_step(dyn2sample, t, y, dt, g, nu[:, k], n_agents, params)
+        t += dt
+
+    return xs, zs, vthetas, sample_points
+
+x, z, vtheta, sample_points = simulate_sampled_dynamics(params, init_conditions)
+t = np.linspace(0, T, sample_points)
+plot_simulation(t, x, z, vtheta, params)
+plot_states(t, x, z, n_agents, ref_state_num=2)
+plot_sign_function(x, z, agent=1)
+
+#%% Simulation: Euler integration (for comparison)
+def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.1):
+    n_points = params["n_points"]
+    n_agents = params["n_agents"]
+    dt = params["dt"]
+
+    # Full trajectories
+    x = np.zeros((n_agents, n_points))
+    z = np.zeros((n_agents, n_points))
+    vtheta = np.zeros((n_agents, n_points))
+
+    # Initial condition vector
+    y = np.concatenate(
+        [init_conditions["x"], init_conditions["z"], init_conditions["vtheta"]]
+    )
+
+    v = np.zeros(n_agents)
+
+    # Sampling setup
+    sample_interval = int(sample_time / dt)   # how many steps between samples
+    sample_points = n_points // sample_interval
+    xs = np.zeros((n_agents, sample_points))
+    zs = np.zeros((n_agents, sample_points))
+    vthetas = np.zeros((n_agents, sample_points))
+
+    t = 0.0
+    for k in range(n_points):
+
+        # Store full trajectory
+        x[:, k] = y[:n_agents]
+        z[:, k] = y[n_agents:2*n_agents]
+        vtheta[:, k] = y[2*n_agents:3*n_agents]
+
+        # Always compute consensus input
         if params["use_laplacian"]:
             v = -L @ z[:, k]
         else:
@@ -435,45 +525,27 @@ def simulate_sampled_dynamics(params, init_conditions):
                 neighbors = params["nodes"][i+1]['neighbors']
                 neighbors_index = [n-1 for n in neighbors]
                 v[i] = vi(i, z[:, k], neighbors_index)
-        g = v
 
-        sigma = x[:, k] - z[:, k]
-        grad = np.sign(sigma)
+        # Store sampled trajectories only at sample points
+        if k % sample_interval == 0:
+            sample_idx = k // sample_interval
+            if sample_idx < sample_points:
+                xs[:, sample_idx] = x[:, k]
+                zs[:, sample_idx] = z[:, k]
+                vthetas[:, sample_idx] = vtheta[:, k]
 
-        u = np.zeros(n_agents)
-        dvtheta = np.zeros(n_agents)
-        for i in range(n_agents):
-            if params["active"][i] == 0: 
-                if np.abs(sigma[i]) > params["epsilon_on"]:
-                    params["active"][i] = 1
-                    dvtheta[i] = params["eta"] * 1.0
-                else: 
-                    dvtheta[i] = 0.0
-
-            else:
-                if np.abs(sigma[i]) <= params["epsilon_off"]:
-                    params["active"][i] = 0
-                    dvtheta[i] = 0.0
-                else:
-                    dvtheta[i] = params["eta"] * 1.0
-
-            if k % 2 == 0:  # Update control every 10 steps (10 ms if dt=1ms)
-                u[i] = g[i] - vtheta[i, k] * grad[i]
-
-        mv[:, k] = u
-        dvth[:, k] = dvtheta
-
-        y = rk4_step(dyn2sample, t, y, dt, u, nu[:, k], dvtheta, n_agents, params)
-
+        # Euler integration step
+        dydt = dyn2sample(t, y, v, nu[:, k], n_agents, params)
+        y = y + dt * dydt
         t += dt
 
-    return x, z, vtheta, mv, dvth
+    return xs, zs, vthetas, sample_points
 
-x, z, vtheta, mv, dvth = simulate_sampled_dynamics(params, init_conditions)
-t = np.linspace(0, T, n_points)
-plot_simulation(t, x, z, vtheta, mv, params)
+x, z, vtheta, sample_points = simulate_sampled_dynamics_euler(params, init_conditions)
+t = np.linspace(0, T, sample_points)
+plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_sign_function(x, z, agent=2)
-plot_hysteresis(x - z, dvth, params, agent=2)
+plot_sign_function(x, z, agent=1)
+
 #%% END OF FILE
 print(np.sign(0.0))  # Just to avoid linting error

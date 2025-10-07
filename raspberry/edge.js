@@ -129,6 +129,35 @@ if (TYPE == TYPE_BLE) {
         return { neighborVStates: neighborVStates, neighborEnabled: neighborEnabled };
     }
 
+    // // Optimized getNeighborStates using Promise.all --> T_fetch = max(T_fetch_i): limited by the slowest neighbor latency
+    // async function getNeighborStates() {
+    //     const fetchPromises = params.neighbors.map(id => {
+    //         if (params.neighborTypes[id] == TYPE_BLE) {
+    //             return bleGetState(nordicNeighbors[id]);
+    //         } else {
+    //             return axios.get(`${params.neighborAddresses[id]}/getVState`);
+    //         }
+    //     });
+
+    //     try {
+    //         const results = await Promise.all(fetchPromises);
+    //         let neighborVStates = [];
+    //         let neighborEnabled = [];
+
+    //         for (const result of results) {
+    //             // Handle structure for BLE and HTTP responses
+    //             const data = result.data || result; // HTTP returns result.data, BLE returns data directly
+    //             neighborVStates.push(Number(data.vstate));
+    //             neighborEnabled.push(Boolean(data.enabled));
+    //         }
+    //         return { neighborVStates, neighborEnabled };
+    //     } catch (error) {
+    //         console.error('Error fetching one or more neighbors concurrently:', error);
+    //         // Important: Decide how to handle failure (e.g., return empty or old data)
+    //         return { neighborVStates: [], neighborEnabled: [] }; 
+    //     }
+    // }
+
     // Consensus algorithm execution every clock period
     async function updateConsensus() { 
 
@@ -197,6 +226,9 @@ if (TYPE == TYPE_BLE) {
                     nordicNeighbors = await bleGetDevices(nordicNeighborsRequired);
                 }
 
+                // Here we wave a problem: 
+                // setInterval(...) does not guarantee that the function updateConsensus will be executed every clock period, 
+                // if the time precision is too small (minimum stable interval is around 10-15ms).
                 intervalId = setInterval(updateConsensus, updatedParams.clock);
 
             } else if (!updatedParams.trigger && params.trigger) {
