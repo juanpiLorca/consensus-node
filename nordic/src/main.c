@@ -137,6 +137,7 @@ static void update_consensus(consensus_params* cp) {
     // 1. Cast to float for calculations: system and disturbance parameters
 
     // Dynamic variables & parameters
+    float dt = (float)(cp->dt * cp->inv_scale_factor); 
     float x = (float)(cp->state * cp->inv_scale_factor);
     float z = (float)(cp->vstate * cp->inv_scale_factor);
     float vartheta = (float)(cp->vartheta * cp->inv_scale_factor);
@@ -173,9 +174,9 @@ static void update_consensus(consensus_params* cp) {
     }
 
     // 5. Update dynamic variables
-    cp->state = (int32_t)((x + cp->dt * (ui + nu)) * cp->scale_factor);
-    cp->vstate = (int32_t)((z + cp->dt * gi) * cp->scale_factor);
-    cp->vartheta = (int32_t)((vartheta + cp->dt * dvtheta) * cp->scale_factor);
+    cp->state = (int32_t)((x + dt * (ui + nu)) * cp->scale_factor);
+    cp->vstate = (int32_t)((z + dt * gi) * cp->scale_factor);
+    cp->vartheta = (int32_t)((vartheta + dt * dvtheta) * cp->scale_factor);
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;

@@ -54,7 +54,7 @@ use_laplacian = False
 #% >>> System parameters: 
 ## Simulation:
 T        = 20
-dt       = 0.01
+dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
@@ -83,10 +83,9 @@ for id in G.nodes:
     print(f"Node {id}: T = V_{id}(0)/ε {np.abs(NODES[id]['x0'] - NODES[id]['z0'])/params['epsilon_off']} [s]")
 
 ## Disturbance: bounded known input
-#nu = np.random.uniform(-3, 3, (n_agents, n_points))  # uniformly distributed between -0.5 and +0.5
-alpha   = 1.5
-beta    = 0.1
-kappa   = 0.4
+alpha   = 2.0
+beta    = 0.0
+kappa   = 0.0
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
 nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 

@@ -45,9 +45,7 @@ typedef struct {
     uint8_t N; 
     int64_t time0; 
     int32_t Ts; 
-
-    float dt; 
-
+    int32_t dt; 
     int32_t state0; 
     int32_t vstate0; 
     int32_t vartheta0;

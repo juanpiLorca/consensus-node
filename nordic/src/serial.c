@@ -26,7 +26,7 @@ consensus_params consensus = {
 	1,						// number of neighbors = N
 	0,						// time0 (internal clock time)
 	1000,					// period of the consensus task
-    1e-3,                   // "dt": integration step (since there's no continuous process running) 
+    1e4,                    // "dt": integration step (since there's no continuous process running) 
 	100,					// initial state
     50,						// initial vstate
     0,						// initial vartheta
@@ -69,6 +69,14 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
 
                     uint8_t *pt;
                     uint8_t cnt; 
+
+                    // --- DEBUGGING LOG ADDED HERE ---
+                    // if (type != 'n' && type != 'a' && type != 't' && type != 'd') {
+                    //     // Log the full received message string when an unknown type is detected
+                    //     LOG_ERR("The received message has unknown type '%c'. Full line: %s", type, evt->data.rx.buf); 
+                    // }
+                    // --------------------------------
+
                     switch (type) {
 
                         // When receiving consensus trigger type: 't'
@@ -113,6 +121,11 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                             }
 
                             consensus.N = cnt - 2; 
+                            LOG_INF("Network parameters updated over serial.\n");
+                            LOG_INF("Node ID: %d, Enabled: %d, Neighbors: ", consensus.node, consensus.enabled);
+                            for (int i = 0; i < consensus.N; i++) {
+                                LOG_INF("%d ", consensus.neighbors[i]);
+                            }
                             break; 
 
                         // When receiving algorithm realted type
@@ -124,26 +137,70 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 int32_t value = atoi(pt); 
                                 switch (cnt) {
                                     case 0:  consensus.Ts                         = value;        break;
-                                    case 1:  consensus.state0                     = value;        break; 
-                                    case 2:  consensus.vstate0                    = value;        break; 
-                                    case 3:  consensus.vartheta0                  = value;        break; 
-                                    case 4:  consensus.eta                        = value;        break; 
-                                    case 5:  consensus.disturbance.disturbance_on = (value == 1); break;
-                                    case 6:  consensus.disturbance.amplitude      = value;        break; 
-                                    case 7:  consensus.disturbance.offset         = value;        break; 
-                                    case 8:  consensus.disturbance.beta           = value;        break;
-                                    case 9:  consensus.disturbance.A              = value;        break;
-                                    case 10: consensus.disturbance.frequency      = value;        break;
-                                    case 11: consensus.disturbance.phase          = value;        break;
-                                    case 12: consensus.disturbance.samples        = value;        break; 
+                                    case 1:  consensus.dt                         = value;        break; 
+                                    case 2:  consensus.state0                     = value;        break; 
+                                    case 3:  consensus.vstate0                    = value;        break; 
+                                    case 4:  consensus.vartheta0                  = value;        break; 
+                                    case 5:  consensus.eta                        = value;        break; 
+                                    case 6:  consensus.disturbance.disturbance_on = (value == 1); break;
+                                    case 7:  consensus.disturbance.amplitude      = value;        break; 
+                                    case 8:  consensus.disturbance.offset         = value;        break; 
+                                    case 9:  consensus.disturbance.beta           = value;        break;
+                                    case 10: consensus.disturbance.A              = value;        break;
+                                    case 11: consensus.disturbance.frequency      = value;        break;
+                                    case 12: consensus.disturbance.phase          = value;        break;
+                                    case 13: consensus.disturbance.samples        = value;        break; 
                                     default: break;
                                 }
 
                                 cnt++; 
                                 pt = strtok(NULL, ",");
                             }
-                            break; 
-                        
+                            LOG_INF("Algorithm parameters updated over serial.\n");
+                            LOG_INF("Ts: %d, dt: %d, state0: %d, vstate0: %d, vartheta0: %d, eta: %d", consensus.Ts, consensus.dt, consensus.state0, consensus.vstate0, consensus.vartheta0, consensus.eta);
+                            LOG_INF("Disturbance - on: %d, amplitude: %d, offset: %d, beta: %d, A: %d, frequency: %d, phase: %d, samples: %d", 
+                                consensus.disturbance.disturbance_on, consensus.disturbance.amplitude, consensus.disturbance.offset, consensus.disturbance.beta,    
+                                consensus.disturbance.A, consensus.disturbance.frequency, consensus.disturbance.phase, consensus.disturbance.samples);
+                            break;
+
+                        // ------------ HARDCODED FIX OF CORRUPTED INITIAL BYTE: "a" --> "U" ------------
+                        // This is a temporary fix for the issue of the first byte being corrupted when sending from
+                        // the Raspberry Pi to the Nordic board. The first byte is supposed to be "a" for algorithm
+                        // parameters, but sometimes it arrives as "U". 
+                        case 'U': 
+                            pt = strtok(&(evt->data.rx.buf[1]), ","); 
+                            cnt = 0; 
+                            
+                            while (pt != NULL) {
+                                int32_t value = atoi(pt); 
+                                switch (cnt) {
+                                    case 0:  consensus.Ts                         = value;        break;
+                                    case 1:  consensus.dt                         = value;        break;
+                                    case 2:  consensus.state0                     = value;        break; 
+                                    case 3:  consensus.vstate0                    = value;        break; 
+                                    case 4:  consensus.vartheta0                  = value;        break; 
+                                    case 5:  consensus.eta                        = value;        break; 
+                                    case 6:  consensus.disturbance.disturbance_on = (value == 1); break;
+                                    case 7:  consensus.disturbance.amplitude      = value;        break; 
+                                    case 8:  consensus.disturbance.offset         = value;        break; 
+                                    case 9:  consensus.disturbance.beta           = value;        break;
+                                    case 10: consensus.disturbance.A              = value;        break;
+                                    case 11: consensus.disturbance.frequency      = value;        break;
+                                    case 12: consensus.disturbance.phase          = value;        break;
+                                    case 13: consensus.disturbance.samples        = value;        break; 
+                                    default: break;
+                                }
+
+                                cnt++; 
+                                pt = strtok(NULL, ",");
+                            }
+                            LOG_INF("Algorithm parameters updated over serial.\n");
+                            LOG_INF("Ts: %d, dt: %d, state0: %d, vstate0: %d, vartheta0: %d, eta: %d", consensus.Ts, consensus.dt, consensus.state0, consensus.vstate0, consensus.vartheta0, consensus.eta);
+                            LOG_INF("Disturbance - on: %d, amplitude: %d, offset: %d, beta: %d, A: %d, frequency: %d, phase: %d, samples: %d", 
+                                consensus.disturbance.disturbance_on, consensus.disturbance.amplitude, consensus.disturbance.offset, consensus.disturbance.beta,    
+                                consensus.disturbance.A, consensus.disturbance.frequency, consensus.disturbance.phase, consensus.disturbance.samples);
+                            break;
+     
                         default: 
                             LOG_ERR("The received message has unknown type."); 
                             break; 
