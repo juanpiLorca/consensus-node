@@ -17,7 +17,9 @@ function getIpAddress() {
 }
 
 // Define function to encode float to integer (for transmission)
-function encodeFloat(x, scale = 1e6) {
+const SCALE_FACTOR = 1e6;
+
+function encodeFloat(x, scale = SCALE_FACTOR) {
   return Math.round(x * scale);
 }
 
@@ -77,6 +79,7 @@ function createNodes(topologyConfig) {
             enabled: cfg.enabled,
             neighbors: cfg.neighbors,
             clock: cfg.clock,
+            dt: 10000,                        // 10000/SCALE_FACTOR = 0.01s sampling step for Euler integration
             state: INITIAL_STATES[nodeIndex],
             vstate: INITIAL_VSTATES[nodeIndex],
             vartheta: 0,
@@ -125,15 +128,15 @@ let TOPOLOGY;
 //  \   /       \   /
 //    4           5
 TOPOLOGY = [
-  {id: 1, ip: '192.168.0.136', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 100},
-  {id: 2, ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 100},
-  {id: 3, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 100},
-  {id: 4, ip: '192.168.0.101', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 100},
-  {id: 5, ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 100},
-  {id: 6, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 100},
-  {id: 7, ip: '192.168.0.134', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 100},
-  {id: 8, ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 100},
-  {id: 9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 100},
+  {id: 1, ip: '192.168.0.136', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 250},
+  {id: 2, ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 250},
+  {id: 3, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 250},
+  {id: 4, ip: '192.168.0.101', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 250},
+  {id: 5, ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 250},
+  {id: 6, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 250},
+  {id: 7, ip: '192.168.0.134', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 250},
+  {id: 8, ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 250},
+  {id: 9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 250},
 ]; 
 
 

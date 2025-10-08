@@ -3,8 +3,6 @@ const M_PI = Math.PI;
 class Algorithm {
 
     setParams(params) {
-        // Keeping dt as the general integration step
-        this.dt = 1e-3; 
 
         // Controller parameters:
         this.scale_factor = 1e6;
@@ -14,6 +12,7 @@ class Algorithm {
         this.epsilonON = 0.075;
         this.epsilonOFF = 0.010;
 
+        this.dt = Number(params.dt) * this.inv_scale_factor;  
         this.state0 = (Number(params.state) * this.inv_scale_factor);
         this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
