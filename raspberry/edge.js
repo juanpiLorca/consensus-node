@@ -107,58 +107,58 @@ if (TYPE == TYPE_BLE) {
     let state = {}; // --> { timestamp, state, vstate, vartheta, neighborState }
 
     // Auxiliary function to return neighbor virtual states 
-    async function getNeighborStates() {
-        let neighborVStates = [];
-        let neighborEnabled = []; 
+    // async function getNeighborStates() {
+    //     let neighborVStates = [];
+    //     let neighborEnabled = []; 
 
-        try { 
-            for (let id of params.neighbors) {
+    //     try { 
+    //         for (let id of params.neighbors) {
 
-                if (params.neighborTypes[id] == TYPE_BLE) {
-                    const data = await bleGetState(nordicNeighbors[id]); 
-                    neighborVStates.push(Number(data.vstate));
-                    neighborEnabled.push(Boolean(data.enabled));
-                } else {
-                    const response = await axios.get(`${params.neighborAddresses[id]}/getVState`)
-                    neighborVStates.push(Number(response.data.vstate));
-                    neighborEnabled.push(Boolean(response.data.enabled));
-                }
-            }
-        } catch (error) {
-            console.error('Error fetching from url');
-        }
+    //             if (params.neighborTypes[id] == TYPE_BLE) {
+    //                 const data = await bleGetState(nordicNeighbors[id]); 
+    //                 neighborVStates.push(Number(data.vstate));
+    //                 neighborEnabled.push(Boolean(data.enabled));
+    //             } else {
+    //                 const response = await axios.get(`${params.neighborAddresses[id]}/getVState`)
+    //                 neighborVStates.push(Number(response.data.vstate));
+    //                 neighborEnabled.push(Boolean(response.data.enabled));
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching from url');
+    //     }
 
-        return { neighborVStates: neighborVStates, neighborEnabled: neighborEnabled };
-    }
+    //     return { neighborVStates: neighborVStates, neighborEnabled: neighborEnabled };
+    // }
 
     // // Optimized getNeighborStates using Promise.all --> T_fetch = max(T_fetch_i): limited by the slowest neighbor latency
-    // async function getNeighborStates() {
-    //     const fetchPromises = params.neighbors.map(id => {
-    //         if (params.neighborTypes[id] == TYPE_BLE) {
-    //             return bleGetState(nordicNeighbors[id]);
-    //         } else {
-    //             return axios.get(`${params.neighborAddresses[id]}/getVState`);
-    //         }
-    //     });
+    async function getNeighborStates() {
+        const fetchPromises = params.neighbors.map(id => {
+            if (params.neighborTypes[id] == TYPE_BLE) {
+                return bleGetState(nordicNeighbors[id]);
+            } else {
+                return axios.get(`${params.neighborAddresses[id]}/getVState`);
+            }
+        });
 
-    //     try {
-    //         const results = await Promise.all(fetchPromises);
-    //         let neighborVStates = [];
-    //         let neighborEnabled = [];
+        try {
+            const results = await Promise.all(fetchPromises);
+            let neighborVStates = [];
+            let neighborEnabled = [];
 
-    //         for (const result of results) {
-    //             // Handle structure for BLE and HTTP responses
-    //             const data = result.data || result; // HTTP returns result.data, BLE returns data directly
-    //             neighborVStates.push(Number(data.vstate));
-    //             neighborEnabled.push(Boolean(data.enabled));
-    //         }
-    //         return { neighborVStates, neighborEnabled };
-    //     } catch (error) {
-    //         console.error('Error fetching one or more neighbors concurrently:', error);
-    //         // Important: Decide how to handle failure (e.g., return empty or old data)
-    //         return { neighborVStates: [], neighborEnabled: [] }; 
-    //     }
-    // }
+            for (const result of results) {
+                // Handle structure for BLE and HTTP responses
+                const data = result.data || result; // HTTP returns result.data, BLE returns data directly
+                neighborVStates.push(Number(data.vstate));
+                neighborEnabled.push(Boolean(data.enabled));
+            }
+            return { neighborVStates, neighborEnabled };
+        } catch (error) {
+            console.error('Error fetching one or more neighbors concurrently:', error);
+            // Important: Decide how to handle failure (e.g., return empty or old data)
+            return { neighborVStates: [], neighborEnabled: [] }; 
+        }
+    }
 
     // Consensus algorithm execution every clock period
     async function updateConsensus() { 

@@ -63,24 +63,32 @@ function createNodes(topologyConfig) {
     const nodes = {}; 
     for (let i = 0; i < topologyConfig.length; i++) {
         cfg = topologyConfig[i];
+
+        nodeIndex = cfg.id - 1;
+
+        if (nodeIndex < 0 || nodeIndex >= NUM_NODES) {
+            console.log(`Node ID ${cfg.id} is out of range. It should be between 1 and ${NUM_NODES}.`);
+            continue; 
+        }
+
         nodes[cfg.id] = {
             ip: cfg.ip,
             type: cfg.type,
             enabled: cfg.enabled,
             neighbors: cfg.neighbors,
             clock: cfg.clock,
-            state: INITIAL_STATES[cfg.id],
-            vstate: INITIAL_VSTATES[cfg.id],
+            state: INITIAL_STATES[nodeIndex],
+            vstate: INITIAL_VSTATES[nodeIndex],
             vartheta: 0,
             eta: 5000,
             disturbance: {                    // --> Disturbance model: m(t) = nu(t) + beta + A*sin(2*pi*f*(t-phi)) f = 10
-                disturbance_on: true,
+                disturbance_on: true,        
                 amplitude: 1500000,
-                offset: 1500000,
+                offset: 500000,
                 beta: 0, 
-                Amp: 500000,   
+                Amp: 0,   
                 frequency: 10,  
-                phase: INITIAL_PHASES[cfg.id],  // [0,1]
+                phase: INITIAL_PHASES[nodeIndex],  // [0,1]
                 samples: 1000
             }
         }

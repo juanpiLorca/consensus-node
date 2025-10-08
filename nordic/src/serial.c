@@ -135,7 +135,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                     case 9:  consensus.disturbance.A              = value;        break;
                                     case 10: consensus.disturbance.frequency      = value;        break;
                                     case 11: consensus.disturbance.phase          = value;        break;
-                                    case 12: consensus.disurbance.samples         = value;        break; 
+                                    case 12: consensus.disturbance.samples        = value;        break; 
                                     default: break;
                                 }
 
