@@ -54,7 +54,7 @@ use_laplacian = False
 #% >>> System parameters: 
 ## Simulation:
 T        = 20
-dt       = 0.001
+dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
@@ -83,9 +83,9 @@ for id in G.nodes:
     print(f"Node {id}: T = V_{id}(0)/ε {np.abs(NODES[id]['x0'] - NODES[id]['z0'])/params['epsilon_off']} [s]")
 
 ## Disturbance: bounded known input
-alpha   = 2.0
-beta    = 0.0
-kappa   = 0.0
+alpha   = 1.25
+beta    = 0.5
+kappa   = 0.25
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
 nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 
@@ -547,4 +547,39 @@ plot_states(t, x, z, n_agents, ref_state_num=2)
 plot_sign_function(x, z, agent=1)
 
 #%% END OF FILE
+
+## Hysteresis loop: 
+def hysteresis_loop():
+    sigma = np.linspace(-0.15, 0.15, 300)
+    dvtheta = np.zeros_like(sigma)
+    active = 0
+    for k in range(len(sigma) - 1):
+        if active == 0:
+            if np.abs(sigma[k]) > freeze_threshold_on:
+                active = 1
+                dvtheta[k] = 1 * eta
+            else: 
+                dvtheta[k] = 0
+        else:
+            if np.abs(sigma[k]) <= freeze_threshold_off:
+                active = 0
+                dvtheta[k] = 0
+            else:
+                dvtheta[k] = 1 * eta
+
+    plt.figure(figsize=(7,5))
+    plt.step(np.abs(sigma), dvtheta, where='post', lw=2)
+    plt.xlim(0, 0.15)
+    plt.axhline(0, color='k', linestyle='--', linewidth=1)
+    plt.axvline(0, color='k', linestyle='--', linewidth=1)
+    plt.axvline(freeze_threshold_off, color='r', linestyle='--', label=r'$\epsilon_{\mathrm{off}}$')  
+    plt.axvline(freeze_threshold_on, color='g', linestyle='--', label=r'$\epsilon_{\mathrm{on}}$')
+    plt.title('Hysteresis behavior', fontsize=14)
+    plt.xlabel(r'$|\sigma(t)|$', fontsize=12)
+    plt.ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
+    plt.legend()
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    plt.show()
+
 print(np.sign(0.0))  # Just to avoid linting error
