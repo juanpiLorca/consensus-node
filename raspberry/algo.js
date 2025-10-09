@@ -26,7 +26,7 @@ class Algorithm {
         // Constant Bias Component
         this.dist_beta = Number(params.disturbance.beta) * this.inv_scale_factor;
         // Sinusoidal Component
-        this.dist_A = Number(params.disturbance.Amp) * this.inv_scale_factor;                 // Amplitude A
+        this.dist_A = Number(params.disturbance.Amp) * this.inv_scale_factor;               // Amplitude A
         this.dist_frequency = Number(params.disturbance.frequency);                         // Frequency f (in Hz)
         this.dist_phase_shift = Number(params.disturbance.phase) * this.inv_scale_factor;   // Phase phi (treated as time shift in seconds)
 

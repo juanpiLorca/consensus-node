@@ -9,7 +9,7 @@ const TYPE = process.argv[2];
 if (TYPE == TYPE_BLE) {
 
     // Import serial modules 
-    const { parser, serialWrite, serialDelay } = require('./serial'); 
+    const { parser, serialWrite, serialDelay, serialDrain } = require('./serial'); 
 
     // For detecting trigger changes
     let pastTrigger = false;
@@ -20,7 +20,7 @@ if (TYPE == TYPE_BLE) {
         
         const line = data.replace(/\r/g, '').replace(/\n/g, '');
 
-        // Log to console the nordic serial logging: 
+        // Log to console the nordic serial logging: [SERIAL RX]
         console.log(line);
 
         const msgType = line[0]; 
@@ -42,22 +42,32 @@ if (TYPE == TYPE_BLE) {
 
     process.on('message', async (params) => {
 
-        // 3 types of messages from backend-process: n -> network, a -> consensus (used to be 'a' as algorithm), t -> trigger
+        // 3 types of messages from backend-process: n -> network, a,p -> consensus (used to be 'a' as algorithm), t -> trigger
         // (1) Network params: { enabled, node, neighbors } --> 'n'
-        // (2) Consensus params updated to: { clock, state, vstate, vartheta, eta, disturbance: { ... }} --> 'a'
-        // (3) Trigger params: { trigger } --> 't'
         const msgNetwork = `n${params.enabled ? 1 : 0},${params.node},${params.neighbors.join(',')}\n\r`;
-        const msgConsensus = `a${params.clock},${params.dt},${params.state},${params.vstate},${params.vartheta},${params.eta},` +
-        `${params.disturbance.disturbance_on ? 1 : 0},${params.disturbance.amplitude},${params.disturbance.offset},` +
-        `${params.disturbance.beta},${params.disturbance.Amp},${params.disturbance.frequency},${params.disturbance.phase},` +
-        `${params.disturbance.samples}\n\r`;
+        // >>> Split in two messages to avoid overflow in nordic uart buffer (defined as 64 bytes) <<<
+        // (2.1) Consensus Algorithm params updated to: { clock, dt, state, vstate, vartheta, eta } --> 'a'
+        const msgConsensus = `a${params.clock},${params.dt},${params.state},${params.vstate},${params.vartheta},${params.eta}\n\r`; 
+        // (2.2) Consensus Disturbance params update to : { amplitude, offset, beta, A, f, phi, N_samples } --> 'p'
+        const msgDisturbance = `p${params.disturbance.disturbance_on ? 1 : 0},${params.disturbance.amplitude},${params.disturbance.offset},` +
+            `${params.disturbance.beta},${params.disturbance.Amp},${params.disturbance.frequency},${params.disturbance.phase},` +
+            `${params.disturbance.samples}\n\r`;
+        // (3) Trigger params: { trigger } --> 't'
         const msgTrigger = `t${params.trigger ? 1 : 0}\n\r`;
 
         try {
+
             await serialWrite(msgNetwork); 
+            await serialDrain(); 
             await serialDelay();
             
             await serialWrite(msgConsensus);
+            await serialDrain();
+            await serialDelay();
+
+            await serialWrite(msgDisturbance);
+            await serialDrain();
+            await serialDelay();
 
             if ((params.trigger && !pastTrigger) || (!params.trigger && pastTrigger)) {
                 await serialDelay();
