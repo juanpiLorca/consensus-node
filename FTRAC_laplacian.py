@@ -16,7 +16,7 @@ def darken_color(color, amount=0.6):
         return color 
 
 ## Graph definition: 
-np.random.seed(42)  # For reproducibility
+np.random.seed(42)  # For reproducibility {40, 41, 42}
 
 NODES = {
     1: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4]},
@@ -30,7 +30,6 @@ NODES = {
     9: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1]},
 }
 
-
 G = nx.DiGraph()
 for node, props in NODES.items():
     G.add_node(node, pos=(props['x0'], props['z0']))
@@ -40,11 +39,6 @@ for node, props in NODES.items():
 print("Graph nodes:", G.nodes)
 print("Graph edges:", G.edges)
 
-## Plotting the graph:
-subax1 = plt.subplot(121)
-nx.draw(G, with_labels=True, font_weight='bold')
-plt.show()
-
 ## Laplacian matrix: 
 L = nx.linalg.directed_laplacian_matrix(G)
 L = np.array(L)
@@ -53,7 +47,7 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 20
+T        = 25
 dt       = 0.01
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -79,13 +73,10 @@ params = {
     "nodes":         NODES,
 }
 
-for id in G.nodes:
-    print(f"Node {id}: T = V_{id}(0)/ε {np.abs(NODES[id]['x0'] - NODES[id]['z0'])/params['epsilon_off']} [s]")
-
 ## Disturbance: bounded known input
-alpha   = 1.25
-beta    = 0.5
-kappa   = 0.25
+alpha   = 1.5
+beta    = 0.1
+kappa   = 0.4
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
 nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 
@@ -180,40 +171,51 @@ def plot_states(t, x, z, n_agents, ref_state_num=1):
     plt.tight_layout()
     plt.show()
 
-def plot_sign_function(x, z, agent=1):
+def plot_lyapunov(t, x, z, params, agent=1):
+    epsilon = (params["epsilon_off"], params["epsilon_on"])
     sigma = x - z
-    grad = np.sign(sigma)
+    V = np.abs(sigma[agent-1,:])
 
-    fig, ax = plt.subplots(figsize=(6, 4))
-    # --- histogram of grad values ---
-    grad_vals = grad[agent-1, :]
-    bins = [-1.5, -0.5, 0.5, 1.5]   # bins centered at -1, 0, +1
-    counts, _, _ = ax.hist(grad_vals, bins=bins, rwidth=0.6,
-                               color='tab:orange', edgecolor='k')
+    fig, ax = plt.subplots(figsize=(9, 5))
 
-    ax.set_xticks([-1, 0, 1])
-    ax.set_title(f'Histogram of sign values for Agent {agent}', fontsize=14)
-    ax.set_xlabel('Sign value', fontsize=12)
-    ax.set_ylabel('Count', fontsize=12)
-    ax.grid(axis='y', linestyle='--', alpha=0.7)
-
-    # annotate counts above bars
-    for x_pos, c in zip([-1, 0, 1], counts):
-        ax.text(x_pos, c + 0.5, str(int(c)), ha='center', fontsize=12)
+    for i in range(n_agents):
+        ax.plot(t, V, label=f'$V(\\sigma_{{{i+1}}})$')
+    ax.axhline(epsilon[0], color='k', linestyle='--', label='$\\epsilon$')
+    ax.axhline(epsilon[1], color='r', linestyle='--', label='$\\bar{\\epsilon}$')
+    ax.set_ylim([0, (epsilon[1] * 2.0)])
+    ax.set_title('Lyapunov Function $V(x)$')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(f'$V(x)$')
+    ax.legend(ncol=3)
+    ax.grid(True)
 
     plt.tight_layout()
     plt.show()
 
-def plot_hysteresis(sigma, dvtheta, params, agent=1):
-    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
-
-    n_agents = params["n_agents"]
+def plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1):
     epsilon = (params["epsilon_off"], params["epsilon_on"])
     eta = params["eta"]
 
-    error = sigma # error term
+    sigma = x - z
     sigma = sigma[agent-1, :]
+    grad = np.sign(sigma)
     dvtheta_t = dvtheta[agent-1, :]
+
+    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
+    # --- histogram of grad values ---
+    bins = [-1.5, -0.5, 0.5, 1.5]   # bins centered at -1, 0, +1
+    counts, _, _ = axs[0].hist(grad, bins=bins, rwidth=0.6,
+                               color='tab:orange', edgecolor='k')
+
+    axs[0].set_xticks([-1, 0, 1])
+    axs[0].set_title(f'Histogram of sign values for Agent {agent}', fontsize=14)
+    axs[0].set_xlabel('Sign value', fontsize=12)
+    axs[0].set_ylabel('Count', fontsize=12)
+    axs[0].grid(axis='y', linestyle='--', alpha=0.7)
+
+    # annotate counts above bars
+    for x_pos, c in zip([-1, 0, 1], counts):
+        axs[0].text(x_pos, c + 0.5, str(int(c)), ha='center', fontsize=12)
 
     # --- Apply hysteresis logic ---
     active = 0
@@ -233,44 +235,31 @@ def plot_hysteresis(sigma, dvtheta, params, agent=1):
                 dvtheta[k] = 1 * eta
     
     # Main hysteresis curve
-    axs[0].step(np.abs(sigma), dvtheta_t, where='post', lw=2,
+    axs[1].step(np.abs(sigma), dvtheta_t, where='post', lw=2,
             label=rf'$\dot{{\vartheta}}_{{{agent}}}(|\sigma_{{{agent}}}|)$ simulated',
             color='tab:blue')
-    axs[0].step(np.abs(sigma), dvtheta, where='post', lw=2,
+    axs[1].step(np.abs(sigma), dvtheta, where='post', lw=2,
             label=rf'$\dot{{\vartheta}}_{{{agent}}}(|\sigma_{{{agent}}}|)$ ideal',
             color='tab:orange', linestyle='--')
-    axs[0].set_xlim(0, (2) * params["epsilon_on"])
+    axs[1].set_xlim(0, (2) * params["epsilon_on"])
     # Reference lines
-    axs[0].axhline(0, color='k', linestyle='--', linewidth=1)
-    axs[0].axvline(0, color='k', linestyle='--', linewidth=1)
+    axs[1].axhline(0, color='k', linestyle='--', linewidth=1)
+    axs[1].axvline(0, color='k', linestyle='--', linewidth=1)
 
     # Hysteresis thresholds
-    axs[0].axvline(params["epsilon_off"], color='r', linestyle='--', 
+    axs[1].axvline(params["epsilon_off"], color='r', linestyle='--', 
                label=r'$\pm \epsilon_{\mathrm{off}}$')
-    axs[0].axvline(-params["epsilon_off"], color='r', linestyle='--')
-    axs[0].axvline(params["epsilon_on"], color='g', linestyle='--', 
+    axs[1].axvline(-params["epsilon_off"], color='r', linestyle='--')
+    axs[1].axvline(params["epsilon_on"], color='g', linestyle='--', 
                label=r'$\pm \epsilon_{\mathrm{on}}$')
-    axs[0].axvline(-params["epsilon_on"], color='g', linestyle='--')
+    axs[1].axvline(-params["epsilon_on"], color='g', linestyle='--')
 
     # Labels and styling
-    axs[0].set_title(f'Hysteresis behavior for Agent {agent}', fontsize=14)
-    axs[0].set_xlabel(r'$|\sigma(t)|$', fontsize=12)
-    axs[0].set_ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
-    axs[0].legend()
-    axs[0].grid(True, linestyle='--', alpha=0.7)
-
-    for i in range(n_agents):
-        axs[1].plot(t, error[i,:], label=f'$\\sigma_{i+1}$')
-    axs[1].axhline(epsilon[0], color='k', linestyle='--', label='$\\pm \\epsilon$')
-    axs[1].axhline(-epsilon[0], color='k', linestyle='--')
-    axs[1].axhline(epsilon[1], color='r', linestyle='--', label='$\\pm \\bar{\\epsilon}$')
-    axs[1].axhline(-epsilon[1], color='r', linestyle='--')
-    axs[1].set_ylim([-(epsilon[1] * 1.5), (epsilon[1] * 1.5)])
-    axs[1].set_title('Error term $\\sigma_i$')
-    axs[1].set_xlabel('Time (s)')
-    axs[1].set_ylabel('$\\sigma(t)$')
-    axs[1].legend(ncol=3)
-    axs[1].grid(True)
+    axs[1].set_title(f'Hysteresis behavior for Agent {agent}', fontsize=14)
+    axs[1].set_xlabel(r'$|\sigma(t)|$', fontsize=12)
+    axs[1].set_ylabel(r'$\dot{\vartheta}(t)$', fontsize=12)
+    axs[1].legend()
+    axs[1].grid(True, linestyle='--', alpha=0.7)
 
     plt.tight_layout()
     plt.show()
@@ -417,8 +406,8 @@ x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_sign_function(x, z, agent=2)
-plot_hysteresis(x - z, dvth, params, agent=2)
+plot_lyapunov(t, x, z, params, agent=1)
+plot_hysteresis_and_sign_function(x, z, dvth, params, agent=1)
 
 #%% Simulation: sampled dynamics (to mimic microcontroller and network behavior)
 def simulate_sampled_dynamics(params, init_conditions, sample_time=0.1):
@@ -481,7 +470,8 @@ x, z, vtheta, sample_points = simulate_sampled_dynamics(params, init_conditions)
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_sign_function(x, z, agent=1)
+plot_lyapunov(t, x, z, params, agent=1)
+plot_hysteresis_and_sign_function(x, z, vtheta, params, agent=1)
 
 #%% Simulation: Euler integration (for comparison)
 def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.1):
@@ -544,10 +534,10 @@ x, z, vtheta, sample_points = simulate_sampled_dynamics_euler(params, init_condi
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_sign_function(x, z, agent=1)
+plot_lyapunov(t, x, z, params, agent=1)
+plot_hysteresis_and_sign_function(x, z, vtheta, params, agent=1)
 
 #%% END OF FILE
-
 ## Hysteresis loop: 
 def hysteresis_loop():
     sigma = np.linspace(-0.15, 0.15, 300)
