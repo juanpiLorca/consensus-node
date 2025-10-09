@@ -47,8 +47,8 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 25
-dt       = 0.01
+T        = 30.0
+dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
 n_agents = len(NODES)
@@ -57,7 +57,7 @@ n_agents = len(NODES)
 omega                 = 1.0     # Timer oscillator frequency (rad/s) --> slope 1s/1s
 eta                   = 0.5     # adaptation gain
 freeze_threshold_off  = 0.010   # error-threshold to freeze gain evolution ("ε" in paper)
-freeze_threshold_on   = 0.075   # error-threshold to re-activate gain evolution ("ε̄" in paper)
+freeze_threshold_on   = 0.050   # error-threshold to re-activate gain evolution ("ε̄" in paper)
 active                = np.zeros(n_agents)  # Initially, all agents are inactive
 
 params = {
@@ -75,8 +75,8 @@ params = {
 
 ## Disturbance: bounded known input
 alpha   = 1.5
-beta    = 0.1
-kappa   = 0.4
+beta    = 0.5
+kappa   = 1.0
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
 nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 

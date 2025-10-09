@@ -40,7 +40,7 @@ consensus_params consensus = {
     50,                     // vstate
     1,                      // vartheta
     0,                      // active boolean
-    0.075f,                 // epsilonON
+    0.050f,                 // epsilonON
     0.010f,                 // epsilonOFF
     neighbor_enabled,       // neighbor enabled
     neighbor_vstates,       // neighbor vstates

@@ -8,7 +8,7 @@ class Algorithm {
         this.scale_factor = 1e6;
         this.inv_scale_factor = 1e-6;
         this.active = 0;
-        this.epsilonON = 0.075;
+        this.epsilonON = 0.050;
         this.epsilonOFF = 0.010;
 
         this.dt = Number(params.dt) * this.inv_scale_factor;  
