@@ -7,7 +7,6 @@ class Algorithm {
         // Controller parameters:
         this.scale_factor = 1e6;
         this.inv_scale_factor = 1e-6;
-        this.scale_eta = 1e-4; 
         this.active = 0;
         this.epsilonON = 0.075;
         this.epsilonOFF = 0.010;
@@ -16,7 +15,7 @@ class Algorithm {
         this.state0 = (Number(params.state) * this.inv_scale_factor);
         this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);
-        this.eta = (Number(params.eta) * this.scale_eta);
+        this.eta = (Number(params.eta) * this.inv_scale_factor);
 
         // --- DISTURBANCE PARAMETERS (Matching the Noridic structure) ---
         this.dist_on = params.disturbance.disturbance_on; 

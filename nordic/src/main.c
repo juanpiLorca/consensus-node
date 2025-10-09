@@ -141,7 +141,7 @@ static void update_consensus(consensus_params* cp) {
     float x = (float)(cp->state * cp->inv_scale_factor);
     float z = (float)(cp->vstate * cp->inv_scale_factor);
     float vartheta = (float)(cp->vartheta * cp->inv_scale_factor);
-    float eta = (float)(cp->eta * cp->scale_eta);
+    float eta = (float)(cp->eta * cp->inv_scale_factor);
 
     // Disturbance: 
     float nu = disturbance(cp);

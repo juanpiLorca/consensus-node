@@ -83,7 +83,7 @@ function createNodes(topologyConfig) {
             state: INITIAL_STATES[nodeIndex],
             vstate: INITIAL_VSTATES[nodeIndex],
             vartheta: 0,
-            eta: 5000,
+            eta: 500000,
             disturbance: {                    // --> Disturbance model: m(t) = nu(t) + beta + A*sin(2*pi*f*(t-phi)) f = 10
                 disturbance_on: true,        
                 amplitude: 1500000,
@@ -139,6 +139,50 @@ TOPOLOGY = [
 //   {id: 9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 250},
 // ]; 
 
+// 18nodes-ring
+// ... --- 1 --- 2 --- 3 --- ... --- 16 --- 17 --- 18 --- ...
+// NODES = {
+//   1: {ip: '192.168.1.125', type: TYPE_BLE,    enabled:  true, neighbors: [ 2,18], clock: 1000, state: 1000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   2: {ip: '192.168.1.126', type: TYPE_BLE,    enabled:  true, neighbors: [ 3, 1], clock: 1000, state: 1500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   3: {ip: '192.168.1.127', type: TYPE_BLE,    enabled:  true, neighbors: [ 4, 2], clock: 1000, state: 2000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   4: {ip: '192.168.1.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 5, 3], clock: 1000, state: 2500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   5: {ip: '192.168.1.131', type: TYPE_BLE,    enabled:  true, neighbors: [ 6, 4], clock: 1000, state: 3000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   6: {ip: '192.168.1.132', type: TYPE_BLE,    enabled:  true, neighbors: [ 7, 5], clock: 1000, state: 3500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   7: {ip: '192.168.1.125', type: TYPE_BRIDGE, enabled: false, neighbors: [ 8, 6], clock: 1000, state: 4000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   8: {ip: '192.168.1.126', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 9, 7], clock: 1000, state: 4500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//   9: {ip: '192.168.1.127', type: TYPE_BRIDGE, enabled:  true, neighbors: [10, 8], clock: 1000, state: 5000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  10: {ip: '192.168.1.130', type: TYPE_WIFI,   enabled:  true, neighbors: [11, 9], clock: 1000, state: 5500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  11: {ip: '192.168.1.131', type: TYPE_WIFI,   enabled:  true, neighbors: [12,10], clock: 1000, state: 6000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  12: {ip: '192.168.1.132', type: TYPE_WIFI,   enabled:  true, neighbors: [13,11], clock: 1000, state: 6500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  13: {ip: '192.168.1.125', type: TYPE_WIFI,   enabled:  true, neighbors: [14,12], clock: 1000, state: 7000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  14: {ip: '192.168.1.126', type: TYPE_WIFI,   enabled:  true, neighbors: [15,13], clock: 1000, state: 7500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  15: {ip: '192.168.1.127', type: TYPE_WIFI,   enabled:  true, neighbors: [16,14], clock: 1000, state: 8000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  16: {ip: '192.168.1.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [17,15], clock: 1000, state: 8500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  17: {ip: '192.168.1.131', type: TYPE_BRIDGE, enabled:  true, neighbors: [18,16], clock: 1000, state: 9000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+//  18: {ip: '192.168.1.132', type: TYPE_BRIDGE, enabled: false, neighbors: [ 1,17], clock: 1000, state: 9500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
+// }
+// // 18nodes-ring-dir
+// // ... <--- 1 <--- 2 <--- 3 <--- ... <--- 16 <--- 17 <--- 18 <--- ...
+// NODES = {
+//   1: {ip: '192.168.1.125', type: TYPE_BLE,    enabled:  true, neighbors: [ 2], clock: 1000, state: 1000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   2: {ip: '192.168.1.126', type: TYPE_BLE,    enabled:  true, neighbors: [ 3], clock: 1000, state: 1500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   3: {ip: '192.168.1.127', type: TYPE_BLE,    enabled:  true, neighbors: [ 4], clock: 1000, state: 2000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   4: {ip: '192.168.1.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 5], clock: 1000, state: 2500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   5: {ip: '192.168.1.131', type: TYPE_BLE,    enabled:  true, neighbors: [ 6], clock: 1000, state: 3000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   6: {ip: '192.168.1.132', type: TYPE_BLE,    enabled:  true, neighbors: [ 7], clock: 1000, state: 3500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   7: {ip: '192.168.1.125', type: TYPE_BRIDGE, enabled: false, neighbors: [ 8], clock: 1000, state: 4000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   8: {ip: '192.168.1.126', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 9], clock: 1000, state: 4500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//   9: {ip: '192.168.1.127', type: TYPE_BRIDGE, enabled:  true, neighbors: [10], clock: 1000, state: 5000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  10: {ip: '192.168.1.130', type: TYPE_WIFI,   enabled:  true, neighbors: [11], clock: 1000, state: 5500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  11: {ip: '192.168.1.131', type: TYPE_WIFI,   enabled:  true, neighbors: [12], clock: 1000, state: 6000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  12: {ip: '192.168.1.132', type: TYPE_WIFI,   enabled:  true, neighbors: [13], clock: 1000, state: 6500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  13: {ip: '192.168.1.125', type: TYPE_WIFI,   enabled:  true, neighbors: [14], clock: 1000, state: 7000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  14: {ip: '192.168.1.126', type: TYPE_WIFI,   enabled:  true, neighbors: [15], clock: 1000, state: 7500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  15: {ip: '192.168.1.127', type: TYPE_WIFI,   enabled:  true, neighbors: [16], clock: 1000, state: 8000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  16: {ip: '192.168.1.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [17], clock: 1000, state: 8500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  17: {ip: '192.168.1.131', type: TYPE_BRIDGE, enabled:  true, neighbors: [18], clock: 1000, state: 9000, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+//  18: {ip: '192.168.1.132', type: TYPE_BRIDGE, enabled: false, neighbors: [ 1], clock: 1000, state: 9500, gamma: 0, lambda: 100, pole: 50, dead: 50, disturbance: {random: true, offset: 0, amplitude: 50, phase: 0, samples: 1}},
+// }
 
 // n30-dirline
 // 1 <--- 2 <--- 3 <--- ... 28 <--- 29 <--- (30 disabled)
