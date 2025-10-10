@@ -111,17 +111,32 @@ if (TYPE == TYPE_BLE) {
     app.use(express.json());
 
     // Store data in RAM for consensus parameters/variables
-    // { enabled, node, neighbors, clock, state, vstate, vartheta, eta, disturbance: { random, offset, amplitude, phase, samples }, trigger, 
-    //   neighborTypes: {}, neighborAddresses: {} }
     // New configuration posted in /updateParams route
     let params = { trigger: false }; 
 
     // Global variables related to the consensus algorithm
-    let intervalId = null;
+    let simulationLoopTimeoutId = null;     // ID for the dynamics loop (dt --> clock)
+    let networkLoop = null;                 // ID for the network fetch loop (must be faster than 10-15 ms)
     let isInitial = true;
 
     let time0 = 0; 
     let state = {}; // --> { timestamp, state, vstate, vartheta, neighborState }
+
+    // --- Shared State for Decoupled Loops --- //
+    let latestNeighborVStates = [];
+    let latestNeighborEnabled = [];
+    const NETWORK_FETCH_INTERVAL = 100; // [ms]
+
+    // Auxiliary function for starting BLE for bridge configuration (restarts the advertising process if any error)
+    function startBleBridge() {
+        advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.vstate)}"`);
+        advProcess.on('exit', (code, signal) => {
+            if (code !== 0) {
+                console.log(`Advertise process exited with error code ${code}. Restarting advertising process...`); 
+                startBleBridge(); 
+            }
+        }); 
+    }
 
     // Auxiliary function to return neighbor virtual states 
     async function getNeighborStates() {
@@ -148,37 +163,60 @@ if (TYPE == TYPE_BLE) {
         return { neighborVStates: neighborVStates, neighborEnabled: neighborEnabled };
     }
 
-    // Consensus algorithm execution every clock period
-    async function updateConsensus() { 
-
-        // 1. Update state: timestamp, state, vstate, vartheta and neighborState
-        state.timestamp = Date.now() - time0; 
-
-        if (params.enabled) {
-            const { neighborVStates, neighborEnabled } = await getNeighborStates();
-            state.neighborVStates = neighborVStates;
-            ({ state: state.state, vstate: state.vstate, vartheta: state.vartheta } = algo.update(neighborVStates, neighborEnabled));
+    /**
+     * SLOW LOOP: Network Fetching
+     * Fetches neighbor data, updates the shared state variables and sends the lastest complete state
+     * to the backend process every NETWORK_FETCH_INTERVAL [ms:
+     */
+    async function NetworkFetchLoop() {
+        if (!params.trigger) {
+            networkLoopTimeoutId = null;
+            return;
         }
 
-        // 2. Send state to backend-process
-        process.send(state); //process.send({ type: 'state', data: state });
+        // 1. Fetch data from neighbors (slow, asynchronous operation)
+        const { neighborVStates, neighborEnabled } = await getNeighborStates();
+        
+        // 2. Update the shared state variables
+        latestNeighborVStates = neighborVStates;
+        latestNeighborEnabled = neighborEnabled;
+        
+        // 3. Send the updated local state (which was updated by the fast loop) to the backend process
+        process.send(state); 
 
-        // 3. Broadcast via BLE
+        // 4. Broadcast via BLE (only needs to happen at the slow network update rate)
         if (TYPE === TYPE_BRIDGE) {
             const bleCommand = `manufacturer 0x0059 0x7` + bleGenerateManufacturerData(params.enabled, params.node, state.vstate) + `\r`; 
             advProcess.stdin.write(bleCommand);
         }
+
+        // 5. Schedule next run
+        networkLoopTimeoutId = setTimeout(networkFetchLoop, NETWORK_FETCH_INTERVAL);
     }
 
-    // Auxiliary function for starting BLE for bridge configuration (restarts the advertising process if any error)
-    function startBleBridge() {
-        advProcess = exec(`./bleadv.sh "${bleGenerateManufacturerData(params.enabled, params.node, state.vstate)}"`);
-        advProcess.on('exit', (code, signal) => {
-            if (code !== 0) {
-                console.log(`Advertise process exited with error code ${code}. Restarting advertising process...`); 
-                startBleBridge(); 
-            }
-        }); 
+    /**
+     * FAST LOOP (Simulation/Euler Integration) - Runs every params.dt (e.g., 1ms).
+     * Reads the latest available neighbor data (snapshot) and updates the local state.
+     * Executes the consensus algorithm update step.
+     */
+    async function SimulationLoop() { 
+        if (!params.trigger) {
+            simulationLoopTimeoutId = null;
+            return;
+        }
+
+        // 1. Update state: timestamp
+        state.timestamp = Date.now() - time0; 
+
+        if (params.enabled) {
+            // READ from the latest shared variables (instantaneous, no await)
+            state.neighborVStates = latestNeighborVStates;
+            // Execute the fast Euler step
+            ({ state: state.state, vstate: state.vstate, vartheta: state.vartheta } = algo.update(latestNeighborVStates, latestNeighborEnabled));
+        }
+
+        // 2. Schedule the next iteration using the DT period (params.dt)
+        simulationLoopTimeoutId = setTimeout(highFreqSimulationLoop, params.dt);
     }
 
     // Edge-process: on params message received from backend-process
@@ -210,19 +248,28 @@ if (TYPE == TYPE_BLE) {
                 algo.setParams(params);
                 algo.resetInitialConditions(); 
 
+                latestNeighborVStates = [];
+                latestNeighborEnabled = [];
+
                 if (TYPE === TYPE_BRIDGE) {
                     startBleBridge();
                     const nordicNeighborsRequired = updatedParams.neighbors.filter(id => updatedParams.neighborTypes[id] === TYPE_BLE).map(id => id);
                     nordicNeighbors = await bleGetDevices(nordicNeighborsRequired);
                 }
 
-                // Here we wave a problem: 
-                // setInterval(...) does not guarantee that the function updateConsensus will be executed every clock period, 
-                // if the time precision is too small (minimum stable interval is around 10-15ms).
-                intervalId = setInterval(updateConsensus, updatedParams.clock);
+                // *** START BOTH LOOPS ***
+                // 1. Start the SLOW network fetch/post loop (100ms)
+                networkLoopTimeoutId = setTimeout(NetworkFetchLoop, NETWORK_FETCH_INTERVAL_MS);
+                // 2. Start the FAST simulation loop (dt, e.g., 1ms)
+                simulationLoopTimeoutId = setTimeout(SimulationLoop, params.dt);
 
             } else if (!updatedParams.trigger && params.trigger) {
-                clearInterval(intervalId);
+                if (simulationLoopTimeoutId) {
+                    clearTimeout(simulationLoopTimeoutId);
+                }
+                if (networkLoopTimeoutId) {
+                    clearTimeout(networkLoopTimeoutId);
+                }
                 if (TYPE === TYPE_BRIDGE) {
                     advProcess.kill();
                 }

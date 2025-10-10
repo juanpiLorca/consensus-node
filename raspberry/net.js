@@ -79,7 +79,7 @@ function createNodes(topologyConfig) {
             enabled: cfg.enabled,
             neighbors: cfg.neighbors,
             clock: cfg.clock,
-            dt: 10000,                        // 10000/SCALE_FACTOR = 0.01s sampling step for Euler integration
+            dt: 1000,                        // 10000/SCALE_FACTOR = 0.01s sampling step for Euler integration
             state: INITIAL_STATES[nodeIndex],
             vstate: INITIAL_VSTATES[nodeIndex],
             vartheta: 0,
