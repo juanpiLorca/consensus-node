@@ -174,8 +174,8 @@ static void update_consensus(consensus_params* cp) {
     }
 
     // 5. Update dynamic variables
-    cp->state = (int32_t)((x + dt * (ui + nu)) * cp->scale_factor);
-    cp->vstate = (int32_t)((z + dt * gi) * cp->scale_factor);
+    cp->state = (int32_t)(fmaxf(0.0f, (x + dt * (ui + nu))) * cp->scale_factor);
+    cp->vstate = (int32_t)(fmaxf(0.0f, (z + dt * gi)) * cp->scale_factor);
     cp->vartheta = (int32_t)((vartheta + dt * dvtheta) * cp->scale_factor);
 
     // 6. Update disturbance parameters & log info.

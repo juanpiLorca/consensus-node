@@ -97,10 +97,10 @@ class Algorithm {
             }
         }
 
-        this.state = this.state + this.dt * (u + disturbance);
-        this.vstate = this.vstate + this.dt * this.gi;
-        this.vartheta = this.vartheta + this.dt * dvtheta;
-        
+        this.state = Math.max(0, this.state + this.dt * (u + disturbance));
+        this.vstate = Math.max(0, this.vstate + this.dt * this.gi);
+        this.vartheta = Math.max(0, this.vartheta + this.dt * dvtheta);
+
         this.cnt = (this.cnt + 1) % this.samples;
 
         return {

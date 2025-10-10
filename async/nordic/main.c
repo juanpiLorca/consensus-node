@@ -30,22 +30,27 @@ LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 
 // --- GLOBAL TIMER DECLARATION (FAST LOOP) ---
 // This timer will trigger the simulation logic at the high-frequency dt rate.
-static struct k_timer sim_timer;
+static struct k_timer dynamics_timer;
 // -------------------------------------------
+
+// --- SYNCHRONIZATION: MUTEX FOR CONSENSUS STATE ---
+// Mutex to protect the global 'consensus' state from concurrent access 
+// by the slow thread and the fast timer handler.
+static struct k_mutex consensus_mutex;
+// --------------------------------------------------
 
 /**
  * Function declarations: --------------------------------------------------------------
  */
-static void leds_init(void);                        // Auxiliary function for starting LEDs
-static void bt_init(void);                          // Auxiliary function for starting Bluetooth
-static float disturbance(consensus_params* cp);     // Auxiliary function to compute disturbance
-static float sign(float x);                         // Auxiliary function to get the sign of a float number
-static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
-static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
-static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
-
-// --- NEW FUNCTION DECLARATIONS ---
-static void timer_fast_simulation_handler(struct k_timer *dummy); // Handler for the high-frequency timer
+static void leds_init(void);                                 // Auxiliary function for starting LEDs
+static void bt_init(void);                                   // Auxiliary function for starting Bluetooth
+static float disturbance(consensus_params* cp);              // Auxiliary function to compute disturbance
+static float sign(float x);                                  // Auxiliary function to get the sign of a float number
+static float max_of_two_non_negative_f(float a, float b);    // Auxiliary function to get the max of two floats, clamped at 0.0f
+static float v_i(consensus_params* cp);                      // Function to compute the v_i term in the consensus algorithm
+static void update_consensus(consensus_params* cp);          // Function to update the consensus algorithm
+static void thread_consensus(void);                          // Thread to run the consensus algorithm periodically
+static void timer_fast_simulation_handler(struct k_timer *dummy);   // Handler for the high-frequency dynamics timer
 // ---------------------------------
 /*
  * -------------------------------------------------------------------------------------
@@ -61,9 +66,12 @@ int main(void) {
     leds_init();
     bt_init();
     serial_init();
+    
+    // Initialize the synchronization primitives
+    k_mutex_init(&consensus_mutex);
 
-    // Initialize the high-frequency simulation timer
-    k_timer_init(&sim_timer, timer_fast_simulation_handler, NULL);
+    // Initialize the high-frequency dynamics timer
+    k_timer_init(&dynamics_timer, timer_fast_simulation_handler, NULL);
 
     while (1) {
         dk_set_led(LED_STATUS, (++blink_status) % 2);
@@ -132,6 +140,19 @@ static float sign(float x) {
     }
 }
 
+/**
+ * Function to find the maximum of two floating-point numbers (float type), 
+ * clamped to be non-negative.
+ */
+static float max_of_two_non_negative_f(float a, float b) {
+    // 1. Find the maximum of the two inputs
+    float max_val = fmaxf(a, b);
+    
+    // 2. Clamp the result: Return the maximum between 0.0f and max_val.
+    // This ensures no negative value is returned.
+    return fmaxf(0.0f, max_val); 
+}
+
 static float v_i(consensus_params* cp) {
     float vstate_f = (float)(cp->vstate * cp->inv_scale_factor);
     float vi = 0.0f;
@@ -186,9 +207,10 @@ static void update_consensus(consensus_params* cp) {
     }
 
     // 5. Update dynamic variables
-    cp->state = (int32_t)((x + dt * (ui + nu)) * cp->scale_factor);
-    cp->vstate = (int32_t)((z + dt * gi) * cp->scale_factor);
-    cp->vartheta = (int32_t)((vartheta + dt * dvtheta) * cp->scale_factor);
+    // Using the specified function name max_of_two_non_negative_f for non-negative clamping.
+    cp->state = (int32_t)(max_of_two_non_negative_f(x + dt * (ui + nu), 0.0f) * cp->scale_factor);
+    cp->vstate = (int32_t)(max_of_two_non_negative_f(z + dt * gi, 0.0f) * cp->scale_factor);
+    cp->vartheta = (int32_t)(max_of_two_non_negative_f(vartheta + dt * dvtheta, 0.0f) * cp->scale_factor);
 
     // 6. Update disturbance parameters & log info.
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
@@ -202,10 +224,14 @@ static void timer_fast_simulation_handler(struct k_timer *dummy) {
     ARG_UNUSED(dummy);
 
     if (consensus.running && consensus.enabled) {
-        // 1. Execute the fast Euler step (READS from shared neighbor_vstates)
+        
+        // --- CRITICAL SECTION START: Protect state variables during dynamics update and BLE update ---
+        k_mutex_lock(&consensus_mutex, K_FOREVER);
+        
+        // 1. Execute the fast Euler step (READS/WRITES the shared state)
         update_consensus(&consensus);
         
-        // 2. Update BLE advertisement with the new state
+        // 2. Update BLE advertisement with the new state (READS the shared vstate)
         custom_data_type custom_data = {
             MANUFACTURER_ID, 
             consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
@@ -213,6 +239,9 @@ static void timer_fast_simulation_handler(struct k_timer *dummy) {
             consensus.vstate
         };
         broadcaster_update_scan_response_custom_data(&custom_data);
+
+        k_mutex_unlock(&consensus_mutex);
+        // --- CRITICAL SECTION END ---
     }
 }
 
@@ -224,9 +253,8 @@ static void timer_fast_simulation_handler(struct k_timer *dummy) {
  */
 static void thread_consensus(void) {
     static neighbor_info_type neighbor_info; 
-    
-    // Convert ms period to k_timeout_t (K_MSEC)
-    k_timeout_t slow_period = K_MSEC(consensus.Ts); 
+
+    k_timeout_t Ts = K_MSEC(consensus.Ts); 
 
     while (1) {
         if (consensus.running) {
@@ -237,32 +265,39 @@ static void thread_consensus(void) {
                 observer_init();        // Initial setup for observer
 
                 // Start the FAST simulation timer
-                k_timer_start(&sim_timer, K_MSEC(0), K_MSEC(consensus.dt));
+                k_timer_start(&dynamics_timer, K_MSEC(0), K_MSEC(consensus.dt));
                 
                 consensus.first_time_running = false;
                 LOG_INF("Consensus Timer started with dt=%d ms.", consensus.dt);
             }
             
             // --- 1. SLOW BLOCKING NETWORK I/O (Receiving neighbor data) ---
-            // Blocks until a new packet is received, or times out if a timeout was used. 
-            // Using K_FOREVER here ensures the new data is acted upon immediately.
             if (consensus.all_neighbors_observed) {
                 if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
-                    // Update the shared state variables (written to by the slow thread, read by the fast timer)
+                    
+                    // --- CRITICAL SECTION START: Protect neighbor inputs during memcpy ---
+                    k_mutex_lock(&consensus_mutex, K_FOREVER);
+                    
+                    // Update the shared neighbor data (WRITING to shared state)
                     if (consensus.enabled) {
                         memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
                         memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
                     }
+                    
+                    k_mutex_unlock(&consensus_mutex);
+                    // --- CRITICAL SECTION END ---
                 }
             }
 
             // --- 2. SLOW LOGGING/POSTING ---
-            // This happens after network data is updated, aligning with the 100ms JS logging
+            // Need to protect logging, as it READS all state variables written by the fast timer.
+            k_mutex_lock(&consensus_mutex, K_FOREVER);
             serial_log_consensus(); 
+            k_mutex_unlock(&consensus_mutex);
 
         } else {
             // Stop the FAST simulation timer when consensus is not running
-            k_timer_stop(&sim_timer);
+            k_timer_stop(&dynamics_timer);
             consensus.first_time_running = true; // Reset for next run
             
             // Wait for a new trigger message before checking again
@@ -270,6 +305,6 @@ static void thread_consensus(void) {
         }        
         
         // Ensure this thread yields/sleeps to allow the timer thread to run
-        k_sleep(slow_period); 
+        k_sleep(Ts); 
     }
 }

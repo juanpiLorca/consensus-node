@@ -200,6 +200,7 @@ def plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1):
     sigma = sigma[agent-1, :]
     grad = np.sign(sigma)
     dvtheta_t = dvtheta[agent-1, :]
+    print(dvtheta_t)
 
     fig, axs = plt.subplots(1, 2, figsize=(14, 6))
     # --- histogram of grad values ---
@@ -323,7 +324,7 @@ def dynamics(t, y, n_agents, nu, mv, dvth, params):
 
     return dydt
 
-def dyn2sample(t, y, g, nu, n_agents, params): 
+def dyn2sample(t, y, g, nu, n_agents, dvth, params): 
     dydt = np.zeros_like(y)
 
     x = y[:n_agents]
@@ -353,6 +354,10 @@ def dyn2sample(t, y, g, nu, n_agents, params):
     dxdt = u + nu
     dzdt = g    # consensus law
     dvthdt = dvtheta
+
+    k = int(t / params["dt"])
+    if k < params["n_points"]:
+        dvth[:,k] = dvthdt
 
     dydt[:n_agents] = dxdt
     dydt[n_agents:2*n_agents] = dzdt
@@ -433,6 +438,7 @@ def simulate_sampled_dynamics(params, init_conditions, sample_time=0.1):
     xs = np.zeros((n_agents, sample_points))
     zs = np.zeros((n_agents, sample_points))
     vthetas = np.zeros((n_agents, sample_points))
+    dvthetas = np.zeros((n_agents, n_points))
 
     t = 0.0
     for k in range(n_points):
@@ -461,17 +467,17 @@ def simulate_sampled_dynamics(params, init_conditions, sample_time=0.1):
 
         # RK4 integration
         g = v
-        y = rk4_step(dyn2sample, t, y, dt, g, nu[:, k], n_agents, params)
+        y = rk4_step(dyn2sample, t, y, dt, g, nu[:, k], n_agents, dvthetas, params)
         t += dt
 
-    return xs, zs, vthetas, sample_points
+    return xs, zs, vthetas, dvthetas, sample_points
 
-x, z, vtheta, sample_points = simulate_sampled_dynamics(params, init_conditions)
+x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics(params, init_conditions)
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
 plot_lyapunov(t, x, z, params, agent=1)
-plot_hysteresis_and_sign_function(x, z, vtheta, params, agent=1)
+plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1)
 
 #%% Simulation: Euler integration (for comparison)
 def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.1):
@@ -497,6 +503,7 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.1):
     xs = np.zeros((n_agents, sample_points))
     zs = np.zeros((n_agents, sample_points))
     vthetas = np.zeros((n_agents, sample_points))
+    dvthetas = np.zeros((n_agents, sample_points))
 
     t = 0.0
     for k in range(n_points):
@@ -524,18 +531,18 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.1):
                 vthetas[:, sample_idx] = vtheta[:, k]
 
         # Euler integration step
-        dydt = dyn2sample(t, y, v, nu[:, k], n_agents, params)
+        dydt = dyn2sample(t, y, v, nu[:, k], n_agents, dvthetas, params)
         y = y + dt * dydt
         t += dt
 
-    return xs, zs, vthetas, sample_points
+    return xs, zs, vthetas, dvthetas, sample_points
 
 x, z, vtheta, sample_points = simulate_sampled_dynamics_euler(params, init_conditions)
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
 plot_lyapunov(t, x, z, params, agent=1)
-plot_hysteresis_and_sign_function(x, z, vtheta, params, agent=1)
+plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1)
 
 #%% END OF FILE
 ## Hysteresis loop: 
