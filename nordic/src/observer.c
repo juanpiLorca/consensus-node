@@ -96,3 +96,7 @@ int observer_init(void) {
 	LOG_INF("Scanning successfully started\n");
 	return 0;
 }
+
+/**
+ * TODO: Add function to stop the observer --> shut down scan. socket
+ */

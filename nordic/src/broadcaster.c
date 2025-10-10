@@ -54,3 +54,7 @@ int broadcaster_update_scan_response_custom_data(custom_data_type* custom_data)
 	return 0;
 	
 }
+
+/**
+ * TODO: Add function to stop the broadcaster --> shut down adv. socket
+ */
