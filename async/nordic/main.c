@@ -28,6 +28,11 @@ LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 #define STACK_SIZE                  2048
 #define THREAD_CONSENSUS_PRIORITY   7
 
+// --- GLOBAL TIMER DECLARATION (FAST LOOP) ---
+// This timer will trigger the simulation logic at the high-frequency dt rate.
+static struct k_timer sim_timer;
+// -------------------------------------------
+
 /**
  * Function declarations: --------------------------------------------------------------
  */
@@ -38,6 +43,10 @@ static float sign(float x);                         // Auxiliary function to get
 static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
 static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
 static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
+
+// --- NEW FUNCTION DECLARATIONS ---
+static void timer_fast_simulation_handler(struct k_timer *dummy); // Handler for the high-frequency timer
+// ---------------------------------
 /*
  * -------------------------------------------------------------------------------------
  */
@@ -53,9 +62,12 @@ int main(void) {
     bt_init();
     serial_init();
 
+    // Initialize the high-frequency simulation timer
+    k_timer_init(&sim_timer, timer_fast_simulation_handler, NULL);
+
     while (1) {
         dk_set_led(LED_STATUS, (++blink_status) % 2);
-        k_sleep(K_MSEC(consensus.Ts));
+        k_sleep(K_MSEC(consensus.Ts)); // Simple blink, not related to core consensus timing
     }
 }
 
@@ -71,21 +83,21 @@ K_THREAD_DEFINE(thread_consensus_id, STACK_SIZE,
  */
 
 static void leds_init(void) {
-	int err = dk_leds_init();
-	if (err) {
-		LOG_ERR("Status LED failed to start (err %d)\n", err);
-		return;
-	}
-	LOG_INF("Status LED successfully started\n");
+    int err = dk_leds_init();
+    if (err) {
+        LOG_ERR("Status LED failed to start (err %d)\n", err);
+        return;
+    }
+    LOG_INF("Status LED successfully started\n");
 }
 
 static void bt_init(void) {
     int err = bt_enable(NULL);
-	if (err) {
-		LOG_ERR("Bluetooth failed to start (err %d)\n", err);
-		return;
-	}
-	LOG_INF("Bluetooth successfully started\n");
+    if (err) {
+        LOG_ERR("Bluetooth failed to start (err %d)\n", err);
+        return;
+    }
+    LOG_INF("Bluetooth successfully started\n");
 }
 
 static float disturbance(consensus_params* cp) {
@@ -100,7 +112,7 @@ static float disturbance(consensus_params* cp) {
         float A = (float)cp->disturbance.A * cp->inv_scale_factor; 
         float f = (float)cp->disturbance.frequency;                                    
         float phi_shift_s = (float)cp->disturbance.phase * cp->inv_scale_factor;       
-        float t = (float)cp->disturbance.counter * (float)cp->dt; 
+        float t = (float)cp->disturbance.counter * (float)cp->dt * cp->inv_scale_factor; // dt must be scaled to seconds
 
         float m = amp * ((float)rand() / (float)RAND_MAX - off); 
         
@@ -182,44 +194,82 @@ static void update_consensus(consensus_params* cp) {
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
 }
 
+/**
+ * --- NEW FAST SIMULATION LOOP (Timer Handler) ---
+ * Runs every 'consensus.dt' (e.g., 1ms). This is non-blocking math.
+ */
+static void timer_fast_simulation_handler(struct k_timer *dummy) {
+    ARG_UNUSED(dummy);
+
+    if (consensus.running && consensus.enabled) {
+        // 1. Execute the fast Euler step (READS from shared neighbor_vstates)
+        update_consensus(&consensus);
+        
+        // 2. Update BLE advertisement with the new state
+        custom_data_type custom_data = {
+            MANUFACTURER_ID, 
+            consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
+            consensus.node, 
+            consensus.vstate
+        };
+        broadcaster_update_scan_response_custom_data(&custom_data);
+    }
+}
+
+
+/**
+ * --- REFACTORED SLOW NETWORK/LOGGING LOOP (Thread) ---
+ * Runs periodically based on consensus.Ts (or only on new network messages).
+ * It waits for new neighbor data and handles the serial logging output.
+ */
 static void thread_consensus(void) {
-    custom_data_type custom_data = {
-        MANUFACTURER_ID, 
-        consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
-        consensus.node, 
-        consensus.vstate
-    };
     static neighbor_info_type neighbor_info; 
+    
+    // Convert ms period to k_timeout_t (K_MSEC)
+    k_timeout_t slow_period = K_MSEC(consensus.Ts); 
 
     while (1) {
         if (consensus.running) {
+            
             if (consensus.first_time_running) {
-                custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
-                custom_data.node = consensus.node;
-                custom_data.vstate = consensus.vstate;
-                broadcaster_init(&custom_data);
-                observer_init();
-                serial_log_consensus();
+                // Perform one-time setup
+                broadcaster_init(NULL); // Initial setup for broadcaster
+                observer_init();        // Initial setup for observer
+
+                // Start the FAST simulation timer
+                k_timer_start(&sim_timer, K_MSEC(0), K_MSEC(consensus.dt));
+                
                 consensus.first_time_running = false;
+                LOG_INF("Consensus Timer started with dt=%d ms.", consensus.dt);
             }
+            
+            // --- 1. SLOW BLOCKING NETWORK I/O (Receiving neighbor data) ---
+            // Blocks until a new packet is received, or times out if a timeout was used. 
+            // Using K_FOREVER here ensures the new data is acted upon immediately.
             if (consensus.all_neighbors_observed) {
                 if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
+                    // Update the shared state variables (written to by the slow thread, read by the fast timer)
                     if (consensus.enabled) {
-                        // Update the neighbor inputs used by the dynamics
                         memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
                         memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
                     }
-                    serial_log_consensus(); 
                 }
-
-                if (consensus.enabled) {
-                        update_consensus(&consensus);
-                }
-                custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
-                custom_data.vstate = consensus.vstate;
-                broadcaster_update_scan_response_custom_data(&custom_data);
             }
+
+            // --- 2. SLOW LOGGING/POSTING ---
+            // This happens after network data is updated, aligning with the 100ms JS logging
+            serial_log_consensus(); 
+
+        } else {
+            // Stop the FAST simulation timer when consensus is not running
+            k_timer_stop(&sim_timer);
+            consensus.first_time_running = true; // Reset for next run
+            
+            // Wait for a new trigger message before checking again
+            k_sleep(K_MSEC(100)); 
         }        
-        k_sleep(K_MSEC(consensus.Ts));
+        
+        // Ensure this thread yields/sleeps to allow the timer thread to run
+        k_sleep(slow_period); 
     }
 }
