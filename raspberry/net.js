@@ -172,7 +172,7 @@ TOPOLOGY = [
 //   {id:  4, ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [ 5], clock: 250}, 
 //   {id:  5, ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [ 6], clock: 250}, 
 //   {id:  6, ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 7], clock: 250}, 
-//   {id:  7, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: false, neighbors: [ 8], clock: 250}, 
+//   {id:  7, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 8], clock: 250}, 
 //   {id:  8, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 9], clock: 250}, 
 //   {id:  9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [10], clock: 250}, 
 //   {id: 10, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [11], clock: 250}, 
@@ -183,7 +183,7 @@ TOPOLOGY = [
 //   {id: 15, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [16], clock: 250}, 
 //   {id: 16, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [17], clock: 250}, 
 //   {id: 17, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [18], clock: 250}, 
-//   {id: 18, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled: false, neighbors: [ 1], clock: 250}, 
+//   {id: 18, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 1], clock: 250}, 
 // ]
 // ------------------------------------------------------------------------------------------------------------------
 

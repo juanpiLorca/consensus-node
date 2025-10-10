@@ -125,7 +125,6 @@ if (TYPE == TYPE_BLE) {
     // --- Shared State for Decoupled Loops --- //
     let latestNeighborVStates = [];
     let latestNeighborEnabled = [];
-    const NETWORK_FETCH_INTERVAL = 100; // [ms]
 
     // Auxiliary function for starting BLE for bridge configuration (restarts the advertising process if any error)
     function startBleBridge() {
@@ -191,7 +190,7 @@ if (TYPE == TYPE_BLE) {
         }
 
         // 5. Schedule next run
-        networkLoopTimeoutId = setTimeout(networkFetchLoop, NETWORK_FETCH_INTERVAL);
+        networkLoopTimeoutId = setTimeout(networkFetchLoop, params.clock);
     }
 
     /**
@@ -259,7 +258,7 @@ if (TYPE == TYPE_BLE) {
 
                 // *** START BOTH LOOPS ***
                 // 1. Start the SLOW network fetch/post loop (100ms)
-                networkLoopTimeoutId = setTimeout(NetworkFetchLoop, NETWORK_FETCH_INTERVAL_MS);
+                networkLoopTimeoutId = setTimeout(NetworkFetchLoop, params.clock);
                 // 2. Start the FAST simulation loop (dt, e.g., 1ms)
                 simulationLoopTimeoutId = setTimeout(SimulationLoop, params.dt);
 
