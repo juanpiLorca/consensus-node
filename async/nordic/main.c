@@ -37,6 +37,7 @@ static struct k_timer dynamics_timer;
 // Mutex to protect the global 'consensus' state from concurrent access 
 // by the slow thread and the fast timer handler.
 static struct k_mutex consensus_mutex;
+// MORE ON THIS VIDEO: https://www.youtube.com/watch?v=i23zYS54JtI
 // --------------------------------------------------
 
 /**

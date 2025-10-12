@@ -18,7 +18,7 @@ plt.rcParams['legend.fontsize'] = 10
 NUM_COLORS = 30 
 try:
     cmap = plt.colormaps['turbo'] 
-    sampled_colors = [cmap(i) for i in np.linspace(0.0, 1.0, NUM_COLORS)]
+    sampled_colors = [cmap(i) for i in np.linspace(0.0, 2.0, NUM_COLORS)]
     plt.rcParams['axes.prop_cycle'] = plt.cycler(color=sampled_colors)
 except Exception:
     custom_colors = plt.cm.get_cmap('turbo', NUM_COLORS)
@@ -26,7 +26,7 @@ except Exception:
 
 
 class PlotConsensus:
-    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1e6, time_factor=0.0025/1000.0):
+    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1e6, time_factor=0.025/1000.0):
         self.filename_template = filename_template
         self.simulation = simulation
         self.total_nodes = total_nodes
@@ -156,7 +156,7 @@ class PlotConsensus:
             ax.plot(t, V, label=f'$|\sigma_{{{node_id}}}|$', linewidth=1.25)
 
         ax.set_xlim([0, t_max])
-        ax.set_ylim([0, 0.01])
+        ax.set_ylim([0, 0.1])
         ax.set_xlabel('Time (s)')
         ax.set_ylabel('$V(t)$') 
         
@@ -178,8 +178,8 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_cluster"
-    num_agents = 8
+    sim_name = "18node-ring_dir_1ms"
+    num_agents = 18
     plotter = PlotConsensus(
         filename_template="../data/{}/{}.json",
         simulation=sim_name, 
