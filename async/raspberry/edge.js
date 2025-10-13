@@ -115,8 +115,8 @@ if (TYPE == TYPE_BLE) {
     let params = { trigger: false }; 
 
     // Global variables related to the consensus algorithm
-    let simulationLoopTimeoutId = null;     // ID for the dynamics loop (dt --> clock)
-    let networkLoop = null;                 // ID for the network fetch loop (must be faster than 10-15 ms)
+    let dynamicsLoopTimeoutId = null;     // ID for the dynamics loop (dt --> clock)
+    let networkLoopTimeoutId = null;      // ID for the network fetch loop (must be faster than 10-15 ms)
     let isInitial = true;
 
     let time0 = 0; 
@@ -167,7 +167,7 @@ if (TYPE == TYPE_BLE) {
      * Fetches neighbor data, updates the shared state variables and sends the lastest complete state
      * to the backend process every NETWORK_FETCH_INTERVAL [ms:
      */
-    async function NetworkFetchLoop() {
+    async function networkFetchLoop() {
         if (!params.trigger) {
             networkLoopTimeoutId = null;
             return;
@@ -198,9 +198,9 @@ if (TYPE == TYPE_BLE) {
      * Reads the latest available neighbor data (snapshot) and updates the local state.
      * Executes the consensus algorithm update step.
      */
-    async function SimulationLoop() { 
+    async function dynamicsLoop() { 
         if (!params.trigger) {
-            simulationLoopTimeoutId = null;
+            dynamicsLoopTimeoutId = null;
             return;
         }
 
@@ -215,7 +215,7 @@ if (TYPE == TYPE_BLE) {
         }
 
         // 2. Schedule the next iteration using the DT period (params.dt)
-        simulationLoopTimeoutId = setTimeout(highFreqSimulationLoop, params.dt);
+        dynamicsLoopTimeoutId = setTimeout(dynamicsLoop, params.dt);
     }
 
     // Edge-process: on params message received from backend-process
@@ -258,13 +258,13 @@ if (TYPE == TYPE_BLE) {
 
                 // *** START BOTH LOOPS ***
                 // 1. Start the SLOW network fetch/post loop (100ms)
-                networkLoopTimeoutId = setTimeout(NetworkFetchLoop, params.clock);
-                // 2. Start the FAST simulation loop (dt, e.g., 1ms)
-                simulationLoopTimeoutId = setTimeout(SimulationLoop, params.dt);
+                networkLoopTimeoutId = setTimeout(networkFetchLoop, params.clock);
+                // 2. Start the FAST dynamics loop (dt, e.g., 1ms)
+                dynamicsLoopTimeoutId = setTimeout(dynamicsLoop, params.dt);
 
             } else if (!updatedParams.trigger && params.trigger) {
-                if (simulationLoopTimeoutId) {
-                    clearTimeout(simulationLoopTimeoutId);
+                if (dynamicsLoopTimeoutId) {
+                    clearTimeout(dynamicsLoopTimeoutId);
                 }
                 if (networkLoopTimeoutId) {
                     clearTimeout(networkLoopTimeoutId);

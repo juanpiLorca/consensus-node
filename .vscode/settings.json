@@ -1,6 +1,7 @@
 {
     "nrf-connect.applications": [
-        "${workspaceFolder}/nordic"
+        "${workspaceFolder}/nordic",
+        "${workspaceFolder}/async/nordic"
     ],
     "files.associations": {
         "random": "c",

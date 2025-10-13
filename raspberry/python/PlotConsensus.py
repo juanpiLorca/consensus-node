@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 plt.rcParams['text.usetex'] = False
 plt.rcParams['font.family'] = 'serif'
 plt.rcParams['font.size'] = 14
-plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['axes.labelsize'] = 12
 plt.rcParams['xtick.labelsize'] = 12
 plt.rcParams['ytick.labelsize'] = 12
 plt.rcParams['legend.fontsize'] = 10
@@ -80,14 +80,14 @@ class PlotConsensus:
             t = node_data[:, 0] * self.time_factor
             x = node_data[:, 1] / self.conversion_factor
             vtheta = node_data[:, 3] / self.conversion_factor
-            axs[0].plot(t, x, label=f'$x_{{{node_id}}}$', linewidth=1.0)
+            axs[0].plot(t, x, label=f'$x_{{{node_id}}}$', linewidth=1.25)
             axs[1].plot(t, vtheta, label=f'$\\vartheta_{{{node_id}}}$', linewidth=1.25)
 
         if ref_node in self.data:
             z_data = self.data[ref_node]
             t = z_data[:, 0] * self.time_factor
             z = z_data[:, 2] / self.conversion_factor
-            axs[0].plot(t, z, '--', color='black', linewidth=2.0, label=f'$z_{{{ref_node}}}$ (ref.)')
+            axs[0].plot(t, z, '--', color='black', linewidth=2.25, label=f'$z_{{{ref_node}}}$ (ref.)')
 
         # Configuration for higher grid resolution and external legend
         num_cols = int(np.ceil(self.total_nodes / 5.0))
@@ -151,7 +151,7 @@ class PlotConsensus:
 
 
     # --- Lyapunov Function V(t) Plot Method (Updated) ---
-    def plot_lyapunov(self, save_filename=None):
+    def plot_lyapunov(self, save_filename=None, yzoom=False):
         if not self.data: return
         fig, ax = plt.subplots(1, 1, figsize=(15, 6))
         t_max = max([self.data[n][:, 0].max() for n in self.data]) * self.time_factor
@@ -162,10 +162,11 @@ class PlotConsensus:
             x = node_data[:, 1] / self.conversion_factor
             z = node_data[:, 2] / self.conversion_factor
             V = np.abs(x - z)
-            ax.plot(t, V, label=f'$|\sigma_{{{node_id}}}|$', linewidth=1.25)
+            ax.plot(t, V, label=f'$|\\sigma_{{{node_id}}}|$', linewidth=1.25)
 
         ax.set_xlim([0, t_max])
-        ax.set_ylim([0, 0.1])
+        if yzoom:
+            ax.set_ylim([0, 0.1])
         ax.set_xlabel('Time (s)')
         ax.set_ylabel('$V(t)$') 
         
@@ -194,12 +195,6 @@ if __name__ == "__main__":
         simulation=sim_name, 
         total_nodes=num_agents)
     plotter.load_data()
-    
-    # Generate the main states and gains plot
     plotter.plot(ref_node=1) 
-    
-    # Generate the virtual state plot
     plotter.plot_vstate()
-    
-    # Generate the Lyapunov function plot
     plotter.plot_lyapunov()

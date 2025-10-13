@@ -141,26 +141,26 @@ let TOPOLOGY;
 
 // 18nodes-ring -----------------------------------------------------------------------------------------------------
 // ... --- 1 --- 2 --- 3 --- ... --- 16 --- 17 --- 18 --- ...
-// TOPOLOGY = [
-//   {id:  1, ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2,18], clock: 250}, 
-//   {id:  2, ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3, 1], clock: 250}, 
-//   {id:  3, ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4, 2], clock: 250}, 
-//   {id:  4, ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [ 5, 3], clock: 250}, 
-//   {id:  5, ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [ 6, 4], clock: 250}, 
-//   {id:  6, ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 7, 5], clock: 250}, 
-//   {id:  7, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: false, neighbors: [ 8, 6], clock: 250}, 
-//   {id:  8, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 9, 7], clock: 250}, 
-//   {id:  9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [10, 8], clock: 250}, 
-//   {id: 10, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [11, 9], clock: 250}, 
-//   {id: 11, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true, neighbors: [12,10], clock: 250}, 
-//   {id: 12, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true, neighbors: [13,11], clock: 250}, 
-//   {id: 13, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true, neighbors: [14,12], clock: 250}, 
-//   {id: 14, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true, neighbors: [15,13], clock: 250}, 
-//   {id: 15, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [16,14], clock: 250}, 
-//   {id: 16, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [17,15], clock: 250}, 
-//   {id: 17, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [18,16], clock: 250}, 
-//   {id: 18, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled: false, neighbors: [ 1,17], clock: 250}, 
-// ]
+TOPOLOGY = [
+  {id:  1, ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2,18], clock: 250}, 
+  {id:  2, ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3, 1], clock: 250}, 
+  {id:  3, ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4, 2], clock: 250}, 
+  {id:  4, ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [ 5, 3], clock: 250}, 
+  {id:  5, ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [ 6, 4], clock: 250}, 
+  {id:  6, ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 7, 5], clock: 250}, 
+  {id:  7, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: false, neighbors: [ 8, 6], clock: 250}, 
+  {id:  8, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 9, 7], clock: 250}, 
+  {id:  9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [10, 8], clock: 250}, 
+  {id: 10, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [11, 9], clock: 250}, 
+  {id: 11, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true, neighbors: [12,10], clock: 250}, 
+  {id: 12, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true, neighbors: [13,11], clock: 250}, 
+  {id: 13, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true, neighbors: [14,12], clock: 250}, 
+  {id: 14, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true, neighbors: [15,13], clock: 250}, 
+  {id: 15, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [16,14], clock: 250}, 
+  {id: 16, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [17,15], clock: 250}, 
+  {id: 17, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [18,16], clock: 250}, 
+  {id: 18, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled: false, neighbors: [ 1,17], clock: 250}, 
+]
 // ------------------------------------------------------------------------------------------------------------------
 
 // 18nodes-ring-dir -------------------------------------------------------------------------------------------------
