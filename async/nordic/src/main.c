@@ -173,7 +173,6 @@ static void slow_network_thread(void) {
             k_sleep(K_MSEC(consensus.Ts));
         } else {
             k_timer_stop(&dynamics_timer);
-            consensus.first_time_running = true;
             k_sleep(K_MSEC(1000));
         }
     }
