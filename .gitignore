@@ -1,4 +1,5 @@
-.venv
+.venv/
+.vscode/    
 docs/
 img/python-sim/
 nordic/build*/
