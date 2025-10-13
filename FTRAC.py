@@ -19,15 +19,24 @@ def darken_color(color, amount=0.6):
 np.random.seed(42)  # For reproducibility {40, 41, 42}
 
 NODES = {
-    1: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4]},
-    2: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5]},
-    3: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [8]},
-    4: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [7]},
-    5: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9]},
-    6: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [2]},
-    7: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3]},
-    8: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [6]},
-    9: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1]},
+    1:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4] },
+    2:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5] },
+    3:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [8] },
+    4:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [7] },
+    5:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9] },
+    6:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [2] },
+    7:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3] },
+    8:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [6] },
+    9:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [10]},
+    10: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [11]},
+    11: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [12]},
+    12: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [13]},
+    13: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [14]},
+    14: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [15]},
+    15: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [16]},
+    16: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [17]},
+    17: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [18]},
+    18: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1] },
 }
 
 G = nx.DiGraph()
@@ -47,7 +56,7 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 30.0
+T        = 20.0
 dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)

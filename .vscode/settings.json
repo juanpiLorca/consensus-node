@@ -3,6 +3,7 @@
         "${workspaceFolder}/nordic"
     ],
     "files.associations": {
-        "random": "c"
+        "random": "c",
+        "common.h": "c"
     }
 }

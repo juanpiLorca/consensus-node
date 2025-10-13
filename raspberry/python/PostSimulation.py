@@ -4,11 +4,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class PostSimulation: 
-    def __init__(self, simulation_dir, num_agents):
+    def __init__(self, simulation_dir, num_agents, Ts=0.25, dt=1e-3):
         self.simulation_dir = simulation_dir
         self.num_agents = num_agents
         self.conversion_factor = 1e6
-
+        self.Ts = Ts
+        self.dt = dt
+        self.time_factor = self.dt / (self.Ts * 1000.0)
         self.epsilon_on = 0.02
         self.epsilon_off = 0.01
 
@@ -140,7 +142,7 @@ class PostSimulation:
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
 
-            t = node_data[:, 0] * 0.001 / 1000.0 
+            t = node_data[:, 0] * self.time_factor
             x = node_data[:, 1] / self.conversion_factor
             z = node_data[:, 2] / self.conversion_factor
             sigma = x - z
@@ -183,7 +185,7 @@ class PostSimulation:
         for idx, node_id in enumerate(sorted(self.data.keys())):
             node_data = self.data[node_id]
 
-            t = node_data[:, 0] * 0.01 / 1000.0  
+            t = node_data[:, 0] * self.time_factor
             x = node_data[:, 1] / self.conversion_factor
             z = node_data[:, 2] / self.conversion_factor
             vartheta = node_data[:, 3] / self.conversion_factor

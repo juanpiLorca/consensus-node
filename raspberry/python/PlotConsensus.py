@@ -26,12 +26,21 @@ except Exception:
 
 
 class PlotConsensus:
-    def __init__(self, filename_template, simulation, total_nodes, conversion_factor=1e6, time_factor=0.025/1000.0):
+    def __init__(
+            self, 
+            filename_template, 
+            simulation, total_nodes, 
+            conversion_factor=1e6, 
+            Ts= 0.25, 
+            dt= 1e-3
+        ):
         self.filename_template = filename_template
         self.simulation = simulation
         self.total_nodes = total_nodes
         self.conversion_factor = conversion_factor
-        self.time_factor = time_factor
+        self.Ts = Ts
+        self.dt = dt
+        self.time_factor = self.dt / (self.Ts * 1000.0)  
         self.data = {}
 
     def load_data(self):
@@ -78,7 +87,7 @@ class PlotConsensus:
             z_data = self.data[ref_node]
             t = z_data[:, 0] * self.time_factor
             z = z_data[:, 2] / self.conversion_factor
-            axs[0].plot(t, z, '--', color='black', linewidth=2.5, label=f'$z_{{{ref_node}}}$ (ref.)')
+            axs[0].plot(t, z, '--', color='black', linewidth=2.0, label=f'$z_{{{ref_node}}}$ (ref.)')
 
         # Configuration for higher grid resolution and external legend
         num_cols = int(np.ceil(self.total_nodes / 5.0))
