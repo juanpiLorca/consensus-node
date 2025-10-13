@@ -4,5 +4,9 @@ img/python-sim/
 nordic/build*/
 raspberry/node_modules/
 raspberry/package-lock.json
+raspberry/figs/
 3-devices-BLE/nordic/build*/
 3-devices-BLE/raspberry/__pycache__/
+async/nordic/build*/
+async/raspberry/node_modules/
+async/raspberry/package-lock.json
