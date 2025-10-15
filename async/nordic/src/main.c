@@ -3,7 +3,7 @@
 #include <dk_buttons_and_leds.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/gap.h>
-#include <string.h> // Needed for memcpy
+#include <string.h> 
 
 #include "consensus.h"
 #include "common.h"
@@ -116,7 +116,6 @@ static void fast_dynamics_thread(void) {
 
         k_mutex_lock(&consensus_mutex, K_FOREVER);
         if (consensus.running && consensus.enabled) {
-
             update_consensus(&consensus);
             custom_data_type custom_data = {
                 MANUFACTURER_ID,

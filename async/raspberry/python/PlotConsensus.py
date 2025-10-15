@@ -31,7 +31,7 @@ class PlotConsensus:
             filename_template, 
             simulation, total_nodes, 
             conversion_factor=1e6, 
-            Ts= 0.25, 
+            Ts= 0.2, 
             dt= 1e-3
         ):
         self.filename_template = filename_template
@@ -40,7 +40,7 @@ class PlotConsensus:
         self.conversion_factor = conversion_factor
         self.Ts = Ts
         self.dt = dt
-        self.time_factor = self.dt / (self.Ts * 1000.0)  
+        self.time_factor = 1 / 1000
         self.data = {}
 
     def load_data(self):
@@ -188,8 +188,8 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    sim_name = "9node-clusters"
-    num_agents = 9
+    sim_name = "18node_dring_1ms"
+    num_agents = 18
     plotter = PlotConsensus(
         filename_template="../data/{}/{}.json",
         simulation=sim_name, 
