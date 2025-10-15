@@ -168,6 +168,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 LOG_INF("Received 't1' (trigger). Consensus running"); 
                             } else {
                                 consensus.running = false;
+                                consensus.first_time_running = false;
                                 LOG_INF("Received 't0' (stop). Consensus stopped");
                             }
                             break;

@@ -29,15 +29,14 @@ LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 static struct k_timer dynamics_timer;
 static struct k_mutex consensus_mutex;
 static struct k_sem dynamics_sem; // Semaphore for 1ms clocking
-// --------------------------------------
 
 /**
- * Function declarations:
+ * Function declarations: --------------------------------------------------------------
  */
-static void leds_init(void);                    // Auxiliary function for starting LEDs
-static void bt_init(void);                      // Auxiliary function for starting Bluetooth
-static void fast_dynamics_thread(void);         // Dedicated thread for 1ms dynamics
-static void slow_network_thread(void);          // Slow network/logging thread (body of original thread_consensus)
+static void leds_init(void);                          // Auxiliary function for starting LEDs
+static void bt_init(void);                            // Auxiliary function for starting Bluetooth
+static void fast_dynamics_thread(void);               // Dedicated thread for 1ms dynamics
+static void slow_network_thread(void);                // Slow network/logging thread (body of original thread_consensus)
 static void dynamics_timer_cb(struct k_timer *dummy); // High-frequency dynamics timer callback
 /*
  * -------------------------------------------------------------------------------------
@@ -152,7 +151,6 @@ static void slow_network_thread(void) {
                 observer_init();
                 k_timer_start(&dynamics_timer, K_MSEC(0), K_MSEC(consensus.dt));
                 consensus.first_time_running = false;
-                LOG_INF("Consensus Timer started with dt=%d ms.", consensus.dt);
             }
 
             // --- SLOW BLOCKING NETWORK I/O (Receiving neighbor data) ---
