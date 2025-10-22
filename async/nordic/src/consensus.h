@@ -39,7 +39,6 @@ typedef struct {
     uint8_t* neighbors; 
     float scale_factor; 
     float inv_scale_factor; 
-    float scale_eta; 
     uint8_t N; 
     int64_t time0; 
     int32_t Ts; 

@@ -18,25 +18,36 @@ def darken_color(color, amount=0.6):
 ## Graph definition: 
 np.random.seed(42)  # For reproducibility {40, 41, 42}
 
+# NODES = {
+#     1:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4] },
+#     2:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5] },
+#     3:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [8] },
+#     4:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [7] },
+#     5:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9] },
+#     6:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [2] },
+#     7:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3] },
+#     8:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [6] },
+#     9:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [10]},
+#     10: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [11]},
+#     11: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [12]},
+#     12: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [13]},
+#     13: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [14]},
+#     14: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [15]},
+#     15: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [16]},
+#     16: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [17]},
+#     17: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [18]},
+#     18: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1] },
+# }
 NODES = {
     1:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4] },
     2:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5] },
     3:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [8] },
-    4:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [7] },
+    4:  {'x0': np.random.uniform(0,100), 'z0': np.random.uniform(0,100), 'neighbors': [7] },
     5:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9] },
     6:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [2] },
     7:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3] },
     8:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [6] },
-    9:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [10]},
-    10: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [11]},
-    11: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [12]},
-    12: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [13]},
-    13: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [14]},
-    14: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [15]},
-    15: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [16]},
-    16: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [17]},
-    17: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [18]},
-    18: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1] },
+    9:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1]},
 }
 
 G = nx.DiGraph()
@@ -56,7 +67,7 @@ use_laplacian = False
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 20.0
+T        = 30.0
 dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -180,15 +191,15 @@ def plot_states(t, x, z, n_agents, ref_state_num=1):
     plt.tight_layout()
     plt.show()
 
-def plot_lyapunov(t, x, z, params, agent=1):
+def plot_lyapunov(t, x, z, params):
     epsilon = (params["epsilon_off"], params["epsilon_on"])
     sigma = x - z
-    V = np.abs(sigma[agent-1,:])
+    V = np.abs(sigma)
 
     fig, ax = plt.subplots(figsize=(9, 5))
 
     for i in range(n_agents):
-        ax.plot(t, V, label=f'$V(\\sigma_{{{i+1}}})$')
+        ax.plot(t, V[i,:], label=f'$V(\\sigma_{{{i+1}}})$')
     ax.axhline(epsilon[0], color='k', linestyle='--', label='$\\epsilon$')
     ax.axhline(epsilon[1], color='r', linestyle='--', label='$\\bar{\\epsilon}$')
     ax.set_ylim([0, (epsilon[1] * 2.0)])
@@ -419,7 +430,7 @@ x, z, vtheta, mv, dvth = simulate_dynamics(params, init_conditions)
 t = np.linspace(0, T, n_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_lyapunov(t, x, z, params, agent=1)
+plot_lyapunov(t, x, z, params)
 plot_hysteresis_and_sign_function(x, z, dvth, params, agent=1)
 
 #%% Simulation: sampled dynamics (to mimic microcontroller and network behavior)
@@ -484,7 +495,7 @@ x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics(params, init_co
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_lyapunov(t, x, z, params, agent=1)
+plot_lyapunov(t, x, z, params)
 plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1)
 
 #%% Simulation: Euler integration (for comparison)
@@ -549,7 +560,7 @@ x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics_euler(params, i
 t = np.linspace(0, T, sample_points)
 plot_simulation(t, x, z, vtheta, params)
 plot_states(t, x, z, n_agents, ref_state_num=2)
-plot_lyapunov(t, x, z, params, agent=1)
+plot_lyapunov(t, x, z, params)
 plot_hysteresis_and_sign_function(x, z, dvtheta, params, agent=1)
 
 #%% END OF FILE

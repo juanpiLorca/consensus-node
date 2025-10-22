@@ -27,7 +27,6 @@ consensus_params consensus = {
     neighbors,              // neigbors
     1e6f,                   // scale_factor
     1e-6f,                  // inv_scale_factor
-    1e-4f,                  // scale_eta
     1,                      // number of neighbors = N
     0,                      // time0 (internal clock time)
     1000,                   // period of the consensus task
