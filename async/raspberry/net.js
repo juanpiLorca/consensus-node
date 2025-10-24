@@ -261,7 +261,7 @@ let TOPOLOGY;
 
 // // n30-ring3
 // // ... <---> 1 <---> 2 <---> 3 <---> ... 28 <---> 29 <---> 30 <---> ...
-// NODES = [
+// TOPOLOGY = [
 //  {id:  1 ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2, 30,  3], clock: 100},
 //  {id:  2 ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3,  1,  4], clock: 100},
 //  {id:  3 ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4,  2,  5], clock: 100},
@@ -296,7 +296,7 @@ let TOPOLOGY;
 
 // n30-ring2
 // ... <---> 1 <---> 2 <---> 3 <---> ... 28 <---> 29 <---> 30 <---> ...
-NODES = [
+TOPOLOGY = [
  {id:  1, ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2, 30], clock: 200},
  {id:  2, ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3,  1], clock: 200},
  {id:  3, ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4,  2], clock: 200},
