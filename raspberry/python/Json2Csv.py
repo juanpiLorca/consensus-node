@@ -51,6 +51,8 @@ class JSONtoCSVConverter:
             vstate = vstate[:min_len]
             vartheta = vartheta[:min_len]
 
+            # Interpolate missing values at the beginning if necessary
+
             # Prepare CSV file
             csv_filename = os.path.join(self.output_dir, f"node_{i}.csv")
             with open(csv_filename, "w", newline="") as csvfile:
@@ -62,9 +64,10 @@ class JSONtoCSVConverter:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_cluster"
-    output_csv_dir = "9node_cluster_csv"
-    num_agents = 9
+    num_agents = 30
+    sim_name = f"{num_agents}node-clusters"
+    output_csv_dir = f"data/{num_agents}node-clusters-csv"
+    num_agents = 30
     converter = JSONtoCSVConverter(filename_template="../data/{}/{}.json",
                                    simulation=sim_name,
                                    total_nodes=num_agents,
