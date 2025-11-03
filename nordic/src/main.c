@@ -3,8 +3,7 @@
 #include <dk_buttons_and_leds.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/gap.h>
-#include <math.h>
-#include <stdlib.h>
+#include <string.h> 
 
 #include "consensus.h"
 #include "common.h"
@@ -12,251 +11,166 @@
 #include "broadcaster.h"
 #include "serial.h"
 
-#define M_PI 3.14159265358979323846f
-
-// Register the logger for this module 
-LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF); 
+// Register the logger for this module
+LOG_MODULE_REGISTER(Module_Main, LOG_LEVEL_INF);
 
 /**
  * Led status
  */
-#define LED_STATUS                  DK_LED1
-#define BLINK_INTERVAL_MS           1000
+#define LED_STATUS                     DK_LED1
 /**
  * Thread stack size and priority
  */
-#define STACK_SIZE                  2048
-#define THREAD_CONSENSUS_PRIORITY   7
+#define APP_STACK_SIZE                 3072
+#define THREAD_SLOW_NETWORK_PRIORITY   7
+#define THREAD_FAST_DYNAMICS_PRIORITY  5
+
+// --- TIMER, SEMAPHORE AND MUTEX structs ---
+static struct k_timer dynamics_timer;
+static struct k_mutex consensus_mutex;
+static struct k_sem dynamics_sem; // Semaphore for 1ms clocking
 
 /**
  * Function declarations: --------------------------------------------------------------
  */
-static void leds_init(void);                        // Auxiliary function for starting LEDs
-static void bt_init(void);                          // Auxiliary function for starting Bluetooth
-static float disturbance(consensus_params* cp);     // Auxiliary function to compute disturbance
-static float sign(float x);                         // Auxiliary function to get the sign of a float number
-static float v_i(consensus_params* cp);             // Function to compute the v_i term in the consensus algorithm
-static void update_consensus(consensus_params* cp); // Function to update the consensus algorithm
-static void thread_consensus(void);                 // Thread to run the consensus algorithm periodically
+static void leds_init(void);                          // Auxiliary function for starting LEDs
+static void bt_init(void);                            // Auxiliary function for starting Bluetooth
+static void fast_dynamics_thread(void);               // Dedicated thread for 1ms dynamics
+static void slow_network_thread(void);                // Slow network/logging thread (body of original thread_consensus)
+static void dynamics_timer_cb(struct k_timer *dummy); // High-frequency dynamics timer callback
 /*
  * -------------------------------------------------------------------------------------
  */
 
 /**
- * Main thread:
+ * --- THREAD DEFINITIONS ---
+ * The fast thread (P=5) handles the 1ms dynamics via a semaphore clock.
+ * The slow thread (P=7) handles network I/O and logging.
+ */
+K_THREAD_DEFINE(fast_dynamics_thread_id, APP_STACK_SIZE,
+                fast_dynamics_thread, NULL, NULL, NULL,
+                THREAD_FAST_DYNAMICS_PRIORITY, 0, 0);
+
+// Assuming thread_consensus_app should execute the thread_slow_network logic
+K_THREAD_DEFINE(thread_consensus_id, APP_STACK_SIZE, slow_network_thread,
+                NULL, NULL, NULL, THREAD_SLOW_NETWORK_PRIORITY, 0, 0);
+
+/**
+ * Main thread (entry point of the program):
  */
 int main(void) {
-
-    int blink_status = 0; 
+    int blink_status = 0;
 
     leds_init();
     bt_init();
     serial_init();
 
+    // Original k_work_init and k_timer_init are replaced/modified:
+    k_mutex_init(&consensus_mutex);
+    k_sem_init(&dynamics_sem, 0, 1);
+    k_timer_init(&dynamics_timer, dynamics_timer_cb, NULL);
+
     while (1) {
         dk_set_led(LED_STATUS, (++blink_status) % 2);
-        k_sleep(K_MSEC(consensus.Ts));
+        k_sleep(K_MSEC(1000)); // Simple blink, non-critical
     }
 }
 
 /**
- * Consensus thread:
+ * Function definitions:
  */
-K_THREAD_DEFINE(thread_consensus_id, STACK_SIZE,
-                thread_consensus, NULL, NULL, NULL,
-                THREAD_CONSENSUS_PRIORITY, 0, 0);
-
-/**
- * Function definitions: --------------------------------------------------------------
- */
-
 static void leds_init(void) {
-	int err = dk_leds_init();
-	if (err) {
-		LOG_ERR("Status LED failed to start (err %d)\n", err);
-		return;
-	}
-	LOG_INF("Status LED successfully started\n");
+    int err = dk_leds_init();
+    if (err) {
+        LOG_ERR("Status LED failed to start (err %d)\n", err);
+        return;
+    }
+    LOG_INF("Status LED successfully started\n");
 }
 
 static void bt_init(void) {
     int err = bt_enable(NULL);
-	if (err) {
-		LOG_ERR("Bluetooth failed to start (err %d)\n", err);
-		return;
-	}
-	LOG_INF("Bluetooth successfully started\n");
+    if (err) {
+        LOG_ERR("Bluetooth failed to start (err %d)\n", err);
+        return;
+    }
+    LOG_INF("Bluetooth successfully started\n");
 }
 
-static float disturbance(consensus_params* cp) {
-    float nu = 0.0f;
-    if (!cp->disturbance.disturbance_on) {
-        nu = 0.0f; 
-    } else {
-        // Scaling factors
-        float amp = (float)cp->disturbance.amplitude * cp->inv_scale_factor;
-        float off = (float)cp->disturbance.offset * cp->inv_scale_factor;
-        float beta = (float)cp->disturbance.beta * cp->inv_scale_factor;
-        float A = (float)cp->disturbance.A * cp->inv_scale_factor; 
-        float f = (float)cp->disturbance.frequency;                                    
-        float phi_shift_s = (float)cp->disturbance.phase * cp->inv_scale_factor;       
-        float t = (float)cp->disturbance.counter * (float)cp->dt; 
-
-        float m = amp * ((float)rand() / (float)RAND_MAX - off); 
-        
-        float sinusoidal = A * sinf(2.0f * M_PI * f * (t - phi_shift_s));
-        nu = m + beta + sinusoidal;
-    } 
-    return nu; 
+/**
+ * --- FAST SIMULATION LOOP (Timer Handler) ---
+ * Runs every 'consensus.dt' (e.g., 1ms) in an ISR context.
+ */
+static void dynamics_timer_cb(struct k_timer *dummy) {
+    ARG_UNUSED(dummy);
+    k_sem_give(&dynamics_sem);
 }
 
-static float sign(float x) {
-    if (x > 0.0f) {
-        return 1.0f;
-    } else if (x < 0.0f) {
-        return -1.0f;
-    } else {
-        return 0.0f;
+/**
+ * --- DEDICATED FAST AGENT DYNAMICS THREAD ---
+ * Runs when signaled by the timer semaphore (P=5).
+ */
+static void fast_dynamics_thread(void) {
+    while (1) {
+        k_sem_take(&dynamics_sem, K_FOREVER);
+
+        k_mutex_lock(&consensus_mutex, K_FOREVER);
+        if (consensus.running && consensus.enabled) {
+            update_consensus(&consensus);
+            custom_data_type custom_data = {
+                MANUFACTURER_ID,
+                consensus.enabled ? NETID_ENABLED : NETID_DISABLED,
+                consensus.node,
+                consensus.vstate
+            };
+            broadcaster_update_scan_response_custom_data(&custom_data);
+        }
+        k_mutex_unlock(&consensus_mutex);
     }
 }
 
-static float v_i(consensus_params* cp) {
-    float vstate_f = (float)(cp->vstate * cp->inv_scale_factor);
-    float vi = 0.0f;
-    for (int j = 0; j < cp->N; j++) {
-        if (cp->neighbor_enabled[j]) {
-            float diff = vstate_f - (float)(cp->neighbor_vstates[j] * cp->inv_scale_factor);
-            vi += -1.0f * sign(diff) * sqrtf(fabsf(diff));
-        }
-    }
-    return vi;
-}
+/**
+ * --- SLOW NETWORK/LOGGING LOOP (Thread) ---
+ * Runs periodically/blocking for network I/O and serial logging (P=7).
+ */
+static void slow_network_thread(void) {
+    static consensus_params log_data_copy;
+    static neighbor_info_type neighbor_info;
 
-static void update_consensus(consensus_params* cp) {
-
-    // 1. Cast to float for calculations: system and disturbance parameters
-
-    // Dynamic variables & parameters
-    float dt = (float)(cp->dt * cp->inv_scale_factor); 
-    float x = (float)(cp->state * cp->inv_scale_factor);
-    float z = (float)(cp->vstate * cp->inv_scale_factor);
-    float vartheta = (float)(cp->vartheta * cp->inv_scale_factor);
-    float eta = (float)(cp->eta * cp->inv_scale_factor);
-
-    // Disturbance: 
-    float nu = disturbance(cp);
-
-    // 2. Compute error term and gradients
-    float sigma = x - z; 
-    float grad = sign(sigma); 
-
-    // 3. Compute control input
-    float vi = v_i(cp);
-    float gi = vi; 
-    float ui = gi - vartheta * grad; 
-
-    // 4. Compute dvtheta (derivative of vartheta): hysteresis bounding 
-    float dvtheta = 0.0f; 
-    if (cp->active == 0){ 
-        if ((float)fabs(sigma) > cp->epsilonON){
-            cp->active = 1;
-            dvtheta = eta * 1.0f; 
-        } else {
-            dvtheta = 0.0f; 
-        }
-    } else {
-        if ((float)fabs(sigma) <= cp->epsilonOFF){
-            cp->active = 0;
-            dvtheta = 0.0f; 
-        } else {
-            dvtheta = eta * 1.0f; 
-        }
-    }
-
-    // 5. Update dynamic variables
-    cp->state = (int32_t)((x + dt * (ui + nu)) * cp->scale_factor);
-    cp->vstate = (int32_t)((z + dt * gi) * cp->scale_factor);
-    cp->vartheta = (int32_t)((vartheta + dt * dvtheta) * cp->scale_factor);
-
-    // 6. Update disturbance parameters & log info.
-    cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
-}
-
-static void thread_consensus(void) {
-    custom_data_type custom_data = {
-        MANUFACTURER_ID, 
-        consensus.enabled ? NETID_ENABLED : NETID_DISABLED, 
-        consensus.node, 
-        consensus.vstate
-    };
-
-    static neighbor_info_type neighbor_info; 
     while (1) {
         if (consensus.running) {
-			if (consensus.first_time_running) {
-				custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
-				custom_data.node = consensus.node;
-				custom_data.vstate = consensus.vstate;
-				broadcaster_init(&custom_data);
-				observer_init();
-				serial_log_consensus();
-				consensus.first_time_running = false;
-			}
-			if (consensus.all_neighbors_observed) {
-				if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
-					if (consensus.enabled) {
-					    memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
-					    memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
-					    update_consensus(&consensus);
-					}
-					custom_data.netid_enabled = consensus.enabled ? NETID_ENABLED : NETID_DISABLED;
-					custom_data.vstate = consensus.vstate;
-		    		broadcaster_update_scan_response_custom_data(&custom_data);
-				    serial_log_consensus();
-		    	}
-			}
-		}
-		k_sleep(K_MSEC(consensus.Ts));
+            if (consensus.first_time_running) {
+                custom_data_type initial_data = {
+                    MANUFACTURER_ID,
+                    consensus.enabled ? NETID_ENABLED : NETID_DISABLED,
+                    consensus.node,
+                    consensus.vstate
+                };
+                broadcaster_init(&initial_data);
+                observer_init();
+                k_timer_start(&dynamics_timer, K_MSEC(0), K_MSEC(consensus.dt));
+                consensus.first_time_running = false;
+            }
+
+            // --- SLOW BLOCKING NETWORK I/O (Receiving neighbor data) ---
+            if (consensus.all_neighbors_observed) {
+                // Blocks until a new network message is available
+                if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_FOREVER)) {
+
+                    k_mutex_lock(&consensus_mutex, K_FOREVER);
+                    if (consensus.enabled) {
+                        memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
+                        memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
+                    }
+                    memcpy(&log_data_copy, &consensus, sizeof(consensus_params));
+                    k_mutex_unlock(&consensus_mutex);
+                    serial_log_consensus(&log_data_copy);
+                }
+            }
+            k_sleep(K_MSEC(consensus.Ts));
+        } else {
+            k_timer_stop(&dynamics_timer);
+            k_sleep(K_MSEC(1000));
+        }
     }
 }
-
-
-// static void thread_consensus(void) {
-//     custom_data_type custom_data = { ... };
-//     static neighbor_info_type neighbor_info; 
-    
-//     while (1) {
-//         if (consensus.running) {
-            
-//             // 1. ASYNCHRONOUS NETWORK INPUT UPDATE (0.1s rate)
-//             // Executes the following block ONLY when a new message arrives from the observer thread.
-//             if (!k_msgq_get(&custom_observer_msg_queue, &neighbor_info, K_NO_WAIT)) { 
-//                 if (consensus.all_neighbors_observed) {
-//                     // Update the neighbor inputs used by the dynamics
-//                     memcpy(consensus.neighbor_vstates, neighbor_info.vstates, sizeof(neighbor_info.vstates));
-//                     memcpy(consensus.neighbor_enabled, neighbor_info.enabled, sizeof(neighbor_info.enabled));
-//                 }
-                
-//                 // 3. SLOW ASYNCHRONOUS OUTPUT REPORTING (0.1s rate)
-//                 // Executes ONLY when the input is updated, giving you the flexibility you want.
-//                 serial_log_consensus(); // <-- This is executed at the 0.1s rate
-//             }
-            
-//             if (consensus.enabled) {
-//                 // 2. SYNCHRONOUS DYNAMICS EXECUTION (1ms rate)
-//                 // Runs every 1ms, using the neighbor data updated at 0.1s.
-//                 update_consensus(&consensus);
-//             }
-            
-//             // 4. BROADCAST UPDATE (can be 1ms or 0.1s, depending on BLE load)
-//             // It's often best to only update the broadcast state (which neighbors read) when the
-//             // consensus calculation *uses* a new network input (i.e., inside the k_msgq_get block).
-//             // For simplicity, let's keep it inside the k_msgq_get block alongside serial_log_consensus.
-//             // If you put it here, it will run every 1ms, increasing BLE advertising load. 
-
-//         }
-        
-//         // 5. FAST LOOP TIMER (1ms rate)
-//         k_sleep(K_MSEC(consensus.Ts));
-//     }
-// }

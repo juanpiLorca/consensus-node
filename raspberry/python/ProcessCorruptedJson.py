@@ -2,7 +2,7 @@ import re
 import json 
 import os # Added os module for file path manipulation
 
-filename = "../data/18node-ring_dir_1ms/2.json"
+filename = "../data/9node-clusters/2.json"
 output_filename = filename.replace(".json", "_structured.json")
 
 # --- FILE READING & INITIAL CLEANUP ---
@@ -26,6 +26,9 @@ if not clean_params_match:
     params_object_str = "{}" # Fallback
 else:
     params_object_str = clean_params_match.group(1)
+
+print(params_object_str)  # Print params for verification
+print(content_string)  # Print final reconstructed JSON for verification
 
 # B. Extract ALL strictly valid data rows
 valid_rows = re.findall(

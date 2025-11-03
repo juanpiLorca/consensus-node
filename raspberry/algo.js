@@ -11,7 +11,7 @@ class Algorithm {
         this.epsilonON = 0.050;
         this.epsilonOFF = 0.010;
 
-        this.dt = Number(params.dt) * this.inv_scale_factor;  
+        this.dt = Number(params.dt) * 1e-3; // Convert ms to seconds
         this.state0 = (Number(params.state) * this.inv_scale_factor);
         this.vstate0 = (Number(params.vstate) * this.inv_scale_factor);
         this.vartheta0 = (Number(params.vartheta) * this.inv_scale_factor);

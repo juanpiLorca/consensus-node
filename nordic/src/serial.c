@@ -27,7 +27,6 @@ consensus_params consensus = {
     neighbors,              // neigbors
     1e6f,                   // scale_factor
     1e-6f,                  // inv_scale_factor
-    1e-4f,                  // scale_eta
     1,                      // number of neighbors = N
     0,                      // time0 (internal clock time)
     1000,                   // period of the consensus task
@@ -168,6 +167,7 @@ static void uart_cb(const struct device *dev, struct uart_event *evt, void *user
                                 LOG_INF("Received 't1' (trigger). Consensus running"); 
                             } else {
                                 consensus.running = false;
+                                consensus.first_time_running = false;
                                 LOG_INF("Received 't0' (stop). Consensus stopped");
                             }
                             break;

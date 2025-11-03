@@ -10,7 +10,7 @@ class PostSimulation:
         self.conversion_factor = 1e6
         self.Ts = Ts
         self.dt = dt
-        self.time_factor = self.dt / (self.Ts * 1000.0)
+        self.time_factor = 1 / 1000#self.dt / (self.Ts * 1000.0)
         self.epsilon_on = 0.02
         self.epsilon_off = 0.01
 
@@ -147,7 +147,7 @@ class PostSimulation:
             z = node_data[:, 2] / self.conversion_factor
             sigma = x - z
 
-            ax.plot(t, sigma, label=f'$\sigma_{{{node_id}}}$')
+            ax.plot(t, sigma, label=f'$\\sigma_{{{node_id}}}$')
 
         ax.axhline(self.epsilon_off, color='k', linestyle='--', label='$\\pm \\epsilon = 0.01$')
         ax.axhline(-self.epsilon_off, color='k', linestyle='--')
@@ -161,6 +161,66 @@ class PostSimulation:
         ax.grid(True)
 
         plt.tight_layout()
+        plt.show()
+
+    def plot_timestamps_and_samples(self, num_points):
+        if not self.data:
+            return
+
+        # Create a 3-row figure: timestamps, state evolution, and number of samples
+        fig, axs = plt.subplots(3, 1, figsize=(14, 9), sharex=False, gridspec_kw={'height_ratios': [1.2, 1.5, 1]})
+        markers = ['o', 'x', '*', 's', 'd', '^', 'v', '<', '>', 'p', 'h']
+
+        # ---------------------- (1) TIMESTAMPS ----------------------
+        for i, node_id in enumerate(sorted(self.data.keys())):
+            node_data = self.data[node_id]
+            t = node_data[:num_points, 0] * self.time_factor
+
+            axs[0].plot(
+                range(num_points), t,
+                label=f'Node {node_id}',
+                linewidth=1.4,
+                marker=markers[i % len(markers)],
+                markersize=5,
+                alpha=0.85
+            )
+        axs[0].set_xlabel('Sample Index')
+        axs[0].set_ylabel('Timestamps (s)')
+        axs[0].legend(loc='upper left', bbox_to_anchor=(1.01, 1.0), fontsize=9)
+        axs[0].grid(True, linestyle='--', alpha=0.6)
+
+        # ---------------------- (2) STATE EVOLUTION ----------------------
+        for i, node_id in enumerate(sorted(self.data.keys())):
+            node_data = self.data[node_id]
+            t = node_data[:num_points, 0] * self.time_factor
+            x = node_data[:num_points, 1] / self.conversion_factor
+
+            axs[1].plot(
+                t, x,
+                label=f'Node {node_id}',
+                linewidth=1.4,
+                marker=markers[i % len(markers)],
+                markersize=5,
+                alpha=0.9
+            )
+        axs[1].set_xlabel('Time (s)')
+        axs[1].set_ylabel('$x(t)$')
+        axs[1].grid(True, linestyle='--', alpha=0.6)
+
+        # Adjust y-limits dynamically to avoid "flat" appearance
+        all_x = np.concatenate([self.data[n][:num_points, 1] / self.conversion_factor for n in self.data])
+        y_mean, y_std = np.mean(all_x), np.std(all_x)
+        axs[1].set_ylim(y_mean - 2*y_std, y_mean + 2*y_std)
+
+        # ---------------------- (3) NUMBER OF SAMPLES PER AGENT ----------------------
+        agent_ids = sorted(self.data.keys())
+        num_samples = [self.data[n].shape[0] for n in agent_ids]
+        axs[2].set_xlabel('Agent ID')
+        axs[2].bar(agent_ids, num_samples, color='skyblue', edgecolor='k', alpha=0.9)
+        axs[2].set_ylabel('Number of Samples')
+        axs[2].grid(axis='y', linestyle='--', alpha=0.6)
+
+        # ---------------------- FINAL FORMATTING ----------------------
         plt.show()
 
     def numerical_results(self):
@@ -226,10 +286,11 @@ class PostSimulation:
 
 
 if __name__ == "__main__":
-    sim_name = "9node_cluster"
-    num_agents = 9
+    sim_name = "30node-clusters"
+    num_agents = 30
     post_sim = PostSimulation(simulation_dir=f"../data/{sim_name}", num_agents=num_agents)
     post_sim.load_data()
-    post_sim.hysteresis_analysis(agent=1)
-    post_sim.plot_errors()
-    post_sim.numerical_results()
+    post_sim.plot_timestamps_and_samples(num_points=20)
+    #post_sim.hysteresis_analysis(agent=1)
+    #post_sim.plot_errors()
+    #post_sim.numerical_results()

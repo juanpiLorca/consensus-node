@@ -6,6 +6,8 @@
 #include <zephyr/kernel.h>
 #include "common.h"
 
+#define M_PI 3.14159265358979323846f
+
 /**
  * Custom type to store disturbance parameters sent by user through UART
  */
@@ -32,16 +34,11 @@ typedef struct {
     bool enabled; 
     bool first_time_running; 
     bool all_neighbors_observed; 
-
     bool* available_neighbors; 
-
     uint8_t node; 
     uint8_t* neighbors; 
-
     float scale_factor; 
     float inv_scale_factor; 
-    float scale_eta; 
-
     uint8_t N; 
     int64_t time0; 
     int32_t Ts; 
@@ -53,21 +50,24 @@ typedef struct {
     int32_t state; 
     int32_t vstate;
     int32_t vartheta;
-
     uint8_t active; 
     float epsilonON;
     float epsilonOFF; 
-
     bool* neighbor_enabled; 
     int32_t* neighbor_vstates;
-
     disturbance_params disturbance;
 } consensus_params;
 
 /**
- * Public boolean to know if the consensus algorithm has received the triggered signal
- * 
+ * Global consensus parameters instance
  */
 extern consensus_params consensus;
+
+float sign(float x);
+float max_of_two_non_negative_f(float a, float b);
+float disturbance(consensus_params* cp);
+float v_i(consensus_params* cp);
+void update_consensus(consensus_params* cp);
+
 
 #endif // CONSENSUS_H

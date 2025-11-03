@@ -9,6 +9,7 @@ target_sources(app PRIVATE
   src/broadcaster.c
   src/observer.c
   src/serial.c
+  src/consensus.c
 )
 
 # NORDIC SDK APP END
