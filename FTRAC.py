@@ -37,18 +37,20 @@ np.random.seed(42)  # For reproducibility {40, 41, 42}
 #     16: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [17]},
 #     17: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [18]},
 #     18: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1] },
+#     19: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5] },
+#     20: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9] },
+#     21: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [13]},
+#     22: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [17]},
+#     23: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3] },
+#     24: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [7] },
+#     25: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [11]},
+#     26: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [15]},
+#     27: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [19]},
+#     28: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [21]}, 
+#     29: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [23]},
+#     30: {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [25]},
 # }
-NODES = {
-    1:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [4] },
-    2:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [5] },
-    3:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [8] },
-    4:  {'x0': np.random.uniform(0,100), 'z0': np.random.uniform(0,100), 'neighbors': [7] },
-    5:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [9] },
-    6:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [2] },
-    7:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [3] },
-    8:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [6] },
-    9:  {'x0': np.random.uniform(0,10), 'z0': np.random.uniform(0,10), 'neighbors': [1]},
-}
+
 
 G = nx.DiGraph()
 for node, props in NODES.items():
