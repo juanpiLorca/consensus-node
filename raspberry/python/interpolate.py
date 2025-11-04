@@ -8,7 +8,7 @@ neighbors = {
     0: [2, 3, 21],       
     1: [1, 4],           
     2: [1, 5],           
-    3: [2, 5, 6],        
+    3: [2, 5, 6],  
     4: [3, 4, 7],        
     5: [4, 7, 8],        
     6: [5, 6, 9],        
@@ -41,7 +41,7 @@ neighbors = {
 NODES = {}
 _nodes = pd.read_csv("../data/30node-clusters/initial_conditions.csv")
 
-num_nodes = 30
+num_nodes = 4
 for i in range(num_nodes):
     node_id = int(_nodes.iloc[i]['node'])
     x0 = float(_nodes.iloc[i]['state']) / SCALE_FACTOR
@@ -61,7 +61,7 @@ for i in range(num_nodes):
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 5.0
+T        = 8.0
 dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -99,9 +99,6 @@ init_conditions = {
     "z": np.array([NODES[i+1]['z0'] for i in range(n_agents)]),
     "vtheta": np.zeros(n_agents)  # Initial adaptive gains
 }
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 def plot_states(t, x, z, vartheta, params, ref_state_num=1):
     """
@@ -177,7 +174,6 @@ def plot_states(t, x, z, vartheta, params, ref_state_num=1):
 
     plt.tight_layout()
     plt.show()
-
 
 def vi(i, z, neighbors): 
     diffs = z[i] - z[neighbors]
@@ -286,3 +282,10 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.2):
 x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics_euler(params, init_conditions)
 t = np.linspace(0, T, sample_points)
 plot_states(t, x, z, vtheta, params, ref_state_num=1)
+
+states_file = "../data/30node-clusters/generated_x.csv"
+vstates_file = "../data/30node-clusters/generated_z.csv"
+vartheta_file = "../data/30node-clusters/generated_vartheta.csv"
+np.savetxt(states_file, x.T, delimiter=",", fmt='%f')
+np.savetxt(vstates_file, z.T, delimiter=",", fmt='%f')
+np.savetxt(vartheta_file, vtheta.T, delimiter=",", fmt='%f')
