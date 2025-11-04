@@ -2,7 +2,58 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+SCALE_FACTOR = 1e6
+
+neighbors = {
+    0: [2, 3, 21],       
+    1: [1, 4],           
+    2: [1, 5],           
+    3: [2, 5, 6],        
+    4: [3, 4, 7],        
+    5: [4, 7, 8],        
+    6: [5, 6, 9],        
+    7: [6, 10],          
+    8: [7, 10],          
+    9: [8, 9, 30],       
+    10: [12, 13, 21],     
+    11: [11, 14],         
+    12: [11, 15],         
+    13: [12, 15, 16],     
+    14: [13, 14, 17],     
+    15: [14, 17, 18],     
+    16: [15, 16, 19],     
+    17: [16, 20],         
+    18: [17, 20],         
+    19: [18, 19, 30],     
+    20: [1, 11, 22, 23], 
+    21: [21, 24],         
+    22: [21, 25],         
+    23: [22, 25, 26],     
+    24: [23, 24, 27],     
+    25: [24, 27, 28],     
+    26: [25, 26, 29],     
+    27: [26, 30],         
+    28: [27, 30],         
+    29: [10, 20, 28, 29],
+}
+
 # Load graph-agent data from csv: {x0, z0, id, neighbors, enabled}
+NODES = {}
+_nodes = pd.read_csv("../data/30node-clusters/initial_conditions.csv")
+
+num_nodes = 30
+for i in range(num_nodes):
+    node_id = int(_nodes.iloc[i]['node'])
+    x0 = float(_nodes.iloc[i]['state']) / SCALE_FACTOR
+    z0 = float(_nodes.iloc[i]['vstate']) / SCALE_FACTOR
+    enabled = int(_nodes.iloc[i]['enabled'])
+    NODES[node_id] = {
+        'x0': x0,
+        'z0': z0,
+        'neighbors': neighbors[i],
+        'enabled': enabled
+    }
+
 
 # Use local model to generate the first 10 seconds of data: 
 # >> consider using the same integration time step
@@ -10,7 +61,7 @@ import matplotlib.pyplot as plt
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 30.0
+T        = 5.0
 dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -37,8 +88,8 @@ params = {
 
 ## Disturbance: bounded known input
 alpha   = 1.5
-beta    = 0.5
-kappa   = 1.0
+beta    = 0.0
+kappa   = 0.0
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
 nu = np.random.uniform(-alpha, alpha, (n_agents, n_points)) + beta + kappa * np.sin(2*np.pi*10*(time - phi))  
 
@@ -49,89 +100,84 @@ init_conditions = {
     "vtheta": np.zeros(n_agents)  # Initial adaptive gains
 }
 
-#% >>> Plotting aux:
-def plot_simulation(t, x, z, vartheta, params):
+import matplotlib.pyplot as plt
+import numpy as np
+
+def plot_states(t, x, z, vartheta, params, ref_state_num=1):
     """
-    Plot x, z, vartheta, and u in a 2x2 grid.
-    
-    Parameters:
-    - t: time vector
-    - x, z, vartheta, mv: 2D arrays of shape (n_agents, n_points)
+    Plot x, z, and vartheta states for all agents with distinct markers and colors.
     """
-    # Trim last time step (if necessary)
     n_agents = params["n_agents"]
 
-    t = t[:-1]
-    x = x[:,:-1]
-    z = z[:,:-1]
-    vartheta = vartheta[:,:-1]
-
-    fig, axs = plt.subplots(2, 1, figsize=(12, 9))
-    
-    # --- Top-left: x_i ---
-    colors = plt.cm.tab10.colors  
-
-    for i in range(n_agents):
-        base_color = colors[i % len(colors)]
-        ref_color = darken_color(base_color, amount=0.75)  
-
-        axs[0].plot(t, x[i,:], color=base_color, linestyle='-', label=f'$x_{{{i+1}}}$')
-        axs[0].plot(t, z[i,:], color=ref_color, linestyle='--', label=f'$z_{{{i+1}}}$ (ref.)')
-    
-    axs[0].set_title('States $x_i$')
-    axs[0].set_xlabel('Time (s)')
-    axs[0].set_ylabel('$x(t)$')
-    axs[0].legend(ncol=3)
-    axs[0].grid(True) 
-    
-    # --- Bottom-left: vartheta_i ---
-    for i in range(n_agents):
-        axs[1].plot(t, vartheta[i,:], label=f'$\\vartheta_{i+1}$')
-    axs[1].set_title('Adaptive gains $\\vartheta_i$')
-    axs[1].set_xlabel('Time (s)')
-    axs[1].set_ylabel('$\\vartheta(t)$')
-    axs[1].legend(ncol=3)
-    axs[1].grid(True)
-    
-    plt.tight_layout()
-    plt.show()
-
-def plot_states(t, x, z, n_agents, ref_state_num=1):
-    """
-    Plot x and z states for all agents.
-    
-    Parameters:
-    - t: time vector
-    - x, z: 2D arrays of shape (n_agents, n_points)
-    - n_agents: number of agents
-    - save_path: path to save figure (optional)
-    """
     # Trim last time step (if necessary)
     t = t[:-1]
-    x = x[:,:-1]
-    z = z[:,:-1]
+    x = x[:, :-1]
+    z = z[:, :-1]
+    vartheta = vartheta[:, :-1]
 
-    fig, axs = plt.subplots(2, 1, figsize=(12, 9))
+    # Define markers and color cycle
+    markers = ['o', 'x', '*', 's', 'd', '^', 'v', '<', '>', 'p', 'h']
+    cmap = plt.colormaps['tab10']
+    colors = [cmap(i % 10) for i in range(n_agents)]
+
+    fig, axs = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
+
+    # --- Top subplot: states x_i ---
     for i in range(n_agents):
-        axs[0].plot(t, x[i,:], linestyle='-', label=f'$x_{{{i+1}}}$')
-    axs[0].plot(t, z[ref_state_num-1,:], '--k', label=f'$z_{{{ref_state_num}}}$ (ref.)')
+        axs[0].plot(
+            t, x[i, :],
+            label=f'$x_{{{i+1}}}$',
+            linewidth=1.25,
+            color=colors[i],
+            marker=markers[i % len(markers)],
+            markersize=4,
+            alpha=0.9
+        )
+    axs[0].plot(
+        t, z[ref_state_num-1, :],
+        '--', color='black', linewidth=2.0,
+        label=f'$z_{{{ref_state_num}}}$ (ref.)'
+    )
     axs[0].set_title('States $x_i$')
-    axs[0].set_xlabel('Time (s)')
     axs[0].set_ylabel('$x(t)$')
-    axs[0].legend(ncol=3)
-    axs[0].grid(True)
+    axs[0].grid(True, linestyle='--', alpha=0.6)
+    axs[0].legend(ncol=3, fontsize=9)
 
+    # --- Middle subplot: reference states z_i ---
     for i in range(n_agents):
-        axs[1].plot(t, z[i,:], linestyle='-', label=f'$z_{{{i+1}}}$ (ref.)')
-
+        axs[1].plot(
+            t, z[i, :],
+            label=f'$z_{{{i+1}}}$',
+            linewidth=1.25,
+            color=colors[i],
+            marker=markers[i % len(markers)],
+            markersize=4,
+            alpha=0.9
+        )
     axs[1].set_title('Reference states $z_i$')
-    axs[1].set_xlabel('Time (s)')
     axs[1].set_ylabel('$z(t)$')
-    axs[1].legend(ncol=3)
-    axs[1].grid(True)
+    axs[1].grid(True, linestyle='--', alpha=0.6)
+    axs[1].legend(ncol=3, fontsize=9)
+
+    # --- Bottom subplot: adaptive gains vartheta_i ---
+    for i in range(n_agents):
+        axs[2].plot(
+            t, vartheta[i, :],
+            label=f'$\\vartheta_{{{i+1}}}$',
+            linewidth=1.25,
+            color=colors[i],
+            marker=markers[i % len(markers)],
+            markersize=4,
+            alpha=0.9
+        )
+    axs[2].set_title('Adaptive gains $\\vartheta_i$')
+    axs[2].set_xlabel('Time (s)')
+    axs[2].set_ylabel('$\\vartheta(t)$')
+    axs[2].grid(True, linestyle='--', alpha=0.6)
 
     plt.tight_layout()
     plt.show()
+
 
 def vi(i, z, neighbors): 
     diffs = z[i] - z[neighbors]
@@ -149,19 +195,20 @@ def dyn2sample(t, y, g, nu, n_agents, dvth, params, sample_points):
 
     dvtheta = np.zeros(n_agents)
     for i in range(n_agents):
-        if params["active"][i] == 0: 
-            if np.abs(sigma[i]) > params["epsilon_on"]:
-                params["active"][i] = 1
-                dvtheta[i] = params["eta"] * 1.0
-            else: 
-                dvtheta[i] = 0.0
+        if params["nodes"][i+1]['enabled'] == 1:
+            if params["active"][i] == 0: 
+                if np.abs(sigma[i]) > params["epsilon_on"]:
+                    params["active"][i] = 1
+                    dvtheta[i] = params["eta"] * 1.0
+                else: 
+                    dvtheta[i] = 0.0
 
-        else:
-            if np.abs(sigma[i]) <= params["epsilon_off"]:
-                params["active"][i] = 0
-                dvtheta[i] = 0.0
             else:
-                dvtheta[i] = params["eta"] * 1.0
+                if np.abs(sigma[i]) <= params["epsilon_off"]:
+                    params["active"][i] = 0
+                    dvtheta[i] = 0.0
+                else:
+                    dvtheta[i] = params["eta"] * 1.0
 
     u = g - vtheta * grad
     dxdt = u + nu
@@ -202,9 +249,6 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.2):
     zs = np.zeros((n_agents, sample_points))
     vthetas = np.zeros((n_agents, sample_points))
     dvthetas = np.zeros((n_agents, sample_points))
-
-    # TODO:
-    # Modifications in order to compute dynamics if nodes are enabled/disabled
     
     t = 0.0
     for k in range(n_points):
@@ -214,13 +258,17 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.2):
         z[:, k] = y[n_agents:2*n_agents]
         vtheta[:, k] = y[2*n_agents:3*n_agents]
 
-        # Store sampled trajectories only at sample points
         if k % sample_interval == 0:
 
             for i in range(n_agents):
-                neighbors = params["nodes"][i+1]['neighbors']
-                neighbors_index = [n-1 for n in neighbors]
-                v[i] = vi(i, z[:, k], neighbors_index)
+
+                if params["nodes"][i+1]['enabled'] == 1:
+                    neighbors = params["nodes"][i+1]['neighbors']
+                    neighbors_index = []
+                    for n in neighbors:
+                        if params["nodes"][n]['enabled'] == 1:
+                            neighbors_index.append(n-1)
+                    v[i] = vi(i, z[:, k], neighbors_index)
 
             sample_idx = k // sample_interval
             if sample_idx < sample_points:
@@ -237,5 +285,4 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.2):
 
 x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics_euler(params, init_conditions)
 t = np.linspace(0, T, sample_points)
-plot_simulation(t, x, z, vtheta, params)
-plot_states(t, x, z, n_agents, ref_state_num=1)
+plot_states(t, x, z, vtheta, params, ref_state_num=1)
