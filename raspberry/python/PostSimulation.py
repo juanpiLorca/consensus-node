@@ -221,6 +221,7 @@ class PostSimulation:
         axs[2].grid(axis='y', linestyle='--', alpha=0.6)
 
         # ---------------------- FINAL FORMATTING ----------------------
+        plt.tight_layout()
         plt.show()
 
     def numerical_results(self):
