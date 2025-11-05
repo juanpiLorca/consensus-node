@@ -1,4 +1,6 @@
 const os = require('os');
+const fs = require('fs');
+const path = require('path');
 const seedrandom = require('seedrandom');
 
 // Define function to get backend-server's IP address
@@ -67,6 +69,7 @@ const INITIAL_VSTATES_BRIDGE = Array.from({length: Math.floor(NUM_NODES/3)}, () 
 
 function createNodes(topologyConfig) {
     const nodes = {}; 
+    const initialConditions = []; 
 
     for (let i = 0; i < topologyConfig.length; i++) {
         const cfg = topologyConfig[i];
@@ -127,7 +130,25 @@ function createNodes(topologyConfig) {
                 samples: 1000
             }
         };
+
+        initialConditions.push({
+            id: cfg.id,
+            type: cfg.type,
+            state: state,
+            vstate: vstate
+        }); 
     }
+
+    const dataDir = path.join(__dirname, 'data');
+    if (!fs.existsSync(dataDir)){
+        fs.mkdirSync(dataDir);
+    }
+
+    const csvPath = path.join(dataDir, 'initial_conditions.csv');
+    const csvHeader = 'id,type,state,vstate\n';
+    const csvRows = initialConditions.map(ic => `${ic.id},${ic.type},${ic.state},${ic.vstate}`).join('\n');
+    fs.writeFileSync(csvPath, csvHeader + csvRows);
+    console.log(`Initial conditions saved to ${csvPath}`);
 
     return nodes;
 }
@@ -222,71 +243,71 @@ let TOPOLOGY;
 // ------------------------------------------------------------------------------------------------------------------
 
 // n30-dirline
-// 1 <--- 2 <--- 3 <--- ... 28 <--- 29 <--- (30 disabled)
-TOPOLOGY = [
- {id:  1, ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2], clock: 200},
- {id:  2, ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3], clock: 200},
- {id:  3, ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4], clock: 200},
- {id:  4, ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [ 5], clock: 200},
- {id:  5, ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [ 6], clock: 200},
- {id:  6, ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 7], clock: 200},
- {id:  7, ip: '192.168.0.126', type: TYPE_BLE,    enabled:  true, neighbors: [ 8], clock: 200},
- {id:  8, ip: '192.168.0.122', type: TYPE_BLE,    enabled:  true, neighbors: [ 9], clock: 200},
- {id:  9, ip: '192.168.0.146', type: TYPE_BLE,    enabled:  true, neighbors: [10], clock: 200},
- {id: 10, ip: '192.168.0.135', type: TYPE_BLE,    enabled:  true, neighbors: [11], clock: 200},
- {id: 11, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [12], clock: 200},
- {id: 12, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true, neighbors: [13], clock: 200},
- {id: 13, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true, neighbors: [14], clock: 200},
- {id: 14, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true, neighbors: [15], clock: 200},
- {id: 15, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true, neighbors: [16], clock: 200},
- {id: 16, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [17], clock: 200},
- {id: 17, ip: '192.168.0.126', type: TYPE_WIFI,   enabled:  true, neighbors: [18], clock: 200},
- {id: 18, ip: '192.168.0.122', type: TYPE_WIFI,   enabled:  true, neighbors: [19], clock: 200},
- {id: 19, ip: '192.168.0.146', type: TYPE_WIFI,   enabled:  true, neighbors: [20], clock: 200},
- {id: 20, ip: '192.168.0.135', type: TYPE_WIFI,   enabled:  true, neighbors: [21], clock: 200},
- {id: 21, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled:  true, neighbors: [22], clock: 200},
- {id: 22, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [23], clock: 200},
- {id: 23, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [24], clock: 200},
- {id: 24, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [25], clock: 200},
- {id: 25, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [26], clock: 200},
- {id: 26, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [27], clock: 200},
- {id: 27, ip: '192.168.0.126', type: TYPE_BRIDGE, enabled:  true, neighbors: [28], clock: 200},
- {id: 28, ip: '192.168.0.122', type: TYPE_BRIDGE, enabled:  true, neighbors: [29], clock: 200},
- {id: 29, ip: '192.168.0.146', type: TYPE_BRIDGE, enabled:  true, neighbors: [30], clock: 200},
- {id: 30, ip: '192.168.0.135', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 1], clock: 200},
-]; 
+// ... <-- 1 <-- 2 <-- 3 <-- 4 <-- 5 <-- 6 <-- 7 <-- 8 <-- 9 <-- 10 <-- 21 <-- 22 <-- 23 <-- 24 <-- 25 <-- 11 <-- 12 <-- 13 <-- 14 <-- 15 <-- 16 <-- 17 <-- 18 <-- 19 <-- 20 <-- 26 <-- 27 <-- 28 <-- 29 <-- 30 <-- ...
+// TOPOLOGY = [
+//  {id:  1, ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [ 2], clock: 200},
+//  {id:  2, ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [ 3], clock: 200},
+//  {id:  3, ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [ 4], clock: 200},
+//  {id:  4, ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [ 5], clock: 200},
+//  {id:  5, ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [ 6], clock: 200},
+//  {id:  6, ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [ 7], clock: 200},
+//  {id:  7, ip: '192.168.0.126', type: TYPE_BLE,    enabled:  true, neighbors: [ 8], clock: 200},
+//  {id:  8, ip: '192.168.0.122', type: TYPE_BLE,    enabled:  true, neighbors: [ 9], clock: 200},
+//  {id:  9, ip: '192.168.0.146', type: TYPE_BLE,    enabled:  true, neighbors: [10], clock: 200},
+//  {id: 10, ip: '192.168.0.135', type: TYPE_BLE,    enabled:  true, neighbors: [21], clock: 200},
+//  {id: 11, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [12], clock: 200},
+//  {id: 12, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true, neighbors: [13], clock: 200},
+//  {id: 13, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true, neighbors: [14], clock: 200},
+//  {id: 14, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true, neighbors: [15], clock: 200},
+//  {id: 15, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true, neighbors: [16], clock: 200},
+//  {id: 16, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [17], clock: 200},
+//  {id: 17, ip: '192.168.0.126', type: TYPE_WIFI,   enabled:  true, neighbors: [18], clock: 200},
+//  {id: 18, ip: '192.168.0.122', type: TYPE_WIFI,   enabled:  true, neighbors: [19], clock: 200},
+//  {id: 19, ip: '192.168.0.146', type: TYPE_WIFI,   enabled:  true, neighbors: [20], clock: 200},
+//  {id: 20, ip: '192.168.0.135', type: TYPE_WIFI,   enabled:  true, neighbors: [26], clock: 200},
+//  {id: 21, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled:  true, neighbors: [22], clock: 200},
+//  {id: 22, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [23], clock: 200},
+//  {id: 23, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [24], clock: 200},
+//  {id: 24, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [25], clock: 200},
+//  {id: 25, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [11], clock: 200},
+//  {id: 26, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [27], clock: 200},
+//  {id: 27, ip: '192.168.0.126', type: TYPE_BRIDGE, enabled:  true, neighbors: [28], clock: 200},
+//  {id: 28, ip: '192.168.0.122', type: TYPE_BRIDGE, enabled:  true, neighbors: [29], clock: 200},
+//  {id: 29, ip: '192.168.0.146', type: TYPE_BRIDGE, enabled:  true, neighbors: [30], clock: 200},
+//  {id: 30, ip: '192.168.0.135', type: TYPE_BRIDGE, enabled:  true, neighbors: [ 1], clock: 200},
+// ]; 
 
 // n30-clusters
 TOPOLOGY = [ 
-{id: 1,  ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true, neighbors: [2, 3, 21],        clock: 200},
-{id: 2,  ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true, neighbors: [1, 4],            clock: 200},
-{id: 3,  ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true, neighbors: [1, 5],            clock: 200},
-{id: 4,  ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true, neighbors: [2, 5, 6],         clock: 200},
-{id: 5,  ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true, neighbors: [3, 4, 7],         clock: 200},
-{id: 6,  ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true, neighbors: [4, 7, 8],         clock: 200},
-{id: 7,  ip: '192.168.0.126', type: TYPE_BLE,    enabled:  true, neighbors: [5, 6, 9],         clock: 200},
-{id: 8,  ip: '192.168.0.122', type: TYPE_BLE,    enabled:  true, neighbors: [6, 10],           clock: 200},
-{id: 9,  ip: '192.168.0.146', type: TYPE_BLE,    enabled:  true, neighbors: [7, 10],           clock: 200},
-{id: 10, ip: '192.168.0.135', type: TYPE_BLE,    enabled:  true, neighbors: [8, 9, 30],        clock: 200},
-{id: 11, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true, neighbors: [12, 13, 21],      clock: 200},
-{id: 12, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true, neighbors: [11, 14],          clock: 200},
-{id: 13, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true, neighbors: [11, 15],          clock: 200},
-{id: 14, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true, neighbors: [12, 15, 16],      clock: 200},
-{id: 15, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true, neighbors: [13, 14, 17],      clock: 200},
-{id: 16, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true, neighbors: [14, 17, 18],      clock: 200},
-{id: 17, ip: '192.168.0.126', type: TYPE_WIFI,   enabled:  true, neighbors: [15, 16, 19],      clock: 200},
-{id: 18, ip: '192.168.0.122', type: TYPE_WIFI,   enabled:  true, neighbors: [16, 20],          clock: 200},
-{id: 19, ip: '192.168.0.146', type: TYPE_WIFI,   enabled:  true, neighbors: [17, 20],          clock: 200},
-{id: 20, ip: '192.168.0.135', type: TYPE_WIFI,   enabled:  true, neighbors: [18, 19, 30],      clock: 200},
+{id: 1,  ip: '192.168.0.136', type: TYPE_BLE,    enabled:  true,  neighbors: [2, 3, 21],       clock: 200},
+{id: 2,  ip: '192.168.0.101', type: TYPE_BLE,    enabled:  true,  neighbors: [1, 4],           clock: 200},
+{id: 3,  ip: '192.168.0.134', type: TYPE_BLE,    enabled:  true,  neighbors: [1, 5],           clock: 200},
+{id: 4,  ip: '192.168.0.191', type: TYPE_BLE,    enabled:  true,  neighbors: [2, 5, 6],        clock: 200},
+{id: 5,  ip: '192.168.0.166', type: TYPE_BLE,    enabled:  true,  neighbors: [3, 4, 7],        clock: 200},
+{id: 6,  ip: '192.168.0.130', type: TYPE_BLE,    enabled:  true,  neighbors: [4, 7, 8],        clock: 200},
+{id: 7,  ip: '192.168.0.126', type: TYPE_BLE,    enabled:  true,  neighbors: [5, 6, 9],        clock: 200},
+{id: 8,  ip: '192.168.0.122', type: TYPE_BLE,    enabled:  true,  neighbors: [6, 10],          clock: 200},
+{id: 9,  ip: '192.168.0.146', type: TYPE_BLE,    enabled:  true,  neighbors: [7, 10],          clock: 200},
+{id: 10, ip: '192.168.0.135', type: TYPE_BLE,    enabled:  true,  neighbors: [8, 9, 30],       clock: 200},
+{id: 11, ip: '192.168.0.136', type: TYPE_WIFI,   enabled:  true,  neighbors: [12, 13, 21],     clock: 200},
+{id: 12, ip: '192.168.0.101', type: TYPE_WIFI,   enabled:  true,  neighbors: [11, 14],         clock: 200},
+{id: 13, ip: '192.168.0.134', type: TYPE_WIFI,   enabled:  true,  neighbors: [11, 15],         clock: 200},
+{id: 14, ip: '192.168.0.191', type: TYPE_WIFI,   enabled:  true,  neighbors: [12, 15, 16],     clock: 200},
+{id: 15, ip: '192.168.0.166', type: TYPE_WIFI,   enabled:  true,  neighbors: [13, 14, 17],     clock: 200},
+{id: 16, ip: '192.168.0.130', type: TYPE_WIFI,   enabled:  true,  neighbors: [14, 17, 18],     clock: 200},
+{id: 17, ip: '192.168.0.126', type: TYPE_WIFI,   enabled:  true,  neighbors: [15, 16, 19],     clock: 200},
+{id: 18, ip: '192.168.0.122', type: TYPE_WIFI,   enabled:  true,  neighbors: [16, 20],         clock: 200},
+{id: 19, ip: '192.168.0.146', type: TYPE_WIFI,   enabled:  true,  neighbors: [17, 20],         clock: 200},
+{id: 20, ip: '192.168.0.135', type: TYPE_WIFI,   enabled:  true,  neighbors: [18, 19, 30],     clock: 200},
 {id: 21, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled:  false, neighbors: [1, 11, 22, 23],  clock: 200},
-{id: 22, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true, neighbors: [21, 24],          clock: 200},
-{id: 23, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true, neighbors: [21, 25],          clock: 200},
-{id: 24, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true, neighbors: [22, 25, 26],      clock: 200},
-{id: 25, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true, neighbors: [23, 24, 27],      clock: 200},
-{id: 26, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled:  true, neighbors: [24, 27, 28],      clock: 200},
-{id: 27, ip: '192.168.0.126', type: TYPE_BRIDGE, enabled:  true, neighbors: [25, 26, 29],      clock: 200},
-{id: 28, ip: '192.168.0.122', type: TYPE_BRIDGE, enabled:  true, neighbors: [26, 30],          clock: 200},
-{id: 29, ip: '192.168.0.146', type: TYPE_BRIDGE, enabled:  true, neighbors: [27, 30],          clock: 200},
+{id: 22, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled:  true,  neighbors: [21, 24],         clock: 200},
+{id: 23, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled:  true,  neighbors: [21, 25],         clock: 200},
+{id: 24, ip: '192.168.0.191', type: TYPE_BRIDGE, enabled:  true,  neighbors: [22, 25, 26],     clock: 200},
+{id: 25, ip: '192.168.0.166', type: TYPE_BRIDGE, enabled:  true,  neighbors: [23, 24, 27],     clock: 200},
+{id: 26, ip: '192.168.0.130', type: TYPE_BRIDGE, enabled:  true,  neighbors: [24, 27, 28],     clock: 200},
+{id: 27, ip: '192.168.0.126', type: TYPE_BRIDGE, enabled:  true,  neighbors: [25, 26, 29],     clock: 200},
+{id: 28, ip: '192.168.0.122', type: TYPE_BRIDGE, enabled:  true,  neighbors: [26, 30],         clock: 200},
+{id: 29, ip: '192.168.0.146', type: TYPE_BRIDGE, enabled:  true,  neighbors: [27, 30],         clock: 200},
 {id: 30, ip: '192.168.0.135', type: TYPE_BRIDGE, enabled:  false, neighbors: [10, 20, 28, 29], clock: 200},
 ];
 
