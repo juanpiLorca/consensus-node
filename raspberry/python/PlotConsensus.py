@@ -45,7 +45,7 @@ class PlotConsensus:
 
     def load_data(self):
         # Determine directory of JSON files
-        data_dir = os.path.dirname(self.filename_template.format(self.simulation, 1))
+        data_dir = "../data/"
         init_path = os.path.join(data_dir, "initial_conditions.csv")
 
         # Try loading initial conditions
@@ -83,8 +83,8 @@ class PlotConsensus:
             node_data = np.stack([timestamp[:min_len], state[:min_len], vstate[:min_len], vartheta[:min_len]], axis=1)
 
             # ---- Append initial condition at t = 0 ----
-            if init_conditions is not None and i in init_conditions['node'].values:
-                row = init_conditions[init_conditions['node'] == i].iloc[0]
+            if init_conditions is not None and i in init_conditions['id'].values:
+                row = init_conditions[init_conditions['id'] == i].iloc[0]
                 x0 = float(row['state'])
                 z0 = float(row['vstate'])
                 v0 = 0  # initial vartheta assumed 0
@@ -127,13 +127,13 @@ class PlotConsensus:
             ax.grid(True, which='major', linestyle='-', linewidth=0.5)
             ax.grid(True, which='minor', linestyle=':', linewidth=0.25)
             
-            # 2. External Legend (Upper Right)
-            ax.legend(loc='upper left', 
-                      bbox_to_anchor=(1.01, 1.0), # Places the legend outside the axes
-                      ncol=num_cols, 
-                      fontsize=10, 
-                      fancybox=True, 
-                      shadow=False)
+        # 2. External Legend (Upper Right)
+        axs[0].legend(loc='upper left', 
+                    bbox_to_anchor=(1.01, 1.0), # Places the legend outside the axes
+                    ncol=num_cols, 
+                    fontsize=10, 
+                    fancybox=True, 
+                    shadow=False)
 
         axs[0].set_ylabel('$x(t)$')
         axs[1].set_ylabel('$\\vartheta(t)$')
@@ -206,7 +206,7 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    sim_name = "30node-clusters"
+    sim_name = "30node-dring"
     num_agents = 30
     plotter = PlotConsensus(
         filename_template="../data/{}/{}.json",

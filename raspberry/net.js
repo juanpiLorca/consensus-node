@@ -82,7 +82,6 @@ function createNodes(topologyConfig) {
 
         // Determine which initial set to use based on communication type
         let state, vstate;
-
         switch (cfg.type) {
             case TYPE_BLE:
                 state  = INITIAL_STATES_BLE[nodeIndex % INITIAL_STATES_BLE.length];
@@ -107,7 +106,6 @@ function createNodes(topologyConfig) {
         }
 
         const INITIAL_PHASES = Array.from({length: NUM_NODES}, () => encodeFloat(rng()));
-        
         nodes[cfg.id] = {
             ip: cfg.ip,
             type: cfg.type,
@@ -130,7 +128,6 @@ function createNodes(topologyConfig) {
                 samples: 1000
             }
         };
-
         initialConditions.push({
             id: cfg.id,
             type: cfg.type,
@@ -145,8 +142,8 @@ function createNodes(topologyConfig) {
     }
 
     const csvPath = path.join(dataDir, 'initial_conditions.csv');
-    const csvHeader = 'id,type,state,vstate\n';
-    const csvRows = initialConditions.map(ic => `${ic.id},${ic.type},${ic.state},${ic.vstate}`).join('\n');
+    const csvHeader = 'id,type,state,vstate,enable\n';
+    const csvRows = initialConditions.map(ic => `${ic.id},${ic.type},${ic.state},${ic.vstate},${ic.enabled}`).join('\n');
     fs.writeFileSync(csvPath, csvHeader + csvRows);
     console.log(`Initial conditions saved to ${csvPath}`);
 

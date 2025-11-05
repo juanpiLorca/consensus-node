@@ -1,8 +1,7 @@
 import re 
 import json 
-import os # Added os module for file path manipulation
 
-filename = "../data/9node-clusters/2.json"
+filename = "../data/30node-dring/17.json"
 output_filename = filename.replace(".json", "_structured.json")
 
 # --- FILE READING & INITIAL CLEANUP ---
@@ -27,13 +26,10 @@ if not clean_params_match:
 else:
     params_object_str = clean_params_match.group(1)
 
-print(params_object_str)  # Print params for verification
-print(content_string)  # Print final reconstructed JSON for verification
-
 # B. Extract ALL strictly valid data rows
 valid_rows = re.findall(
-    r'\[\s*"\d+",\s*"\d+",\s*"\d+",\s*"\d+",\s*"\d+"\s*\]', 
-    content_string, 
+    r'\[\s*(?:\d+\s*,\s*){3,4}\d+\s*\]',  # match 4 or 5 numbers inside brackets
+    content_string,
     flags=re.DOTALL
 )
 

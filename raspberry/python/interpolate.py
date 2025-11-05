@@ -1,3 +1,4 @@
+#%% Simulate the local model to generate data for interpolation
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,11 +40,11 @@ neighbors = {
 
 # Load graph-agent data from csv: {x0, z0, id, neighbors, enabled}
 NODES = {}
-_nodes = pd.read_csv("../data/30node-clusters/initial_conditions.csv")
+_nodes = pd.read_csv("../data/initial_conditions.csv")
 
-num_nodes = 4
+num_nodes = 30
 for i in range(num_nodes):
-    node_id = int(_nodes.iloc[i]['node'])
+    node_id = int(_nodes.iloc[i]['id'])
     x0 = float(_nodes.iloc[i]['state']) / SCALE_FACTOR
     z0 = float(_nodes.iloc[i]['vstate']) / SCALE_FACTOR
     enabled = int(_nodes.iloc[i]['enabled'])
@@ -61,7 +62,7 @@ for i in range(num_nodes):
 
 #% >>> System parameters: 
 ## Simulation:
-T        = 8.0
+T        = 6.0
 dt       = 0.001
 time     = np.arange(0, T, dt)
 n_points = len(time)
@@ -87,7 +88,7 @@ params = {
 }
 
 ## Disturbance: bounded known input
-alpha   = 1.5
+alpha   = 0.0
 beta    = 0.0
 kappa   = 0.0
 phi     = np.random.uniform(0, 1, (n_agents, n_points)) 
@@ -255,6 +256,7 @@ def simulate_sampled_dynamics_euler(params, init_conditions, sample_time=0.2):
         vtheta[:, k] = y[2*n_agents:3*n_agents]
 
         if k % sample_interval == 0:
+            print(f"Simulating time: {t:.2f}s / {T:.2f}s", end='\r')
 
             for i in range(n_agents):
 
@@ -283,9 +285,60 @@ x, z, vtheta, dvtheta, sample_points = simulate_sampled_dynamics_euler(params, i
 t = np.linspace(0, T, sample_points)
 plot_states(t, x, z, vtheta, params, ref_state_num=1)
 
-states_file = "../data/30node-clusters/generated_x.csv"
-vstates_file = "../data/30node-clusters/generated_z.csv"
-vartheta_file = "../data/30node-clusters/generated_vartheta.csv"
+states_file = "../data/30node-clusters/x.csv"
+vstates_file = "../data/30node-clusters/z.csv"
+vartheta_file = "../data/30node-clusters/vartheta.csv"
 np.savetxt(states_file, x.T, delimiter=",", fmt='%f')
 np.savetxt(vstates_file, z.T, delimiter=",", fmt='%f')
 np.savetxt(vartheta_file, vtheta.T, delimiter=",", fmt='%f')
+
+#%% Do the actual interpolation
+NUM_NODE = 21
+
+states_file = "../data/30node-clusters/x.csv"
+vstates_file = "../data/30node-clusters/z.csv"
+vartheta_file = "../data/30node-clusters/vartheta.csv"
+
+x = pd.read_csv(states_file, header=None).to_numpy()
+x_gen1 = x[:,NUM_NODE-1]
+z = pd.read_csv(vstates_file, header=None).to_numpy()
+z_gen1 = z[:,NUM_NODE-1]
+vartheta = pd.read_csv(vartheta_file, header=None).to_numpy()
+vartheta_gen1 = vartheta[:,0]
+
+x_samples = x.shape[1]
+z_samples = z.shape[1]
+vartheta_samples = vartheta.shape[1]
+
+Ts = 0.2
+time_gen = np.arange(0, Ts * x_samples, Ts)
+
+# Original time vector (sampled)
+node1 = pd.read_csv(f"data/30node-clusters-csv/node_{NUM_NODE}.csv")
+timestamp = node1['timestamp'].to_numpy()
+time = timestamp[:x_samples] / 1000.0  
+x1 = node1['state'].to_numpy()
+x1 = x1[:x_samples] / SCALE_FACTOR  
+z1 = node1['vstate'].to_numpy()
+z1 = z1[:z_samples] / SCALE_FACTOR 
+vartheta1 = node1['vartheta'].to_numpy()
+vartheta1 = vartheta1[:vartheta_samples] / SCALE_FACTOR
+
+fig, axs = plt.subplots(4, 1, figsize=(12, 9), sharex=True)
+# --- Top subplot: states x_i ---
+axs[0].plot(time_gen, x_gen1, '-', label='Node 1 Gen x', linewidth=1.4, marker="o", markersize=4, alpha=0.7)
+axs[0].plot(time, x1, '-', label='Node 1 Sampled x', linewidth=1.4, marker="x", markersize=4, alpha=0.7)
+# --- Middle subplot: reference states z_i ---
+axs[1].plot(time_gen, z_gen1, '-', label='Node 1 Gen z', linewidth=1.4, marker="o", markersize=4, alpha=0.7)
+axs[1].plot(time, z1, '-', label='Node 1 Sampled z', linewidth=1.4, marker="x", markersize=4, alpha=0.7)
+# --- Bottom subplot: adaptive gains vartheta_i ---
+axs[2].plot(time_gen, vartheta_gen1, '-', label='Node 1 Gen vartheta', linewidth=1.4, marker="o", markersize=4, alpha=0.7)
+axs[2].plot(time, vartheta1, '-', label='Node 1 Sampled vartheta', linewidth=1.4, marker="x", markersize=4, alpha=0.7)
+# --- Bottom subplot: time plot ---
+axs[3].plot(time_gen, '-', label='Timestamps Gen', linewidth=1.4, marker="o", markersize=4, alpha=0.7)
+axs[3].plot(time, '-', label='Timestamps', linewidth=1.4, marker="x", markersize=4, alpha=0.7)
+for ax in axs:
+    ax.grid(True, linestyle='--', alpha=0.6)
+    ax.legend()
+plt.tight_layout()
+plt.show()
