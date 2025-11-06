@@ -52,30 +52,6 @@ class JSONtoCSVConverter:
             x = np.array(state[:min_len])
             z = np.array(vstate[:min_len])
             vartheta = np.array(vartheta[:min_len])
-
-            # # 1. Add initial conditions to arrays: 
-            # data_dir = "../data/"
-            # init_path = os.path.join(data_dir, "initial_conditions.csv")
-            # init_conditions = None
-            # if os.path.exists(init_path):
-            #     try:
-            #         init_conditions = pd.read_csv(init_path)
-            #     except Exception as e:
-            #         print(f"Could not read initial_conditions.csv: {e}")
-            # else: 
-            #     print(f"No initial_conditions.csv found in {data_dir}")
-
-            # if init_conditions is not None and i in init_conditions['id'].values:
-            #     row = init_conditions[init_conditions['id'] == i].iloc[0]
-            #     x0 = int(row['state'])
-            #     z0 = int(row['vstate'])
-            #     vtheta0 = 0
-                
-            #     x = np.concatenate(([x0], state[:-1]))
-            #     z = np.concatenate(([z0], vstate[:-1]))
-            #     vartheta = np.concatenate(([vtheta0], vartheta[:-1]))
-
-            # 2. Normalize timestamps to start from zero
             timestamp = timestamp - timestamp[0]  
 
             # Prepare CSV file
@@ -90,8 +66,8 @@ class JSONtoCSVConverter:
 
 if __name__ == "__main__":
     num_agents = 30
-    sim_name = f"{num_agents}node-clusters"
-    output_csv_dir = f"data/{num_agents}node-clusters-csv"
+    sim_name = f"{num_agents}node-dring"
+    output_csv_dir = f"data/{num_agents}node-dring-csv"
     num_agents = 30
     converter = JSONtoCSVConverter(filename_template="../data/{}/{}.json",
                                    simulation=sim_name,
