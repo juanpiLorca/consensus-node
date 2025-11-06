@@ -1,36 +1,133 @@
-# Consensus
+# 🧠 Consensus Platform
 
-This project is for implementing a consensus algorithm with RaspberryPis via Wifi/BLE and nrf52DK via BLE.
+This repository implements a **consensus algorithm** across a heterogeneous IoT network composed of **Raspberry Pi 4** devices and **Nordic nRF52-DK** boards.  
+Communication between agents occurs through **Wi-Fi** and **Bluetooth Low Energy (BLE)** links.
 
-## Components
+---
 
-In this project, we need to keep in mind:
+## ⚙️ System Overview
 
-* A node is the physical hardware which is composed by a RaspberryPi attached by an USB cable to a nrf52DK.
-* An edge-device is inside a node and represents an aplication which can be of 3 types: ble, wifi, bridge. In this way, a single node can act 3 different edge-devices at the same time.
-* A router with is in cherge of deployin a LAN.
-* The hub-server can be deployed in a laptop and is in charge of configuring the network, parameters and triggers the start of the algorithms for the edge-devices.
-* The user-interface which can be visualized a browser in the same laptop of the heb-server.
+The project includes several coordinated components:
 
-## Steps for implementation
+- **Node:**  
+  A physical hardware unit composed of a Raspberry Pi connected via USB to an nRF52-DK board.
 
-1.- For all nrf52DK you need to burn the firmware which source code is in the folder `/consensus/nordic` (see the [nordic dev academy courses](https://academy.nordicsemi.com/) in order to do this). Use nordic SDK 2.7.0. 
+- **Edge-device:**  
+  A logical process running inside a node.  
+  Each node can host up to **three edge-devices**, one per communication type:
+  - `ble` → BLE process (advertises and listens)
+  - `wifi` → Wi-Fi process (HTTP client/server)
+  - `bridge` → bridge process (links BLE and Wi-Fi subnetworks)
 
-2.- For all the RaspberryPis create an SD card with Raspian Bookworm OS and enable SSH-server (username: `control`, password: `control1234`). Via a keyboard-screen (or SSH-client), you can then install nvm:0.40.1 and the node:22.11.0 and install "expect": `sudo apt install expect`. Then, make sure the `raspberry/bleadv.sh` is executable (`ls -l bleadv.sh`). If not, run the following command: `chmod +x bleadv.sh` 
+- **Router:**  
+  Provides the local Wi-Fi LAN for inter-node communication.
 
-3.- pload all the contents of `/consensus/raspberry` (except for `node_modules` nor `package-lock.json`) and install all node dependencies with `~/Desktop/consensus/raspberry$ npm install`. Additionally you need to connect to the LAN via wifi, use `sudo raspi-config` for setting the wifi credentials, and get the dynamic LAN ip address (which normally doesn't change in the router) with `ip a` and remember it.
+- **Hub server:**  
+  Runs on a laptop and is responsible for configuring network parameters, broadcasting experiment triggers, and coordinating all edge-devices.
 
-4.- In your laptop you need to have the `~/Desktop/consensus/raspberry`; with SSH-client, nmv and node installed (it's not necessary to install expect), with the node modules of the project installed and connected to the router LAN.
+- **User Interface (UI):**  
+  A web dashboard available at `http://localhost:3000` on the same laptop as the hub server.  
+  It allows configuring algorithms, launching experiments, and visualizing results.
 
-5.- In the physical world create a node by ataching 1 nrf52DK with 1 raspberry using a usb cable. Repeat the process for every node you want to have. Note that you can connect to a node via SSH-client with the RaspberryPi credentials and its LAN ip address.
+---
 
-6.- From your laptop open 3 terminals for each node and navigate to the `~/Desktop/consensus/raspberry` and the run 3 edge-devices processes on each terminal: `node back ble`, `node back wifi`, `node back bridge`.
+## 🚀 Implementation Steps
 
-7.- From your laptop open the file `~/Desktop/consensus/raspberry/net.js` to edit the network graph and parameters by simply changing the `NODES` variable. Here is an example for 3 nodes:
+### 1. Flash the nRF52-DK firmware
+
+1. Build and flash the firmware located in  
+   `/consensus/nordic`.  
+   Use **Nordic SDK 2.7.0**.
+2. Refer to the [Nordic DevAcademy courses](https://academy.nordicsemi.com/) for instructions on installing toolchains and flashing via nRF Connect or `nrfutil`.
+
+---
+
+### 2. Prepare the Raspberry Pi devices
+
+1. Flash each SD card with **Raspbian Bookworm OS** and enable the **SSH server**.  
+   Default credentials:
+   ```bash
+   username: control
+   password: control1234
+   ```
+2. Install required packages:
+   ```bash
+   sudo apt update
+   sudo apt install expect
+   ```
+3. Install Node Version Manager (NVM) and Node.js:
+   ```bash
+   nvm install 0.40.1
+   nvm use 0.40.1
+   nvm install 22.11.0
+   ```
+4. Ensure the script `bleadv.sh` is executable:
+   ```bash
+   chmod +x raspberry/bleadv.sh
+   ```
+5. Connect to the LAN via Wi-Fi:
+   ```bash
+   sudo raspi-config
+   ```
+   Then verify and note the IP address:
+   ```bash
+   ip a
+   ```
+
+---
+
+### 3. Deploy the Raspberry Pi code
+
+1. Copy all files from `/consensus/raspberry` to each Raspberry Pi (omit `node_modules` and `package-lock.json`).  
+2. Install dependencies:
+   ```bash
+   cd ~/Desktop/consensus/raspberry
+   npm install
+   ```
+
+---
+
+### 4. Configure the laptop (hub host)
+
+On your laptop:
+- Clone or copy the repository to `~/Desktop/consensus/raspberry`.
+- Install Node.js and NVM (no need for `expect`).
+- Ensure you are connected to the same router LAN as the Raspberry Pis.
+
+---
+
+### 5. Create the physical nodes
+
+Attach each **nRF52-DK** board to a **Raspberry Pi** using a USB cable.  
+Repeat for every node.  
+You can SSH into each node using its IP address and credentials.
+
+---
+
+### 6. Run the edge-device processes
+
+For each node:
+
+1. Open **three terminal windows** and navigate to:
+   ```bash
+   cd ~/Desktop/consensus/raspberry
+   ```
+2. Launch the edge-device processes:
+   ```bash
+   node back ble
+   node back wifi
+   node back bridge
+   ```
+
+---
+
+### 7. Configure the network topology
+
+Edit `~/Desktop/consensus/raspberry/net.js` and modify the `NODES` variable to match your desired topology.
+
+Example (9-node cluster):
 ```js
-// file: /consensus/raspberry/net.js
-...
-// 9node-clusters
+// Example topology
 //       3 --- 9
 //        \   /
 //          6
@@ -38,30 +135,42 @@ In this project, we need to keep in mind:
 // 7 --- 1     8 --- 2
 //  \   /       \   /
 //    4           5
-NODES = {
-  1: {ip: '192.168.1.112', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 1000, state: 1000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  2: {ip: '192.168.1.112', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 1000, state: 4000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  3: {ip: '192.168.1.112', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 1000, state: 7000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  4: {ip: '192.168.1.190', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 1000, state: 2000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  5: {ip: '192.168.1.190', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 1000, state: 3000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  6: {ip: '192.168.1.190', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 1000, state: 8000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  7: {ip: '192.168.1.136', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 1000, state: 3000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  8: {ip: '192.168.1.136', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 1000, state: 6000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-  9: {ip: '192.168.1.136', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 1000, state: 9000, gamma: 0, lambda: 100, pole: 50, dead: 0, disturbance: {random: true, offset: 0, amplitude: 0, phase: 0, samples: 1}},
-}
-...
 ```
-8.- From your laptop open another terminal, navigate to the `~/Desktop/consensus/raspberry` and run: `node hub`. Open a browser at `http://localhost:3000`. This is optional but a good practice: press the reset button of all norf52DKs, this is a good idea when the preivious tests gives unstable results. In the user-interface select the type of the algorithm (1: pure adaptative integral, 2: adaptative PI + LPF), chande the name of the test and check the trigger option, then press `Update Params`.
 
-9.- In the user interface you can see when the algorithm converges. At this point it is time to stop the test by unckecking the trigger button and pressing `Update Params`. You can now press the link `Open data history in a new window` and navigate to see the name of your test, click it and you can see your results.
+---
 
+### 8. Launch the hub server
 
-## Some results
+1. On your laptop, open a new terminal:
+   ```bash
+   cd ~/Desktop/consensus/raspberry
+   node hub
+   ```
+2. Open a browser at [http://localhost:3000](http://localhost:3000).
 
-We consider the following topology:
+**Tip:** Press the reset button on all nRF52-DK boards before starting new experiments to ensure a clean state.
+
+In the UI:
+- Select the algorithm type:  
+  `1` → Pure Adaptive Integral  
+  `2` → Adaptive PI + LPF
+- Enter a test name, enable the trigger, and click **Update Params**.
+
+---
+
+### 9. Observe and collect results
+
+When the algorithm converges (visible in the UI), stop the test by unchecking the trigger box and clicking **Update Params**.  
+Then go to **Data History → [your test name]** to view and analyze your results.
+
+---
+
+## 📊 Example Results
+
+Using the following topology:
 
 ```js
-// 9node-clusters
+// 9-node cluster
 //       3 --- 9
 //        \   /
 //          6
@@ -71,21 +180,39 @@ We consider the following topology:
 //    4           5
 ```
 
-Were initially node 6 is disconected from the complete graph, then (at second 30 or 60) node 6 connects to the network. At second 160 we add a constant disturbance when possible.
+```js
+TOPOLOGY = [
+  {id: 1, ip: '192.168.0.136', type: TYPE_BLE,    enabled: true,  neighbors: [4,6,7],   clock: 250},
+  {id: 2, ip: '192.168.0.136', type: TYPE_WIFI,   enabled: true,  neighbors: [5,8],     clock: 250},
+  {id: 3, ip: '192.168.0.136', type: TYPE_BRIDGE, enabled: true,  neighbors: [6,9],     clock: 250},
+  {id: 4, ip: '192.168.0.101', type: TYPE_BLE,    enabled: true,  neighbors: [1,7],     clock: 250},
+  {id: 5, ip: '192.168.0.101', type: TYPE_WIFI,   enabled: true,  neighbors: [2,8],     clock: 250},
+  {id: 6, ip: '192.168.0.101', type: TYPE_BRIDGE, enabled: false, neighbors: [1,3,8,9], clock: 250},
+  {id: 7, ip: '192.168.0.134', type: TYPE_BLE,    enabled: true,  neighbors: [1,4],     clock: 250},
+  {id: 8, ip: '192.168.0.134', type: TYPE_WIFI,   enabled: true,  neighbors: [2,5,6],   clock: 250},
+  {id: 9, ip: '192.168.0.134', type: TYPE_BRIDGE, enabled: true,  neighbors: [3,6],     clock: 250},
+];
+```
 
+Initially, node 6 is disconnected from the network.  
+At second 30 (or 60), node 6 reconnects, demonstrating the algorithm’s robustness to dynamic topology changes.
 
-### Adaptative Pure Integral Consensus Algorithm
+---
 
-![](./img/n9-integral-clean-dist500n6.png)
-9-node network setup over time. Initially, the network forms 4 clusters: [1, 4, 7], [2, 5, 8], [3, 9], and [6], with each cluster converging to its own consensus value. Afterward, node 6 connects to all clusters, leading to a global consensus. Finally, node 6 is subjected to a constant disturbance of 500, and the network tries to converge to an uptend line which is not achieved since gamma diverges. Note that no random disturbance is included in this example.
+## 🧩 Folder Structure
 
-![](./img/n9-integral-rand50.png)
-Same setup as before, but now with the addition of random disturbances on all nodes of amplitude 50 and is not regarded the addition of a constant randome distubance during the experiment. Initially, all clusters try to converge to their own concensus (contant or uptend line). Afterward, node 6 connects to all clusters, and the network tries to converge to an uptend line which is not achieved since gamma diverges.
+```
+consensus/
+├── nordic/          # nRF52 firmware source (Zephyr-based)
+├── raspberry/       # Node.js applications for BLE, Wi-Fi, and bridge agents
+├── hub/             # Web server and UI
+└── docs/            # Documentation and topology examples
+```
 
-### Adaptative PI+LPF Consensus Algorithm
+---
 
-![](./img/n9-pilpf-clean-dist1000n6.png)
-9-node network setup over time. Initially, the network forms 4 clusters: [1, 4, 7], [2, 5, 8], [3, 9], and [6], with each cluster converging to its own consensus value. Afterward, node 6 connects to all clusters, leading to a global consensus. Finally, node 6 is subjected to a constant disturbance of 1000, and the network demonstrates robustness by converging to a new consensus. Note that no random disturbance is included in this example.
+## 🧠 Credits
 
-![](./img/n9-pilpf-rand50-dist1000n6.png)
-Same setup as before, but now with the addition of random disturbances on all nodes of amplitude 50. The algorithm still demonstrates robustness. Note that gamma tends to decrease, unlike in the absence of random disturbances, where it remains constant. This decrease is beneficial, as large gamma values can make the network more unstable.
+Developed as part of the **Time Synchronization and Finite-Time Consensus** project  
+at the **Cyber-Physical Systems Laboratory**,  
+**Pontificia Universidad Católica de Chile**.

@@ -121,8 +121,8 @@ function createNodes(topologyConfig) {
                 disturbance_on: true,        
                 amplitude: 1500000,
                 offset: 500000,
-                beta: 0, 
-                Amp: 0,   
+                beta: 100000, 
+                Amp: 400000,   
                 frequency: 10,  
                 phase: INITIAL_PHASES[nodeIndex],
                 samples: 1000
