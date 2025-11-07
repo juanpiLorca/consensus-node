@@ -72,6 +72,7 @@ class PlotConsensus:
             content = json.loads(raw_content) if isinstance(raw_content, str) else raw_content
             data_dict = content.get('data', {})
 
+            print("Node", i)
             timestamp = [int(x) for x in data_dict.get('timestamp', [])]
             state = [int(x) for x in data_dict.get('state', [])]
             vstate = [int(x) for x in data_dict.get('vstate', [])]
@@ -206,7 +207,7 @@ class PlotConsensus:
 
 
 if __name__ == "__main__":
-    sim_name = "30node-dring"
+    sim_name = "30node-clusters"
     num_agents = 30
     plotter = PlotConsensus(
         filename_template="../data/{}/{}.json",

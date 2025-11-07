@@ -1,7 +1,7 @@
 import re 
 import json 
 
-filename = "../data/30node-dring/17.json"
+filename = "../data/30node-clusters/25.json"
 output_filename = filename.replace(".json", "_structured.json")
 
 # --- FILE READING & INITIAL CLEANUP ---
@@ -28,10 +28,11 @@ else:
 
 # B. Extract ALL strictly valid data rows
 valid_rows = re.findall(
-    r'\[\s*(?:\d+\s*,\s*){3,4}\d+\s*\]',  # match 4 or 5 numbers inside brackets
+    r'\[\s*(?:\d+\s*,\s*){5,6}\d+\s*\]',  # match 4 or 5 numbers inside brackets
     content_string,
     flags=re.DOTALL
 )
+
 
 if not valid_rows:
     print(f"[Warning] File {filename} contains no valid data rows to process.")
