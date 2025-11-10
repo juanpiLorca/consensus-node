@@ -78,8 +78,8 @@ void update_consensus(consensus_params* cp) {
             dvtheta = eta * 1.0f; 
         }
     }
-    cp->state = (int32_t)((x + dt * (ui + nu)) * cp->scale_factor);
-    cp->vstate = (int32_t)((z + dt * gi) * cp->scale_factor);
-    cp->vartheta = (int32_t)((vartheta + dt * dvtheta) * cp->scale_factor);
+    cp->state = (int32_t)((x + 1.0f * (ui + nu)) * cp->scale_factor);          // removed: dt *
+    cp->vstate = (int32_t)((z + 1.0f * gi) * cp->scale_factor);                // removed: dt *
+    cp->vartheta = (int32_t)((vartheta + 1.0f * dvtheta) * cp->scale_factor);  // removed: dt *
     cp->disturbance.counter = (cp->disturbance.counter + 1) % cp->disturbance.samples;
 }
